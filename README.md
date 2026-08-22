@@ -11,6 +11,10 @@ Calamares. Главное окно установщика принудитель
 ISO рабочий стол собирается отдельно от live-композитора и добавляется в
 устанавливаемую систему как основной графический сеанс SDDM.
 
+Regalia также входит в KaskadOS как штатный VPN-компонент MacqueenDE. Её
+исходники, службы и защищённый движок собираются вместе с системой, поэтому в
+настройках рабочего стола не требуется отдельная установка VPN-компонента.
+
 ## Сборка ISO
 
 Сборка поддерживается на Arch Linux x86_64.
@@ -19,7 +23,7 @@ ISO рабочий стол собирается отдельно от live-ко
    сборки компонентов:
 
    ```bash
-   sudo pacman -Syu --needed archiso base-devel boost cmake extra-cmake-modules \
+   sudo pacman -Syu --needed archiso base-devel boost cmake curl extra-cmake-modules \
      git go kpmcore kwin libpwquality ninja plasma-wayland-protocols pybind11 \
      qt6-declarative vulkan-headers wayland-protocols \
      xdg-desktop-portal-kde yaml-cpp
@@ -68,10 +72,11 @@ make clean
 ## Как устроена сборка live-среды
 
 `scripts/prepare-live-profile.sh` отдельно собирает Calamares,
-`kaskad-installer` и полный MacqueenDE, затем создаёт генерируемый профиль
-`build/iso-profile/`. Исходный `profile/` не засоряется бинарными файлами.
-Calamares устанавливается в `/usr`, live-композитор — в
-`/opt/kaskados-installer`, а установленный рабочий стол — в `/opt/macqueende`.
+`kaskad-installer`, полный MacqueenDE и Regalia, затем создаёт генерируемый
+профиль `build/iso-profile/`. Исходный `profile/` не засоряется бинарными
+файлами. Calamares устанавливается в `/usr`, live-композитор — в
+`/opt/kaskados-installer`, рабочий стол — в `/opt/macqueende`, а компоненты
+Regalia — в `/usr/bin` и `/usr/lib/regalia`.
 
 После этого `scripts/build-iso.sh` передаёт подготовленный профиль в
 `mkarchiso`. Только этот последний этап запускается через `sudo`; исходники и
@@ -80,7 +85,9 @@ Calamares устанавливается в `/usr`, live-композитор �
 Установка выполняется без сети: Calamares копирует готовую live-систему из
 ISO, включая MacqueenDE и все его пакеты времени выполнения, создаёт обычный
 initramfs, устанавливает GRUB и включает SDDM. В SDDM заранее регистрируется
-сеанс `MacqueenDE`, который выбирается установщиком как основной.
+сеанс `MacqueenDE`, который выбирается установщиком как основной. Regalia и
+проверенная контрольной суммой копия `sing-box` также уже находятся в ISO;
+пользовательская служба VPN запускается автоматически после входа в систему.
 
 ## Разработка Calamares
 
@@ -117,6 +124,7 @@ CALAMARES_BUILD_DIR=/tmp/kaskados-calamares-build CALAMARES_JOBS=8 make calamare
 - `profile/profiledef.sh` — имя, метка, издатель и режимы загрузки ISO;
 - `components/calamares/` — код и конфигурация установщика;
 - `components/macqueende/` — полный исходный код рабочего стола MacqueenDE;
+- `components/regalia/` — исходный код встроенного VPN-компонента Regalia;
 - `components/kaskad-installer-compositor/` — отдельная копия MacqueenDE для
   live-установщика;
 - `profile/airootfs/usr/local/bin/kaskados-installer-session` — запуск

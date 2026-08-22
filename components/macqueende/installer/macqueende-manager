@@ -4,6 +4,7 @@ set -euo pipefail
 
 repo=${MACQUEENDE_GITHUB_REPO:-lyrka-meow/KaskadOS-main}
 component_path=${MACQUEENDE_REPOSITORY_PATH:-components/macqueende}
+release_tag=${MACQUEENDE_RELEASE_TAG:-macqueende-rolling}
 raw_installer="https://raw.githubusercontent.com/$repo/main/$component_path/installer/install-github.sh"
 info_file=/opt/macqueende/INSTALL_INFO
 
@@ -79,7 +80,7 @@ command_status()
 latest_binary_version()
 {
     local api asset
-    api="https://api.github.com/repos/$repo/releases/tags/rolling?cache_bust=$(date +%s)"
+    api="https://api.github.com/repos/$repo/releases/tags/$release_tag?cache_bust=$(date +%s)"
     asset=$(curl -fsSL \
         -H 'Accept: application/vnd.github+json' \
         -H 'Cache-Control: no-cache' \

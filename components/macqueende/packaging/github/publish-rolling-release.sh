@@ -4,7 +4,7 @@ set -euo pipefail
 
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 repo=${MACQUEENDE_GITHUB_REPO:-lyrka-meow/KaskadOS-main}
-tag=${MACQUEENDE_ROLLING_TAG:-rolling}
+tag=${MACQUEENDE_ROLLING_TAG:-macqueende-rolling}
 version=${1:?usage: publish-rolling-release.sh VERSION [ARCH]}
 arch=${2:-x86_64}
 

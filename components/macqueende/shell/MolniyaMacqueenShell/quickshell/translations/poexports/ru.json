@@ -9188,6 +9188,9 @@
   "The VPN component could not be reached": {
     "The VPN component could not be reached": "Не удалось подключиться к VPN-компоненту"
   },
+  "The integrated VPN component is missing. Reinstall or update KaskadOS.": {
+    "The integrated VPN component is missing. Reinstall or update KaskadOS.": "Встроенный VPN-компонент отсутствует. Переустановите или обновите KaskadOS."
+  },
   "This shell requires Regalia API version %1 or newer.": {
     "This shell requires Regalia API version %1 or newer.": "Для этой оболочки требуется Regalia API версии %1 или новее."
   },

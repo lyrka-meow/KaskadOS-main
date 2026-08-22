@@ -13,6 +13,12 @@ readonly MACQUEEN_COMPOSITOR_BUILD="${MACQUEENDE_BUILD}/compositor"
 readonly MACQUEEN_PORTAL_BUILD="${MACQUEENDE_BUILD}/portal"
 readonly MACQUEEN_QUICKSHELL_BUILD="${MACQUEENDE_BUILD}/quickshell-macqueen"
 readonly MACQUEEN_SHELL_BUILD="${MACQUEENDE_BUILD}/shell-source"
+readonly REGALIA_SOURCE="${PROJECT_DIR}/components/regalia"
+readonly REGALIA_BUILD="${BUILD_ROOT}/regalia"
+readonly REGALIA_BIN="${REGALIA_BUILD}/bin"
+readonly SING_BOX_VERSION="1.13.15"
+readonly SING_BOX_ARCHIVE="sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
+readonly SING_BOX_SHA256="a3a3ff223b23c3f4731d0a17cb0ef94c97ce257c70721a5b07dc7ca079203c9f"
 readonly INSTALLER_THEMES="${PROJECT_DIR}/components/installer-themes"
 readonly PROFILE_DIR="${PROFILE_DIR:-${BUILD_ROOT}/iso-profile}"
 readonly BUILD_JOBS="${BUILD_JOBS:-$(nproc)}"
@@ -24,12 +30,13 @@ die() {
   exit 1
 }
 
-for command_name in cmake go ldd make ninja pacman readelf; do
+for command_name in cmake curl go ldd make ninja pacman readelf sha256sum tar; do
   command -v "${command_name}" >/dev/null 2>&1 || die "не найдена команда ${command_name}"
 done
 
 required_build_packages=(
   base-devel
+  curl
   extra-cmake-modules
   git
   go
@@ -60,6 +67,9 @@ fi
 [[ -d "${INSTALLER_THEMES}/previews" ]] || die 'не найдены превью тем для установщика'
 [[ -f "${MACQUEENDE_SOURCE}/VERSION" ]] || die 'не найден исходный код MacqueenDE'
 [[ -f "${MACQUEENDE_SOURCE}/session/macqueende.desktop" ]] || die 'не найдена сессия MacqueenDE'
+[[ -f "${REGALIA_SOURCE}/go.mod" ]] || die 'не найден исходный код Regalia'
+[[ -f "${REGALIA_SOURCE}/packaging/systemd/user/regaliad.service" ]] \
+  || die 'не найдена пользовательская служба Regalia'
 
 "${SCRIPT_DIR}/check-profile.sh"
 
@@ -113,6 +123,29 @@ make -C "${MACQUEEN_SHELL_BUILD}/core" \
   VERSION="$(tr -d '\n' < "${MACQUEENDE_SOURCE}/VERSION")" \
   COMMIT=kaskados \
   build
+
+if [[ -e "${REGALIA_BUILD}" ]]; then
+  rm -rf -- "${REGALIA_BUILD}"
+fi
+mkdir -p -- "${REGALIA_BIN}"
+(
+  cd -- "${REGALIA_SOURCE}"
+  env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags '-s -w' -o "${REGALIA_BIN}/regalia" ./cmd/regalia
+  env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags '-s -w' -o "${REGALIA_BIN}/regaliad" ./cmd/regaliad
+  env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags '-s -w' -o "${REGALIA_BIN}/regalia-engine" ./cmd/regalia-engine
+)
+curl -fL --retry 3 --silent --show-error \
+  "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/${SING_BOX_ARCHIVE}" \
+  -o "${REGALIA_BUILD}/${SING_BOX_ARCHIVE}"
+printf '%s  %s\n' "${SING_BOX_SHA256}" "${REGALIA_BUILD}/${SING_BOX_ARCHIVE}" \
+  | sha256sum -c -
+tar -xzf "${REGALIA_BUILD}/${SING_BOX_ARCHIVE}" -C "${REGALIA_BUILD}"
+install -m 0755 \
+  "${REGALIA_BUILD}/sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box" \
+  "${REGALIA_BIN}/sing-box"
 
 env -u LD_LIBRARY_PATH cmake -S "${PROJECT_DIR}/components/calamares" -B "${CALAMARES_BUILD}" -G Ninja \
   -DBUILD_SCHEMA_TESTING=OFF \
@@ -191,6 +224,24 @@ printf '%s\n' \
   'MANAGED_FLAMESHOT=0' \
   > "${MACQUEEN_STAGE}/INSTALL_INFO"
 
+install -Dm0755 "${REGALIA_BIN}/regalia" \
+  "${PROFILE_DIR}/airootfs/usr/bin/regalia"
+install -Dm0755 "${REGALIA_BIN}/regaliad" \
+  "${PROFILE_DIR}/airootfs/usr/bin/regaliad"
+install -Dm0755 "${REGALIA_BIN}/regalia-engine" \
+  "${PROFILE_DIR}/airootfs/usr/lib/regalia/regalia-engine"
+install -Dm0755 "${REGALIA_BIN}/sing-box" \
+  "${PROFILE_DIR}/airootfs/usr/lib/regalia/sing-box"
+install -Dm0644 "${REGALIA_SOURCE}/packaging/systemd/regalia-engine@.service" \
+  "${PROFILE_DIR}/airootfs/usr/lib/systemd/system/regalia-engine@.service"
+install -Dm0644 "${REGALIA_SOURCE}/packaging/systemd/user/regaliad.service" \
+  "${PROFILE_DIR}/airootfs/usr/lib/systemd/user/regaliad.service"
+install -Dm0644 "${REGALIA_SOURCE}/packaging/polkit/50-regalia-engine.rules" \
+  "${PROFILE_DIR}/airootfs/usr/share/polkit-1/rules.d/50-regalia-engine.rules"
+install -d -m 0755 "${PROFILE_DIR}/airootfs/etc/systemd/user/default.target.wants"
+ln -sfn /usr/lib/systemd/user/regaliad.service \
+  "${PROFILE_DIR}/airootfs/etc/systemd/user/default.target.wants/regaliad.service"
+
 declare -A runtime_packages=()
 declare -A system_libraries=()
 readonly STAGED_ROOT="${PROFILE_DIR}/airootfs"
@@ -205,6 +256,7 @@ for package_name in \
   mesa \
   pacman-contrib \
   pciutils \
+  polkit \
   qt6-5compat \
   qt6-connectivity \
   qt6-imageformats \
@@ -266,3 +318,4 @@ printf 'Подготовлен live-профиль: %s\n' "${PROFILE_DIR}"
 printf 'Композитор: %s\n' "${PROFILE_DIR}/airootfs/opt/kaskados-installer/bin/kaskad-installer"
 printf 'Calamares:  %s\n' "${PROFILE_DIR}/airootfs/usr/bin/calamares"
 printf 'MacqueenDE: %s\n' "${PROFILE_DIR}/airootfs/opt/macqueende/start-macqueende"
+printf 'Regalia:    %s\n' "${PROFILE_DIR}/airootfs/usr/bin/regalia"

@@ -4,7 +4,7 @@ set -euo pipefail
 
 repo=${MACQUEENDE_GITHUB_REPO:-lyrka-meow/KaskadOS-main}
 component_path=${MACQUEENDE_REPOSITORY_PATH:-components/macqueende}
-release_tag=${MACQUEENDE_RELEASE_TAG:-rolling}
+release_tag=${MACQUEENDE_RELEASE_TAG:-macqueende-rolling}
 requested_mode=${MACQUEENDE_INSTALL_MODE:-}
 install_mode=
 managed_flameshot=0

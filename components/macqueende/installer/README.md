@@ -14,8 +14,9 @@ version, source commit, and runtime state of the compositor, Quickshell, DMS
 backend, and portal. Its numeric menu supports updates through either method
 and complete system-file removal while preserving user configuration.
 
-MacqueenDE uses one permanent GitHub release tagged `rolling`. After committing
-and building the current sources, maintainers replace its assets with:
+MacqueenDE uses one permanent GitHub release tagged `macqueende-rolling`.
+After committing and building the current sources, maintainers replace its
+assets with:
 
 ```bash
 ./packaging/github/publish-rolling-release.sh VERSION

@@ -101,6 +101,7 @@ parted
 partimage
 pciutils
 pcsclite
+polkit
 ppp
 pptpclient
 pv

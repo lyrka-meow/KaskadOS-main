@@ -283,9 +283,9 @@ Item {
                                 text: {
                                     switch (RegaliaService.availabilityState) {
                                     case "checking":
-                                        return I18n.tr("Looking for the optional VPN component");
+                                        return I18n.tr("Checking Regalia");
                                     case "not-installed":
-                                        return I18n.tr("VPN support is optional. Install Regalia separately to unlock connection, server and routing settings.");
+                                        return I18n.tr("The integrated VPN component is missing. Reinstall or update KaskadOS.");
                                     case "service-offline":
                                         return I18n.tr("The component is installed, but its user service is offline. Your desktop works normally without it.");
                                     case "incompatible":
@@ -296,93 +296,28 @@ Item {
                                 }
                             }
 
-                            Rectangle {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                width: optionalText.implicitWidth + Theme.spacingM * 2
-                                height: 26
-                                radius: 13
-                                color: Theme.surfaceContainerHigh
-                                visible: RegaliaService.availabilityState === "not-installed"
-
-                                StyledText {
-                                    id: optionalText
-                                    anchors.centerIn: parent
-                                    text: I18n.tr("Optional component")
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    font.weight: Font.Medium
-                                    color: Theme.surfaceVariantText
-                                }
-                            }
-
-                            Column {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: Theme.spacingS
-                                visible: !RegaliaService.checkingInstallation && !RegaliaService.componentOperationRunning
-
-                                Row {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    spacing: Theme.spacingS
-                                    visible: RegaliaService.availabilityState !== "service-offline"
-
-                                    DankButton {
-                                        text: I18n.tr("Install binary")
-                                        iconName: "download"
-                                        buttonHeight: 36
-                                        enabled: !RegaliaService.busy
-                                        onClicked: RegaliaService.installComponent("binary")
-                                    }
-
-                                    DankButton {
-                                        text: I18n.tr("Build from source")
-                                        iconName: "code"
-                                        buttonHeight: 36
-                                        backgroundColor: Theme.surfaceContainerHigh
-                                        textColor: Theme.surfaceText
-                                        enabled: !RegaliaService.busy
-                                        onClicked: RegaliaService.installComponent("source")
-                                    }
-                                }
-
-                                Row {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    spacing: Theme.spacingS
-
-                                    DankButton {
-                                        text: I18n.tr("Start service")
-                                        iconName: "play_arrow"
-                                        buttonHeight: 36
-                                        visible: RegaliaService.availabilityState === "service-offline"
-                                        enabled: !RegaliaService.busy
-                                        onClicked: RegaliaService.startDaemon()
-                                    }
-
-                                    DankButton {
-                                        text: I18n.tr("Check again")
-                                        iconName: "refresh"
-                                        buttonHeight: 36
-                                        backgroundColor: Theme.surfaceContainerHigh
-                                        textColor: Theme.surfaceText
-                                        enabled: !RegaliaService.busy
-                                        onClicked: RegaliaService.detect()
-                                    }
-                                }
-                            }
-
                             Row {
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: Theme.spacingM
-                                visible: RegaliaService.componentOperationRunning
+                                spacing: Theme.spacingS
+                                visible: !RegaliaService.checkingInstallation
 
-                                DankSpinner {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    running: RegaliaService.componentOperationRunning
+                                DankButton {
+                                    text: I18n.tr("Start service")
+                                    iconName: "play_arrow"
+                                    buttonHeight: 36
+                                    visible: RegaliaService.availabilityState === "service-offline"
+                                    enabled: !RegaliaService.busy
+                                    onClicked: RegaliaService.startDaemon()
                                 }
 
-                                StyledText {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: RegaliaService.componentOperation === "install-source" ? I18n.tr("Building and installing Regalia") : I18n.tr("Installing Regalia")
-                                    font.pixelSize: Theme.fontSizeMedium
-                                    color: Theme.surfaceText
+                                DankButton {
+                                    text: I18n.tr("Check again")
+                                    iconName: "refresh"
+                                    buttonHeight: 36
+                                    backgroundColor: Theme.surfaceContainerHigh
+                                    textColor: Theme.surfaceText
+                                    enabled: !RegaliaService.busy
+                                    onClicked: RegaliaService.detect()
                                 }
                             }
 
@@ -392,7 +327,7 @@ Item {
                                 wrapMode: Text.Wrap
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.error
-                                text: RegaliaService.componentOperationError || RegaliaService.lastError
+                                text: RegaliaService.lastError
                                 visible: text.length > 0
                             }
                         }
@@ -488,57 +423,6 @@ Item {
                             }
                         }
 
-                        Rectangle {
-                            width: parent.width
-                            height: 1
-                            color: Theme.outline
-                            opacity: 0.2
-                        }
-
-                        Row {
-                            width: parent.width
-                            spacing: Theme.spacingM
-
-                            Column {
-                                width: parent.width - removeRegaliaButton.width - Theme.spacingM
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: Theme.spacingXXS
-
-                                StyledText {
-                                    width: parent.width
-                                    text: I18n.tr("Regalia component")
-                                    font.pixelSize: Theme.fontSizeMedium
-                                    font.weight: Font.Medium
-                                    color: Theme.surfaceText
-                                }
-
-                                StyledText {
-                                    width: parent.width
-                                    text: I18n.tr("Removing the component keeps your subscriptions and routing profiles")
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    color: Theme.surfaceVariantText
-                                    wrapMode: Text.WordWrap
-                                }
-                            }
-
-                            DankButton {
-                                id: removeRegaliaButton
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: I18n.tr("Remove")
-                                iconName: "delete"
-                                buttonHeight: 34
-                                backgroundColor: Theme.surfaceContainerHigh
-                                textColor: Theme.error
-                                enabled: !RegaliaService.componentOperationRunning
-                                onClicked: deleteConfirm.showWithOptions({
-                                    "title": I18n.tr("Remove Regalia"),
-                                    "message": I18n.tr("Remove Regalia binaries and services? Your subscriptions and routing profiles will be kept."),
-                                    "confirmText": I18n.tr("Remove"),
-                                    "confirmColor": Theme.error,
-                                    "onConfirm": () => RegaliaService.uninstallComponent()
-                                })
-                            }
-                        }
                     }
                 }
             }

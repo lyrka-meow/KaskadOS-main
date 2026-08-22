@@ -47,6 +47,7 @@ required_installed_packages=(
   grub
   kwin
   networkmanager
+  polkit
   python-pillow
   qt6-5compat
   qt6-multimedia
@@ -163,6 +164,32 @@ grep -Fq -- '--target macqueen screenshot screencast' "${PREPARE_PROFILE}" \
 grep -Fq 'readonly MACQUEEN_STAGE="${PROFILE_DIR}/airootfs/opt/macqueende"' "${PREPARE_PROFILE}" \
   || die 'prepare-live-profile.sh не добавляет MacqueenDE в ISO'
 
+readonly REGALIA_DIR="${PROJECT_DIR}/components/regalia"
+for source_path in \
+  go.mod \
+  cmd/regalia/main.go \
+  cmd/regaliad/main.go \
+  cmd/regalia-engine/main.go \
+  packaging/systemd/regalia-engine@.service \
+  packaging/systemd/user/regaliad.service \
+  packaging/polkit/50-regalia-engine.rules; do
+  [[ -e "${REGALIA_DIR}/${source_path}" ]] \
+    || die "в Regalia отсутствует ${source_path}"
+done
+grep -Fq 'go build -trimpath' "${PREPARE_PROFILE}" \
+  || die 'prepare-live-profile.sh не собирает Regalia'
+grep -Fq 'SING_BOX_SHA256=' "${PREPARE_PROFILE}" \
+  || die 'для sing-box не задана контрольная сумма'
+grep -Fq 'default.target.wants/regaliad.service' "${PREPARE_PROFILE}" \
+  || die 'пользовательская служба Regalia не включается автоматически'
+
+readonly REGALIA_SERVICE_QML="${MACQUEENDE_DIR}/shell/MolniyaMacqueenShell/quickshell/Services/RegaliaService.qml"
+readonly REGALIA_SETTINGS_QML="${MACQUEENDE_DIR}/shell/MolniyaMacqueenShell/quickshell/Modules/Settings/NetworkVpnTab.qml"
+if grep -Eq 'installerUrl|uninstallerUrl|installComponent|uninstallComponent' \
+  "${REGALIA_SERVICE_QML}" "${REGALIA_SETTINGS_QML}"; then
+  die 'MacqueenDE всё ещё устанавливает Regalia как внешний компонент'
+fi
+
 readonly BOOTLOADER_CONFIG="${PROJECT_DIR}/components/calamares/src/modules/bootloader/bootloader.conf"
 grep -Eq '^efiBootLoader:[[:space:]]+"grub"$' "${BOOTLOADER_CONFIG}" \
   || die 'GRUB не выбран обязательным загрузчиком'
@@ -230,7 +257,11 @@ required_executables=(
   '/opt/kaskados-installer/bin/kaskad-installer'
   '/opt/macqueende/start-macqueende'
   '/usr/bin/calamares'
+  '/usr/bin/regalia'
+  '/usr/bin/regaliad'
   '/usr/bin/start-macqueende'
+  '/usr/lib/regalia/regalia-engine'
+  '/usr/lib/regalia/sing-box'
   '/usr/local/bin/kaskados-installer-session'
   '/usr/local/bin/kaskados-run-calamares'
 )
