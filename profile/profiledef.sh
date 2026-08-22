@@ -3,7 +3,7 @@
 
 iso_name="kaskados"
 iso_label="KASKADOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="KaskadOS <https://github.com/lyrka-meow/KaskadOS>"
+iso_publisher="KaskadOS <https://github.com/lyrka-meow/KaskadOS-main>"
 iso_application="KaskadOS Live Installer"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
 install_dir="arch"
@@ -17,10 +17,12 @@ bootstrap_tarball_compression=('zstd' '-c' '-T0' '--auto-threads=logical' '--lon
 file_permissions=(
   ["/etc/shadow"]="0:0:400"
   ["/opt/kaskados-installer/bin/kaskad-installer"]="0:0:755"
+  ["/opt/macqueende/start-macqueende"]="0:0:755"
   ["/root"]="0:0:750"
   ["/root/.automated_script.sh"]="0:0:755"
   ["/root/.gnupg"]="0:0:700"
   ["/usr/bin/calamares"]="0:0:755"
+  ["/usr/bin/start-macqueende"]="0:0:755"
   ["/usr/local/bin/kaskados-installer-session"]="0:0:755"
   ["/usr/local/bin/kaskados-run-calamares"]="0:0:755"
   ["/usr/local/bin/choose-mirror"]="0:0:755"

@@ -7,6 +7,10 @@ ISO запускает отдельный минимальный Wayland-ком�
 Calamares. Главное окно установщика принудительно остаётся полноэкранным, без
 возможности свернуть или закрыть его средствами оконного менеджера.
 
+Полный исходный код MacqueenDE хранится в этом же репозитории. Во время сборки
+ISO рабочий стол собирается отдельно от live-композитора и добавляется в
+устанавливаемую систему как основной графический сеанс SDDM.
+
 ## Сборка ISO
 
 Сборка поддерживается на Arch Linux x86_64.
@@ -16,8 +20,9 @@ Calamares. Главное окно установщика принудитель
 
    ```bash
    sudo pacman -Syu --needed archiso base-devel boost cmake extra-cmake-modules \
-     kpmcore kwin libpwquality ninja plasma-wayland-protocols pybind11 \
-     vulkan-headers wayland-protocols yaml-cpp
+     git go kpmcore kwin libpwquality ninja plasma-wayland-protocols pybind11 \
+     qt6-declarative vulkan-headers wayland-protocols \
+     xdg-desktop-portal-kde yaml-cpp
    ```
 
 2. Проверить профиль:
@@ -62,19 +67,20 @@ make clean
 
 ## Как устроена сборка live-среды
 
-`scripts/prepare-live-profile.sh` отдельно собирает Calamares и
-`kaskad-installer`, затем создаёт генерируемый профиль `build/iso-profile/`.
-Исходный `profile/` не засоряется бинарными файлами. Calamares устанавливается
-в `/usr`, а композитор — в `/opt/kaskados-installer` внутри live-системы.
+`scripts/prepare-live-profile.sh` отдельно собирает Calamares,
+`kaskad-installer` и полный MacqueenDE, затем создаёт генерируемый профиль
+`build/iso-profile/`. Исходный `profile/` не засоряется бинарными файлами.
+Calamares устанавливается в `/usr`, live-композитор — в
+`/opt/kaskados-installer`, а установленный рабочий стол — в `/opt/macqueende`.
 
 После этого `scripts/build-iso.sh` передаёт подготовленный профиль в
 `mkarchiso`. Только этот последний этап запускается через `sudo`; исходники и
 бинарные компоненты собираются от обычного пользователя.
 
 Установка выполняется без сети: Calamares копирует готовую live-систему из
-ISO, создаёт обычный initramfs, устанавливает GRUB и включает SDDM. Среда
-рабочего стола пока намеренно не входит в образ, поэтому после установки SDDM
-запустится, но список графических сеансов будет пуст до добавления DE.
+ISO, включая MacqueenDE и все его пакеты времени выполнения, создаёт обычный
+initramfs, устанавливает GRUB и включает SDDM. В SDDM заранее регистрируется
+сеанс `MacqueenDE`, который выбирается установщиком как основной.
 
 ## Разработка Calamares
 
@@ -110,6 +116,7 @@ CALAMARES_BUILD_DIR=/tmp/kaskados-calamares-build CALAMARES_JOBS=8 make calamare
 - `profile/airootfs/` — файлы, которые попадут в корень live-системы;
 - `profile/profiledef.sh` — имя, метка, издатель и режимы загрузки ISO;
 - `components/calamares/` — код и конфигурация установщика;
+- `components/macqueende/` — полный исходный код рабочего стола MacqueenDE;
 - `components/kaskad-installer-compositor/` — отдельная копия MacqueenDE для
   live-установщика;
 - `profile/airootfs/usr/local/bin/kaskados-installer-session` — запуск

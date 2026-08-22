@@ -40,14 +40,21 @@ grep -Fxq 'breeze-cursors' "${PROFILE_DIR}/packages.x86_64" \
   || die 'в packages.x86_64 отсутствует тема курсора breeze-cursors'
 
 required_installed_packages=(
+  brightnessctl
+  cava
   fastfetch
+  flameshot
   grub
+  kwin
   networkmanager
   python-pillow
   qt6-5compat
   qt6-multimedia
   qt6-multimedia-ffmpeg
+  quickshell
   sddm
+  xdg-desktop-portal-kde
+  xorg-xwayland
 )
 for package_name in "${required_installed_packages[@]}"; do
   grep -Fxq "${package_name}" "${PROFILE_DIR}/packages.x86_64" \
@@ -119,6 +126,42 @@ if grep -Eq '^[[:space:]]*-[[:space:]]*source:[[:space:]]+\.\./CHANGES' "${UNPAC
 fi
 grep -Fq '_install_kernel(root)' "${PROJECT_DIR}/components/calamares/src/modules/kaskadthemes/main.py" \
   || die 'установщик не переносит ядро из live-образа в /boot'
+if grep -Fq '"/opt/macqueende/' "${UNPACKFS_CONFIG}"; then
+  die 'unpackfs исключает MacqueenDE из установленной системы'
+fi
+
+readonly MACQUEENDE_DIR="${PROJECT_DIR}/components/macqueende"
+for source_path in \
+  VERSION \
+  compositor/CMakeLists.txt \
+  portal/CMakeLists.txt \
+  quickshell/macqueen-module/CMakeLists.txt \
+  shell/MolniyaMacqueenShell/core/Makefile \
+  shell/MolniyaMacqueenShell/quickshell/shell.qml \
+  session/macqueende.desktop \
+  session/run-molniya \
+  start-macqueende; do
+  [[ -e "${MACQUEENDE_DIR}/${source_path}" ]] \
+    || die "в MacqueenDE отсутствует ${source_path}"
+done
+
+readonly MACQUEEN_SESSION="${PROFILE_DIR}/airootfs/usr/share/wayland-sessions/macqueende.desktop"
+grep -Fxq 'Exec=/usr/bin/start-macqueende' "${MACQUEEN_SESSION}" \
+  || die 'сеанс SDDM не запускает MacqueenDE'
+grep -Fxq 'TryExec=/usr/bin/start-macqueende' "${MACQUEEN_SESSION}" \
+  || die 'в сеансе SDDM не задана проверка запуска MacqueenDE'
+
+readonly DISPLAYMANAGER_CONFIG="${PROJECT_DIR}/components/calamares/src/modules/displaymanager/displaymanager.conf"
+grep -Fq 'executable: "/usr/bin/start-macqueende"' "${DISPLAYMANAGER_CONFIG}" \
+  || die 'Calamares не выбирает запуск MacqueenDE по умолчанию'
+grep -Fq 'desktopFile: "macqueende"' "${DISPLAYMANAGER_CONFIG}" \
+  || die 'Calamares не выбирает сеанс MacqueenDE по умолчанию'
+
+readonly PREPARE_PROFILE="${SCRIPT_DIR}/prepare-live-profile.sh"
+grep -Fq -- '--target macqueen screenshot screencast' "${PREPARE_PROFILE}" \
+  || die 'prepare-live-profile.sh не собирает обязательные цели Macqueen'
+grep -Fq 'readonly MACQUEEN_STAGE="${PROFILE_DIR}/airootfs/opt/macqueende"' "${PREPARE_PROFILE}" \
+  || die 'prepare-live-profile.sh не добавляет MacqueenDE в ISO'
 
 readonly BOOTLOADER_CONFIG="${PROJECT_DIR}/components/calamares/src/modules/bootloader/bootloader.conf"
 grep -Eq '^efiBootLoader:[[:space:]]+"grub"$' "${BOOTLOADER_CONFIG}" \
@@ -185,7 +228,9 @@ fi
 
 required_executables=(
   '/opt/kaskados-installer/bin/kaskad-installer'
+  '/opt/macqueende/start-macqueende'
   '/usr/bin/calamares'
+  '/usr/bin/start-macqueende'
   '/usr/local/bin/kaskados-installer-session'
   '/usr/local/bin/kaskados-run-calamares'
 )
