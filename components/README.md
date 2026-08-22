@@ -35,6 +35,24 @@ Quickshell и MolniyaMacqueenShell. Готовая среда помещаетс
 `/opt/macqueende`, копируется Calamares в установленную систему и
 регистрируется как Wayland-сеанс SDDM.
 
+## Regalia
+
+Каталог `regalia/` содержит полный исходный код VPN-компонента MacqueenDE:
+
+- исходный проект: <https://github.com/lyrka-meow/Regalia>;
+- ветка: `main`;
+- commit перед переносом: `78e7cfc38fd36e1c7e54af9fffd41e710f243e18`;
+- дата переноса: 2026-08-22.
+
+Исходники перенесены обычными файлами без вложенного `.git`. Основное место
+дальнейшей разработки Regalia — `components/regalia/` внутри KaskadOS-main.
+
+При подготовке ISO из исходников собираются `regalia`, `regaliad` и
+`regalia-engine`. В образ также добавляются systemd-службы, правило polkit и
+отдельная root-owned копия официального `sing-box`, проверенная по SHA-256.
+Calamares переносит весь комплект офлайн, а пользовательская служба
+`regaliad` запускается автоматически после входа в MacqueenDE.
+
 ## Kaskad Installer compositor
 
 Каталог `kaskad-installer-compositor/` содержит снимок композитора Macqueen,
