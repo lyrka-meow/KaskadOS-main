@@ -17,6 +17,13 @@ bootstrap_tarball_compression=('zstd' '-c' '-T0' '--auto-threads=logical' '--lon
 file_permissions=(
   ["/etc/shadow"]="0:0:400"
   ["/opt/kaskados-installer/bin/kaskad-installer"]="0:0:755"
+  ["/opt/macqueende/build/compositor/bin/macqueen"]="0:0:755"
+  ["/opt/macqueende/build/portal/bin/xdg-desktop-portal-macqueen"]="0:0:755"
+  ["/opt/macqueende/session/prepare-user-config"]="0:0:755"
+  ["/opt/macqueende/session/run-molniya"]="0:0:755"
+  ["/opt/macqueende/shell/MolniyaMacqueenShell/core/bin/dms"]="0:0:755"
+  ["/opt/macqueende/shell/MolniyaMacqueenShell/quickshell/scripts/system-info.sh"]="0:0:755"
+  ["/opt/macqueende/shell/MolniyaMacqueenShell/quickshell/scripts/system-maintenance.sh"]="0:0:755"
   ["/opt/macqueende/start-macqueende"]="0:0:755"
   ["/root"]="0:0:750"
   ["/root/.automated_script.sh"]="0:0:755"

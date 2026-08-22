@@ -255,6 +255,13 @@ fi
 
 required_executables=(
   '/opt/kaskados-installer/bin/kaskad-installer'
+  '/opt/macqueende/build/compositor/bin/macqueen'
+  '/opt/macqueende/build/portal/bin/xdg-desktop-portal-macqueen'
+  '/opt/macqueende/session/prepare-user-config'
+  '/opt/macqueende/session/run-molniya'
+  '/opt/macqueende/shell/MolniyaMacqueenShell/core/bin/dms'
+  '/opt/macqueende/shell/MolniyaMacqueenShell/quickshell/scripts/system-info.sh'
+  '/opt/macqueende/shell/MolniyaMacqueenShell/quickshell/scripts/system-maintenance.sh'
   '/opt/macqueende/start-macqueende'
   '/usr/bin/calamares'
   '/usr/bin/regalia'
