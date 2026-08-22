@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root=${MACQUEENDE_ROOT:?MACQUEENDE_ROOT is not set}
+backend="$repo_root/shell/MolniyaMacqueenShell/core/bin/dms"
+shell_dir="$repo_root/shell/MolniyaMacqueenShell/quickshell"
+portal="$repo_root/build/portal/bin/xdg-desktop-portal-macqueen"
+
+if [[ ! -x "$backend" ]]; then
+    echo "run-molniya: missing $backend; run make dev in the shell core" >&2
+    exit 1
+fi
+
+if [[ ! -f "$shell_dir/shell.qml" ]]; then
+    echo "run-molniya: missing $shell_dir/shell.qml" >&2
+    exit 1
+fi
+
+if [[ ! -x "$portal" ]]; then
+    echo "run-molniya: missing $portal; build the Macqueen portal first" >&2
+    exit 1
+fi
+
+export QT_NO_XDG_DESKTOP_PORTAL=1
+
+# The portal fork currently keeps KDE's D-Bus backend name for compatibility
+# with xdg-desktop-portal. Replace the distro instance after Macqueen's Wayland
+# socket is ready, then make the broker rediscover its ScreenCast interfaces.
+"$portal" --replace &
+portal_pid=$!
+for _ in $(seq 1 50); do
+    if qdbus6 org.freedesktop.impl.portal.desktop.kde \
+        /org/freedesktop/portal/desktop 2>/dev/null |
+        grep -q org.freedesktop.impl.portal.ScreenCast; then
+        break
+    fi
+    sleep 0.1
+done
+if ! kill -0 "$portal_pid" 2>/dev/null; then
+    echo "run-molniya: Macqueen portal failed to start" >&2
+    exit 1
+fi
+systemctl --user restart xdg-desktop-portal.service 2>/dev/null || true
+
+exec "$backend" run -c "$shell_dir"
