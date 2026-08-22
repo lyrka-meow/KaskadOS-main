@@ -1,0 +1,124 @@
+name: Build KaskadOS ISO
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kaskados-iso
+  cancel-in-progress: false
+
+jobs:
+  build-iso:
+    if: github.actor == 'lyrka-meow' || github.actor == 'infikot'
+    runs-on: [self-hosted, Linux, X64, kaskados-local]
+    timeout-minutes: 120
+
+    steps:
+      - name: Check out the repository
+        shell: bash
+        env:
+          KASKADOS_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          [[ "${GITHUB_SHA}" =~ ^[0-9a-f]{40}$ ]]
+
+          if [[ -d .git ]]; then
+            git remote set-url origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          else
+            git init
+            git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          fi
+
+          basic_auth=$(printf 'x-access-token:%s' "${KASKADOS_GITHUB_TOKEN}" | base64 -w0)
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${basic_auth}" \
+            git fetch --no-tags --prune --depth=1 origin "${GITHUB_SHA}"
+          git checkout --force --detach FETCH_HEAD
+          git clean -ffdx
+
+      - name: Check profile and runner isolation
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(id -u)" -ne 0
+          sudo -n true
+          sudo -n -l
+          make check
+          df -h / /tmp
+
+      - name: Prepare clean ISO directories
+        run: sudo -n /usr/local/sbin/kaskados-iso-clean
+
+      - name: Build ISO
+        run: sudo -n /usr/local/sbin/kaskados-iso-build
+
+      - name: Verify ISO
+        id: verify
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          out_dir='/var/lib/github-runner-kaskados/iso-output'
+          iso_path="$(find "${out_dir}" -maxdepth 1 -type f -name '*.iso' -print -quit)"
+          [[ -n "${iso_path}" ]]
+          file "${iso_path}" | tee "${iso_path}.file.txt"
+          file "${iso_path}" | grep -Fq 'ISO 9660'
+          xorriso -indev "${iso_path}" -report_el_torito plain \
+            > "${iso_path}.eltorito.txt" 2>&1
+          bsdtar -tf "${iso_path}" | sort > "${iso_path}.contents.txt"
+          sha256sum "${iso_path}" > "${iso_path}.sha256"
+
+      - name: Upload ISO to a prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          out_dir='/var/lib/github-runner-kaskados/iso-output'
+          release_tag="iso-build-${GITHUB_RUN_NUMBER}"
+
+          retry() {
+            local attempt=1
+            local max_attempts=5
+            local delay=10
+
+            until "$@"; do
+              if (( attempt >= max_attempts )); then
+                return 1
+              fi
+              printf 'GitHub request failed; retrying in %s seconds (%s/%s)\n' \
+                "${delay}" "${attempt}" "${max_attempts}" >&2
+              sleep "${delay}"
+              (( attempt += 1 ))
+              (( delay *= 2 ))
+            done
+          }
+
+          for attempt in 1 2 3 4 5; do
+            if gh release view "${release_tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+              break
+            fi
+            if gh release create "${release_tag}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --target "${GITHUB_SHA}" \
+              --title "KaskadOS ISO build #${GITHUB_RUN_NUMBER}" \
+              --notes "Automated ISO build from ${GITHUB_SHA}." \
+              --prerelease \
+              --latest=false; then
+              break
+            fi
+            (( attempt < 5 )) && sleep $(( 10 * attempt ))
+          done
+
+          gh release view "${release_tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null
+          for asset in "${out_dir}"/*; do
+            retry gh release upload "${release_tag}" "${asset}" \
+              --repo "${GITHUB_REPOSITORY}" --clobber
+          done
+
+      - name: Clean local ISO data
+        if: success()
+        run: sudo -n /usr/local/sbin/kaskados-iso-clean

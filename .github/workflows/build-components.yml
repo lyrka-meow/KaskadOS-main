@@ -1,0 +1,73 @@
+name: Build KaskadOS components
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - components/calamares/**
+      - Makefile
+      - .github/workflows/build-components.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kaskados-components-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-calamares:
+    if: github.actor == 'lyrka-meow' || github.actor == 'infikot'
+    runs-on: [self-hosted, Linux, X64, kaskados-local]
+    timeout-minutes: 90
+    env:
+      CALAMARES_BUILD_DIR: /var/lib/github-runner-kaskados/build-cache/KaskadOS/calamares
+      CALAMARES_JOBS: "8"
+
+    steps:
+      - name: Check out the repository
+        shell: bash
+        env:
+          KASKADOS_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          [[ "${GITHUB_SHA}" =~ ^[0-9a-f]{40}$ ]]
+
+          if [[ -d .git ]]; then
+            git remote set-url origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          else
+            git init
+            git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          fi
+
+          basic_auth=$(printf 'x-access-token:%s' "${KASKADOS_GITHUB_TOKEN}" | base64 -w0)
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${basic_auth}" \
+            git fetch --no-tags --prune --depth=1 origin "${GITHUB_SHA}"
+          git checkout --force --detach FETCH_HEAD
+          git clean -ffdx
+
+      - name: Verify the isolated build account
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(id -u)" -ne 0
+          sudo -n true
+          sudo -n -l
+          cmake --version
+          ninja --version
+
+      - name: Build Calamares
+        run: make calamares-build
+
+      - name: Verify the executable and shared libraries
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -x "${CALAMARES_BUILD_DIR}/calamares"
+          if ldd "${CALAMARES_BUILD_DIR}/calamares" | grep -F 'not found'; then
+            exit 1
+          fi
