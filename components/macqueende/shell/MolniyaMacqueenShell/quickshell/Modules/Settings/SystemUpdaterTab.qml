@@ -55,6 +55,17 @@ Item {
         return 1800;
     }
 
+    function validScheduleDate(value) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+        if (!match)
+            return false;
+        const year = Number(match[1]);
+        const month = Number(match[2]) - 1;
+        const day = Number(match[3]);
+        const date = new Date(year, month, day);
+        return date.getFullYear() === year && date.getMonth() === month && date.getDate() === day;
+    }
+
     DankFlickable {
         anchors.fill: parent
         clip: true
@@ -67,6 +78,178 @@ Item {
             width: Math.min(550, parent.width - Theme.spacingL * 2)
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: Theme.spacingXL
+
+            SettingsCard {
+                width: parent.width
+                iconName: "schedule"
+                title: "Автоматическое обновление"
+                settingKey: "automaticUpdates"
+
+                SettingsToggleRow {
+                    text: "Обновлять автоматически"
+                    description: "Проверять и устанавливать обновления без терминала по выбранному расписанию."
+                    checked: SettingsData.updaterAutomaticEnabled
+                    onToggled: checked => SettingsData.set("updaterAutomaticEnabled", checked)
+                }
+
+                SettingsSliderRow {
+                    text: "Периодичность"
+                    description: "Через сколько дней должен наступать новый сеанс обслуживания."
+                    minimum: 1
+                    maximum: 30
+                    step: 1
+                    value: SettingsData.updaterScheduleDays
+                    defaultValue: 1
+                    unit: " дн."
+                    onSliderValueChanged: value => SettingsData.set("updaterScheduleDays", value)
+                }
+
+                FocusScope {
+                    width: parent.width - Theme.spacingM * 2
+                    height: scheduleTimeColumn.implicitHeight
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingM
+
+                    Column {
+                        id: scheduleTimeColumn
+                        width: parent.width
+                        spacing: Theme.spacingXS
+
+                        StyledText {
+                            text: "Время начала окна обслуживания"
+                            font.pixelSize: Theme.fontSizeMedium
+                            font.weight: Font.Medium
+                            color: Theme.surfaceText
+                        }
+
+                        StyledText {
+                            text: "Если включено ожидание бездействия, в это время система только становится готовой к обновлению."
+                            width: parent.width
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceVariantText
+                            wrapMode: Text.WordWrap
+                        }
+
+                        Row {
+                            width: parent.width
+                            spacing: Theme.spacingS
+
+                            DankTextField {
+                                id: scheduleHourField
+                                width: (parent.width - Theme.spacingS) / 2
+                                placeholderText: "Часы: 0–23"
+                                text: SettingsData.updaterScheduleHour.toString().padStart(2, "0")
+                                onEditingFinished: {
+                                    const hour = Math.max(0, Math.min(23, parseInt(text, 10) || 0));
+                                    text = hour.toString().padStart(2, "0");
+                                    SettingsData.set("updaterScheduleHour", hour);
+                                }
+                            }
+
+                            DankTextField {
+                                id: scheduleMinuteField
+                                width: (parent.width - Theme.spacingS) / 2
+                                placeholderText: "Минуты: 0–59"
+                                text: SettingsData.updaterScheduleMinute.toString().padStart(2, "0")
+                                onEditingFinished: {
+                                    const minute = Math.max(0, Math.min(59, parseInt(text, 10) || 0));
+                                    text = minute.toString().padStart(2, "0");
+                                    SettingsData.set("updaterScheduleMinute", minute);
+                                }
+                            }
+                        }
+
+                        DankTextField {
+                            id: scheduleStartDateField
+                            width: parent.width
+                            placeholderText: "Не раньше даты: ГГГГ-ММ-ДД (необязательно)"
+                            text: SettingsData.updaterScheduleStartDate
+                            onEditingFinished: {
+                                const value = text.trim();
+                                if (value.length === 0 || root.validScheduleDate(value)) {
+                                    SettingsData.set("updaterScheduleStartDate", value);
+                                } else {
+                                    text = SettingsData.updaterScheduleStartDate;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                SettingsToggleRow {
+                    text: "Ждать бездействия"
+                    description: "Начинать установку только когда пользователь не работает и не воспроизводится медиа."
+                    checked: SettingsData.updaterIdleFallbackEnabled
+                    onToggled: checked => SettingsData.set("updaterIdleFallbackEnabled", checked)
+                }
+
+                SettingsSliderRow {
+                    visible: SettingsData.updaterIdleFallbackEnabled
+                    text: "Время бездействия"
+                    description: "Пользователь сам определяет, через сколько минут компьютер считается свободным для обновления."
+                    minimum: 5
+                    maximum: 180
+                    step: 5
+                    value: SettingsData.updaterIdleMinutes
+                    defaultValue: 30
+                    unit: " мин"
+                    onSliderValueChanged: value => SettingsData.set("updaterIdleMinutes", value)
+                }
+
+                SettingsToggleRow {
+                    text: "На ноутбуке — только от сети"
+                    description: "Не начинать автоматическую установку во время работы от аккумулятора."
+                    checked: SettingsData.updaterOnlyOnAC
+                    onToggled: checked => SettingsData.set("updaterOnlyOnAC", checked)
+                }
+
+                Rectangle {
+                    width: parent.width - Theme.spacingM * 2
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingM
+                    height: confirmationRow.implicitHeight + Theme.spacingS * 2
+                    radius: Theme.cornerRadius
+                    color: SettingsData.updaterScheduleConfirmed
+                           ? Theme.withAlpha(Theme.primaryContainer, 0.65)
+                           : Theme.withAlpha(Theme.warning, 0.12)
+
+                    Row {
+                        id: confirmationRow
+                        anchors.fill: parent
+                        anchors.margins: Theme.spacingS
+                        spacing: Theme.spacingS
+
+                        DankIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            name: SettingsData.updaterScheduleConfirmed ? "check_circle" : "notification_important"
+                            size: 22
+                            color: SettingsData.updaterScheduleConfirmed ? Theme.primary : Theme.warning
+                        }
+
+                        StyledText {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - confirmScheduleButton.width - Theme.spacingS * 2 - 22
+                            text: SettingsData.updaterScheduleConfirmed
+                                ? "Расписание подтверждено"
+                                : "Подтвердите расписание, чтобы включить автоматический запуск"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            wrapMode: Text.WordWrap
+                        }
+
+                        DankButton {
+                            id: confirmScheduleButton
+                            visible: !SettingsData.updaterScheduleConfirmed
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Подтвердить"
+                            iconName: "check"
+                            backgroundColor: Theme.primary
+                            textColor: Theme.primaryText
+                            onClicked: SystemUpdateService.confirmDefaultSchedule()
+                        }
+                    }
+                }
+            }
 
             SettingsCard {
                 width: parent.width
@@ -86,6 +269,85 @@ Item {
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     wrapMode: Text.WordWrap
+                }
+
+                Rectangle {
+                    width: parent.width - Theme.spacingM * 2
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingM
+                    height: manualCheckRow.implicitHeight + Theme.spacingS * 2
+                    radius: Theme.cornerRadius
+                    color: Theme.withAlpha(Theme.surfaceContainerHighest, 0.72)
+
+                    Row {
+                        id: manualCheckRow
+                        anchors.fill: parent
+                        anchors.margins: Theme.spacingS
+                        spacing: Theme.spacingS
+
+                        DankIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            name: {
+                                if (SystemUpdateService.isChecking)
+                                    return "sync";
+                                if (SystemUpdateService.hasError)
+                                    return "error";
+                                if (SystemUpdateService.updateCount > 0)
+                                    return "system_update_alt";
+                                return "check_circle";
+                            }
+                            size: 22
+                            color: SystemUpdateService.hasError ? Theme.error : Theme.primary
+                        }
+
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - manualCheckButton.width - Theme.spacingS * 2 - 22
+                            spacing: Theme.spacingXXS
+
+                            StyledText {
+                                width: parent.width
+                                text: {
+                                    if (SystemUpdateService.isChecking)
+                                        return "Проверяю обновления…";
+                                    if (SystemUpdateService.hasError)
+                                        return "Не удалось проверить обновления";
+                                    if (SystemUpdateService.updateCount > 0)
+                                        return "Найдено обновлений: " + SystemUpdateService.updateCount;
+                                    if (SystemUpdateService.lastCheckUnix > 0)
+                                        return "Система обновлена";
+                                    return "Проверка ещё не запускалась";
+                                }
+                                font.pixelSize: Theme.fontSizeMedium
+                                font.weight: Font.Medium
+                                color: SystemUpdateService.hasError ? Theme.error : Theme.surfaceText
+                                elide: Text.ElideRight
+                            }
+
+                            StyledText {
+                                width: parent.width
+                                text: SystemUpdateService.updateCount > 0
+                                    ? "Откройте значок обновлений на панели, чтобы начать установку."
+                                    : "Проверка выполняется без терминала."
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceVariantText
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        DankButton {
+                            id: manualCheckButton
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: SystemUpdateService.isChecking ? "Проверяю…" : "Проверить сейчас"
+                            iconName: "refresh"
+                            enabled: SystemUpdateService.helperAvailable
+                                && !SystemUpdateService.isChecking
+                                && !SystemUpdateService.isUpgrading
+                            backgroundColor: Theme.primary
+                            textColor: Theme.primaryText
+                            onClicked: SystemUpdateService.checkForUpdates()
+                        }
+                    }
                 }
 
                 SettingsDropdownRow {

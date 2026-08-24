@@ -2,9 +2,9 @@ import QtQuick
 import qs.Common
 import qs.Services
 import qs.Widgets
-import qs.Modules.Plugins
+import qs.Modules.ControlCenter.Components
 
-PluginComponent {
+BuiltinWidget {
     id: root
 
     Ref {

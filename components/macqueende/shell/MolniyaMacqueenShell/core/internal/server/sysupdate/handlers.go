@@ -46,6 +46,7 @@ func handleUpgrade(conn *models.Conn, req models.Request, m *Manager) {
 		Terminal:       params.StringOpt(req.Params, "terminal", ""),
 		TerminalArgs:   stringSliceOpt(req.Params, "terminalArgs"),
 		Ignored:        stringSliceOpt(req.Params, "ignored"),
+		Automatic:      params.BoolOpt(req.Params, "automatic", false),
 	}
 	if err := m.Upgrade(opts); err != nil {
 		models.RespondError(conn, req.ID, err.Error())

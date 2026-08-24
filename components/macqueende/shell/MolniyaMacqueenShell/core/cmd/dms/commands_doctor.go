@@ -940,7 +940,6 @@ func checkConfigurationFiles() []checkResult {
 	configFiles := []struct{ name, path string }{
 		{"settings.json", filepath.Join(configDir, dmsDir, "settings.json")},
 		{"clsettings.json", filepath.Join(configDir, dmsDir, "clsettings.json")},
-		{"plugin_settings.json", filepath.Join(configDir, dmsDir, "plugin_settings.json")},
 		{"session.json", filepath.Join(utils.XDGStateHome(), dmsDir, "session.json")},
 		{"dms-colors.json", filepath.Join(cacheDir, dmsDir, "dms-colors.json")},
 	}

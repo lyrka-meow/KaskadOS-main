@@ -2,42 +2,11 @@ import QtQuick
 import Quickshell
 import qs.Common
 import qs.Services
-import qs.Modules.Plugins
 import qs.Modules.BuiltinDesktopPlugins
 
 Variants {
     id: root
     model: Quickshell.screens
-
-    Component.onCompleted: Qt.callLater(autoEnablePluginsForInstances)
-
-    function autoEnablePluginsForInstances() {
-        const instances = SettingsData.desktopWidgetInstances || [];
-        const pluginTypes = new Set();
-
-        for (const inst of instances) {
-            if (!inst.enabled)
-                continue;
-            if (inst.widgetType === "desktopClock" || inst.widgetType === "systemMonitor")
-                continue;
-            pluginTypes.add(inst.widgetType);
-        }
-
-        for (const pluginId of pluginTypes) {
-            if (PluginService.isPluginLoaded(pluginId))
-                continue;
-            if (!PluginService.availablePlugins[pluginId])
-                continue;
-            PluginService.enablePlugin(pluginId);
-        }
-    }
-
-    Connections {
-        target: PluginService
-        function onPluginListUpdated() {
-            Qt.callLater(root.autoEnablePluginsForInstances);
-        }
-    }
 
     QtObject {
         id: screenDelegate
@@ -58,7 +27,7 @@ Variants {
         }
 
         // Layer surfaces stack by map order, so recreate them in list order on
-        // reorder/enable/display-pref changes or once a plugin component loads (#2715).
+        // reorder/enable/display-pref changes.
         property bool rebuilding: false
 
         readonly property string orderSignature: {
@@ -72,22 +41,7 @@ Variants {
             return sig;
         }
 
-        readonly property string pluginReadyKey: {
-            const instances = SettingsData.desktopWidgetInstances || [];
-            const comps = PluginService.pluginDesktopComponents;
-            let key = "";
-            for (const inst of instances) {
-                if (!inst.enabled)
-                    continue;
-                if (inst.widgetType === "desktopClock" || inst.widgetType === "systemMonitor")
-                    continue;
-                key += inst.widgetType + (comps[inst.widgetType] ? ":1" : ":0") + ",";
-            }
-            return key;
-        }
-
         onOrderSignatureChanged: rebuildDebounce.restart()
-        onPluginReadyKeyChanged: rebuildDebounce.restart()
 
         property Timer rebuildDebounce: Timer {
             interval: 150
@@ -116,10 +70,12 @@ Variants {
             model: ScriptModel {
                 objectProp: "id"
                 // Reversed so the top of the list maps last and renders in front.
-                values: screenDelegate.rebuilding ? [] : [...(SettingsData.desktopWidgetInstances || [])].reverse()
+                values: screenDelegate.rebuilding ? [] : [...(SettingsData.desktopWidgetInstances || [])]
+                    .filter(inst => inst.widgetType === "desktopClock" || inst.widgetType === "systemMonitor")
+                    .reverse()
             }
 
-            DesktopPluginWrapper {
+            DesktopWidgetWrapper {
                 required property var modelData
                 required property int index
 
@@ -136,7 +92,7 @@ Variants {
                     return screenDelegate.shouldShowOnScreen(prefs);
                 }
 
-                pluginId: liveInstanceData.widgetType
+                widgetType: liveInstanceData.widgetType
                 instanceId: instanceIdRef
                 instanceData: liveInstanceData
                 builtinComponent: {
@@ -149,7 +105,6 @@ Variants {
                         return null;
                     }
                 }
-                pluginService: (liveInstanceData.widgetType !== "desktopClock" && liveInstanceData.widgetType !== "systemMonitor") ? PluginService : null
                 screen: screenDelegate.screen
                 widgetEnabled: shouldBeVisible
             }

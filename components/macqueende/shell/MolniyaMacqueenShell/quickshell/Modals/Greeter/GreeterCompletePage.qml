@@ -463,7 +463,7 @@ Item {
                     spacing: Theme.spacingS
 
                     GreeterQuickLink {
-                        width: (parent.width - Theme.spacingS * 2) / 3
+                        width: (parent.width - Theme.spacingS) / 2
                         iconName: "menu_book"
                         title: I18n.tr("Docs", "greeter documentation link")
                         isExternal: true
@@ -471,19 +471,10 @@ Item {
                     }
 
                     GreeterQuickLink {
-                        width: (parent.width - Theme.spacingS * 2) / 3
-                        iconName: "extension"
-                        title: I18n.tr("Plugins", "greeter plugins link")
-                        isExternal: true
-                        onClicked: Qt.openUrlExternally("https://danklinux.com/plugins")
-                    }
-
-                    GreeterQuickLink {
-                        width: (parent.width - Theme.spacingS * 2) / 3
+                        width: (parent.width - Theme.spacingS) / 2
                         iconName: "palette"
                         title: I18n.tr("Themes", "greeter themes link")
-                        isExternal: true
-                        onClicked: Qt.openUrlExternally("https://danklinux.com/plugins?tab=themes")
+                        onClicked: PopoutService.openSettingsWithTab("theme")
                     }
                 }
             }

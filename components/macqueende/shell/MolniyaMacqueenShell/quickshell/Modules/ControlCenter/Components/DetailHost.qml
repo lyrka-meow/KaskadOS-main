@@ -12,12 +12,11 @@ Item {
     property string screenName: ""
     property string screenModel: ""
 
-    property var pluginDetailInstance: null
     property var widgetModel: null
     property var collapseCallback: null
 
     Loader {
-        id: pluginDetailLoader
+        id: builtinDetailLoader
         width: parent.width
         height: Math.max(0, parent.height - Theme.spacingS)
         y: Theme.spacingS
@@ -81,11 +80,7 @@ Item {
     }
 
     onExpandedSectionChanged: {
-        if (pluginDetailInstance) {
-            pluginDetailInstance.destroy();
-            pluginDetailInstance = null;
-        }
-        pluginDetailLoader.active = false;
+        builtinDetailLoader.active = false;
         coreDetailLoader.active = false;
 
         if (!root.expandedSection) {
@@ -125,29 +120,8 @@ Item {
                 return;
             }
 
-            pluginDetailLoader.sourceComponent = builtinInstance.ccDetailContent;
-            pluginDetailLoader.active = true;
-            return;
-        }
-
-        if (root.expandedSection.startsWith("plugin_")) {
-            const pluginId = root.expandedSection.replace("plugin_", "");
-            const pluginComponent = PluginService.pluginWidgetComponents[pluginId];
-            if (!pluginComponent) {
-                return;
-            }
-
-            pluginDetailInstance = pluginComponent.createObject(null);
-            if (!pluginDetailInstance || !pluginDetailInstance.ccDetailContent) {
-                if (pluginDetailInstance) {
-                    pluginDetailInstance.destroy();
-                    pluginDetailInstance = null;
-                }
-                return;
-            }
-
-            pluginDetailLoader.sourceComponent = pluginDetailInstance.ccDetailContent;
-            pluginDetailLoader.active = true;
+            builtinDetailLoader.sourceComponent = builtinInstance.ccDetailContent;
+            builtinDetailLoader.active = true;
             return;
         }
 

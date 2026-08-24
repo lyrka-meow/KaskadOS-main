@@ -10,7 +10,6 @@ let
     "programs"
     "dank-material-shell"
   ];
-  jsonFormat = pkgs.formats.json { };
   builtInRemovedMsg = "This is now built-in in DMS and doesn't need additional dependencies.";
 in
 {
@@ -85,45 +84,5 @@ in
       };
     };
 
-    plugins = lib.mkOption {
-      type = types.attrsOf (
-        types.submodule {
-          options = {
-            enable = lib.mkOption {
-              type = types.bool;
-              default = true;
-              description = "Whether to enable this plugin";
-            };
-            src = lib.mkOption {
-              type = types.either types.package types.path;
-              description = "Source of the plugin package or path";
-            };
-            settings = lib.mkOption {
-              type = jsonFormat.type;
-              default = { };
-              description = "Plugin settings as an attribute set";
-            };
-          };
-        }
-      );
-      default = { };
-      description = "DMS Plugins to install and enable";
-      example = lib.literalExpression ''
-        {
-          DockerManager = {
-            src = pkgs.fetchFromGitHub {
-              owner = "LuckShiba";
-              repo = "DmsDockerManager";
-              rev = "v1.2.0";
-              sha256 = "sha256-VoJCaygWnKpv0s0pqTOmzZnPM922qPDMHk4EPcgVnaU=";
-            };
-          };
-          AnotherPlugin = {
-            enable = true;
-            src = pkgs.another-plugin;
-          };
-        }
-      '';
-    };
   };
 }

@@ -1,0 +1,27 @@
+#!/usr/bin/bash
+
+set -Eeuo pipefail
+
+mode=${1:-}
+if (( $# != 1 )) || [[ "${mode}" != system && "${mode}" != flatpak-system ]]; then
+    echo "Допустимый режим: system или flatpak-system" >&2
+    exit 64
+fi
+
+exec 9>/run/lock/kaskados-system-update.lock
+if ! flock -n 9; then
+    echo "Обновление уже выполняется" >&2
+    exit 75
+fi
+
+export LC_ALL=C.UTF-8
+
+case "${mode}" in
+    system)
+        /usr/bin/pacman -Syu --noconfirm --needed
+        ;;
+    flatpak-system)
+        command -v flatpak >/dev/null 2>&1 || exit 0
+        /usr/bin/flatpak update --system --noninteractive -y
+        ;;
+esac

@@ -20,6 +20,9 @@ readonly SING_BOX_VERSION="1.13.15"
 readonly SING_BOX_ARCHIVE="sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
 readonly SING_BOX_SHA256="a3a3ff223b23c3f4731d0a17cb0ef94c97ce257c70721a5b07dc7ca079203c9f"
 readonly INSTALLER_THEMES="${PROJECT_DIR}/components/installer-themes"
+readonly KEYRING_PACKAGE_SOURCE="${PROJECT_DIR}/repository/packages/kaskados-keyring"
+readonly DESKTOP_PACKAGE_SOURCE="${PROJECT_DIR}/repository/packages/kaskados-desktop"
+readonly BOOTSTRAP_REPOSITORY="${BUILD_ROOT}/repository-bootstrap/x86_64"
 readonly PROFILE_DIR="${PROFILE_DIR:-${BUILD_ROOT}/iso-profile}"
 readonly BUILD_JOBS="${BUILD_JOBS:-$(nproc)}"
 readonly MACQUEEN_BUILD_JOBS="${MACQUEEN_BUILD_JOBS:-8}"
@@ -30,7 +33,7 @@ die() {
   exit 1
 }
 
-for command_name in cmake curl go ldd make ninja pacman readelf sha256sum tar; do
+for command_name in bsdtar cmake curl go ldd make makepkg ninja pacman readelf repo-add sha256sum tar; do
   command -v "${command_name}" >/dev/null 2>&1 || die "не найдена команда ${command_name}"
 done
 
@@ -66,12 +69,53 @@ fi
 [[ -d "${INSTALLER_THEMES}/sddm" ]] || die 'не найдены темы SDDM для установщика'
 [[ -d "${INSTALLER_THEMES}/previews" ]] || die 'не найдены превью тем для установщика'
 [[ -f "${MACQUEENDE_SOURCE}/VERSION" ]] || die 'не найден исходный код MacqueenDE'
+[[ -f "${MACQUEENDE_SOURCE}/release/release.json" ]] || die 'не найден манифест выпуска MacqueenDE'
+[[ -f "${PROJECT_DIR}/components/system-update/kaskados-system-update" ]] \
+  || die 'не найден системный помощник обновлений'
+[[ -f "${PROJECT_DIR}/components/system-update/org.kaskados.system-update.policy" ]] \
+  || die 'не найдена политика системного помощника обновлений'
+[[ -f "${PROJECT_DIR}/components/file-manager/io.kaskados.Files.desktop" ]] \
+  || die 'не найден ярлык файлового менеджера KaskadOS'
+[[ -f "${PROJECT_DIR}/components/file-manager/mimeapps.list" ]] \
+  || die 'не найдены MIME-настройки файлового менеджера KaskadOS'
 [[ -f "${MACQUEENDE_SOURCE}/session/macqueende.desktop" ]] || die 'не найдена сессия MacqueenDE'
 [[ -f "${REGALIA_SOURCE}/go.mod" ]] || die 'не найден исходный код Regalia'
 [[ -f "${REGALIA_SOURCE}/packaging/systemd/user/regaliad.service" ]] \
   || die 'не найдена пользовательская служба Regalia'
+[[ -f "${KEYRING_PACKAGE_SOURCE}/PKGBUILD" ]] \
+  || die 'не найден пакет kaskados-keyring'
+[[ -f "${DESKTOP_PACKAGE_SOURCE}/PKGBUILD" ]] \
+  || die 'не найден пакет kaskados-desktop'
 
 "${SCRIPT_DIR}/check-profile.sh"
+
+if (( EUID == 0 )); then
+  die 'подготовку live-профиля запускайте обычным пользователем; sudo вызовет только mkarchiso'
+fi
+
+if [[ -e "${BUILD_ROOT}/repository-bootstrap" ]]; then
+  rm -rf -- "${BUILD_ROOT}/repository-bootstrap"
+fi
+install -d -m 0755 \
+  "${BOOTSTRAP_REPOSITORY}" \
+  "${BUILD_ROOT}/repository-bootstrap/work" \
+  "${BUILD_ROOT}/repository-bootstrap/sources"
+(
+  cd -- "${KEYRING_PACKAGE_SOURCE}"
+  env \
+    BUILDDIR="${BUILD_ROOT}/repository-bootstrap/work" \
+    PKGDEST="${BOOTSTRAP_REPOSITORY}" \
+    SRCDEST="${BUILD_ROOT}/repository-bootstrap/sources" \
+    makepkg --cleanbuild --force --nodeps
+)
+mapfile -t keyring_packages < <(
+  find "${BOOTSTRAP_REPOSITORY}" -maxdepth 1 -type f \
+    -name 'kaskados-keyring-*.pkg.tar.zst' -print
+)
+(( ${#keyring_packages[@]} == 1 )) \
+  || die 'не удалось однозначно определить собранный пакет kaskados-keyring'
+repo-add "${BOOTSTRAP_REPOSITORY}/kaskados-bootstrap.db.tar.gz" \
+  "${keyring_packages[0]}"
 
 env -u LD_LIBRARY_PATH cmake -S "${PROJECT_DIR}/components/kaskad-installer-compositor" -B "${COMPOSITOR_BUILD}" -G Ninja \
   -DBUILD_TESTING=OFF \
@@ -162,6 +206,16 @@ fi
 mkdir -p -- "${PROFILE_DIR}"
 cp -a -- "${SOURCE_PROFILE}/." "${PROFILE_DIR}/"
 
+install -Dm0644 "${SOURCE_PROFILE}/pacman.conf" \
+  "${PROFILE_DIR}/airootfs/etc/pacman.conf"
+sed -i \
+  "/^\[core\]$/i [kaskados]\nSigLevel = Required DatabaseRequired\nServer = https://repo.kaskados.xyz/\$arch\n" \
+  "${PROFILE_DIR}/airootfs/etc/pacman.conf"
+sed -i \
+  "/^\[core\]$/i [kaskados-bootstrap]\nSigLevel = Optional TrustAll\nServer = file://${BOOTSTRAP_REPOSITORY}\n" \
+  "${PROFILE_DIR}/pacman.conf"
+printf '%s\n' 'kaskados-keyring' >> "${PROFILE_DIR}/packages.x86_64"
+
 install -d -m 0755 \
   "${PROFILE_DIR}/airootfs/usr/share/kaskados-installer/theme-pool" \
   "${PROFILE_DIR}/airootfs/usr/share/kaskados-installer/theme-previews"
@@ -190,6 +244,7 @@ install -d -m 0755 \
   "${MACQUEEN_STAGE}/build/portal" \
   "${MACQUEEN_STAGE}/build/quickshell-macqueen" \
   "${MACQUEEN_STAGE}/shell/MolniyaMacqueenShell/core/bin" \
+  "${PROFILE_DIR}/airootfs/usr/bin" \
   "${PROFILE_DIR}/airootfs/usr/share/applications" \
   "${PROFILE_DIR}/airootfs/usr/share/xdg-desktop-portal"
 cp -a -- "${MACQUEEN_COMPOSITOR_BUILD}/bin" "${MACQUEEN_STAGE}/build/compositor/"
@@ -199,12 +254,15 @@ cp -a -- "${MACQUEEN_QUICKSHELL_BUILD}"/libquickshell-macqueen.so* \
   "${MACQUEEN_STAGE}/build/quickshell-macqueen/"
 install -m 0755 "${MACQUEEN_SHELL_BUILD}/core/bin/dms" \
   "${MACQUEEN_STAGE}/shell/MolniyaMacqueenShell/core/bin/dms"
+ln -sfn /opt/macqueende/shell/MolniyaMacqueenShell/core/bin/dms \
+  "${PROFILE_DIR}/airootfs/usr/bin/dms"
 cp -a -- \
   "${MACQUEENDE_SOURCE}/shell/MolniyaMacqueenShell/quickshell" \
   "${MACQUEENDE_SOURCE}/shell/MolniyaMacqueenShell/dank-qml-common" \
   "${MACQUEEN_STAGE}/shell/MolniyaMacqueenShell/"
 cp -a -- \
   "${MACQUEENDE_SOURCE}/config" \
+  "${MACQUEENDE_SOURCE}/release" \
   "${MACQUEENDE_SOURCE}/session" \
   "${MACQUEENDE_SOURCE}/start-macqueende" \
   "${MACQUEEN_STAGE}/"
@@ -214,6 +272,19 @@ sed 's|@MACQUEENDE_ROOT@|/opt/macqueende|g' \
   "${MACQUEENDE_SOURCE}/session/org.freedesktop.impl.portal.desktop.kde.desktop.in" \
   > "${PROFILE_DIR}/airootfs/usr/share/applications/org.macqueen.portal.desktop"
 install -m 0644 "${MACQUEENDE_SOURCE}/VERSION" "${MACQUEEN_STAGE}/VERSION"
+install -d -m 0755 "${PROFILE_DIR}/airootfs/usr/share/kaskados/releases"
+install -m 0644 "${MACQUEENDE_SOURCE}/release/release.json" \
+  "${PROFILE_DIR}/airootfs/usr/share/kaskados/release.json"
+find "${MACQUEENDE_SOURCE}/release/releases" -maxdepth 1 -type f -name '*.json' \
+  -exec install -m 0644 -t "${PROFILE_DIR}/airootfs/usr/share/kaskados/releases" -- {} +
+install -Dm0755 "${PROJECT_DIR}/components/system-update/kaskados-system-update" \
+  "${PROFILE_DIR}/airootfs/usr/lib/kaskados/kaskados-system-update"
+install -Dm0644 "${PROJECT_DIR}/components/system-update/org.kaskados.system-update.policy" \
+  "${PROFILE_DIR}/airootfs/usr/share/polkit-1/actions/org.kaskados.system-update.policy"
+install -Dm0644 "${PROJECT_DIR}/components/file-manager/io.kaskados.Files.desktop" \
+  "${PROFILE_DIR}/airootfs/usr/share/applications/io.kaskados.Files.desktop"
+install -Dm0644 "${PROJECT_DIR}/components/file-manager/mimeapps.list" \
+  "${PROFILE_DIR}/airootfs/etc/xdg/mimeapps.list"
 printf '%s\n' \
   'METHOD=kaskados' \
   "VERSION=$(tr -d '\n' < "${MACQUEENDE_SOURCE}/VERSION")" \
@@ -312,10 +383,48 @@ for package_name in "${!runtime_packages[@]}"; do
   printf '%s\n' "${package_name}" >> "${PROFILE_DIR}/packages.x86_64"
 done
 
+desktop_pkgver="$(tr '-' '_' < "${MACQUEENDE_SOURCE}/VERSION" | tr -d '\n')"
+(
+  cd -- "${DESKTOP_PACKAGE_SOURCE}"
+  env \
+    KASKADOS_DESKTOP_PAYLOAD="${PROFILE_DIR}/airootfs" \
+    KASKADOS_DESKTOP_PKGVER="${desktop_pkgver}" \
+    BUILDDIR="${BUILD_ROOT}/repository-bootstrap/work" \
+    PKGDEST="${BOOTSTRAP_REPOSITORY}" \
+    SRCDEST="${BUILD_ROOT}/repository-bootstrap/sources" \
+    makepkg --cleanbuild --force --nodeps
+)
+mapfile -t desktop_packages < <(
+  find "${BOOTSTRAP_REPOSITORY}" -maxdepth 1 -type f \
+    -name "kaskados-desktop-${desktop_pkgver}-*.pkg.tar.zst" -print
+)
+(( ${#desktop_packages[@]} == 1 )) \
+  || die 'не удалось однозначно определить собранный пакет kaskados-desktop'
+repo-add "${BOOTSTRAP_REPOSITORY}/kaskados-bootstrap.db.tar.gz" \
+  "${desktop_packages[0]}"
+
+# MacqueenDE и встроенные компоненты сначала собираются в airootfs,
+# который используется как payload для пакета. После сборки убираем точно
+# эти файлы из профиля: в готовую систему их должен устанавливать и обновлять pacman.
+while IFS= read -r package_path; do
+  [[ -n "${package_path}" ]] || continue
+  case "${package_path}" in
+    /*|..|../*|*/../*)
+      die "небезопасный путь в пакете kaskados-desktop: ${package_path}"
+      ;;
+  esac
+
+  staged_path="${PROFILE_DIR}/airootfs/${package_path#./}"
+  if [[ -L "${staged_path}" || -f "${staged_path}" ]]; then
+    rm -f -- "${staged_path}"
+  fi
+done < <(bsdtar -tf "${desktop_packages[0]}")
+
+printf '%s\n' 'kaskados-desktop' >> "${PROFILE_DIR}/packages.x86_64"
+
 LC_ALL=C sort -u -o "${PROFILE_DIR}/packages.x86_64" "${PROFILE_DIR}/packages.x86_64"
 
 printf 'Подготовлен live-профиль: %s\n' "${PROFILE_DIR}"
 printf 'Композитор: %s\n' "${PROFILE_DIR}/airootfs/opt/kaskados-installer/bin/kaskad-installer"
 printf 'Calamares:  %s\n' "${PROFILE_DIR}/airootfs/usr/bin/calamares"
-printf 'MacqueenDE: %s\n' "${PROFILE_DIR}/airootfs/opt/macqueende/start-macqueende"
-printf 'Regalia:    %s\n' "${PROFILE_DIR}/airootfs/usr/bin/regalia"
+printf 'Пакет DE:   %s\n' "${desktop_packages[0]}"

@@ -20,11 +20,6 @@ pkgs.testers.runNixOSTest {
       enable = true;
       systemd.enable = true;
       lockscreen.securityKey.enable = true;
-      plugins = {
-        TestPlugin = {
-          src = pkgs.emptyDirectory;
-        };
-      };
     };
 
     system.stateVersion = "25.11";
@@ -38,7 +33,6 @@ pkgs.testers.runNixOSTest {
     machine.succeed("command -v dms")
     machine.succeed("command -v quickshell")
     machine.succeed("su -- danklinux -c 'dms --help >/dev/null'")
-    machine.succeed("test -d /etc/xdg/quickshell/dms-plugins")
     machine.succeed("test -f /run/current-system/sw/lib/systemd/user/dms.service")
     machine.succeed("grep -q 'lib/security/pam_u2f.so cue' /etc/pam.d/dankshell-u2f")
 

@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Common
-import qs.Modules.Plugins
+import qs.Modules.DankBar.Components
 import qs.Services
 import qs.Widgets
 
@@ -13,34 +13,8 @@ BasePill {
     readonly property bool hasUpdates: SystemUpdateService.updateCount > 0
     readonly property bool isChecking: SystemUpdateService.isChecking
     readonly property bool isClean: SystemUpdateService.sysupdateAvailable && !hasUpdates && !isChecking && !SystemUpdateService.hasError
-    readonly property bool hideWhenIdle: widgetData?.hideWhenIdle === true
-    readonly property bool shouldHide: hideWhenIdle && isClean
-
-    width: shouldHide ? 0 : (isVerticalOrientation ? barThickness : visualWidth)
-    height: shouldHide ? 0 : (isVerticalOrientation ? visualHeight : barThickness)
-    visible: !shouldHide
-    opacity: shouldHide ? 0 : 1
-
-    Behavior on width {
-        NumberAnimation {
-            duration: Theme.shortDuration
-            easing.type: Theme.standardEasing
-        }
-    }
-
-    Behavior on height {
-        NumberAnimation {
-            duration: Theme.shortDuration
-            easing.type: Theme.standardEasing
-        }
-    }
-
-    Behavior on opacity {
-        NumberAnimation {
-            duration: Theme.shortDuration
-            easing.type: Theme.standardEasing
-        }
-    }
+    width: isVerticalOrientation ? barThickness : visualWidth
+    height: isVerticalOrientation ? visualHeight : barThickness
 
     Ref {
         service: SystemUpdateService

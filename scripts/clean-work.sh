@@ -26,5 +26,11 @@ if mounts="$(findmnt --submounts --noheadings --output TARGET "${RESOLVED_WORK_D
   die 'сначала размонтируйте их; каталог не удалён'
 fi
 
-unshare --map-auto --map-root-user -- rm -rf -- "${RESOLVED_WORK_DIR}"
+if (( EUID == 0 )); then
+  rm -rf -- "${RESOLVED_WORK_DIR}"
+else
+  command -v sudo >/dev/null 2>&1 || die 'не найдена команда sudo'
+  sudo -v
+  sudo rm -rf -- "${RESOLVED_WORK_DIR}"
+fi
 printf 'Удалён рабочий каталог: %s\n' "${RESOLVED_WORK_DIR}"

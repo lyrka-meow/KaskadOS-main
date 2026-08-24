@@ -605,7 +605,9 @@ DankPopout {
 
                     StyledText {
                         width: parent.width
-                        text: I18n.tr("Running in terminal")
+                        text: SystemUpdateService.operationLabel.length > 0
+                            ? SystemUpdateService.operationLabel
+                            : I18n.tr("Running in terminal")
                         font.pixelSize: Theme.fontSizeLarge
                         font.weight: Font.Medium
                         color: Theme.surfaceText
@@ -639,7 +641,16 @@ DankPopout {
                     StyledText {
                         id: logText
                         width: parent.width
-                        text: (SystemUpdateService.recentLog || []).join("\n")
+                        text: {
+                            const stage = SystemUpdateService.operationLabel;
+                            const attempt = SystemUpdateService.upgradeMaxAttempts > 1
+                                ? " · попытка " + SystemUpdateService.upgradeAttempt
+                                    + " из " + SystemUpdateService.upgradeMaxAttempts
+                                : "";
+                            const header = stage.length > 0 ? stage + attempt : "";
+                            const log = (SystemUpdateService.recentLog || []).join("\n");
+                            return header.length > 0 ? header + "\n\n" + log : log;
+                        }
                         font.family: Theme.monoFontFamily || "monospace"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceText

@@ -2,10 +2,10 @@ import QtQuick
 import qs.Common
 import qs.Services
 import qs.Widgets
-import qs.Modules.Plugins
+import qs.Modules.ControlCenter.Components
 import qs.Modules.Settings.DisplayConfig
 
-PluginComponent {
+BuiltinWidget {
     id: root
 
     readonly property var allProfiles: DisplayConfigState.validatedProfiles || ({})
@@ -214,39 +214,4 @@ PluginComponent {
         }
     }
 
-    horizontalBarPill: Component {
-        Row {
-            spacing: Theme.spacingXS
-            DankIcon {
-                name: "monitor"
-                color: Theme.primary
-                size: root.iconSize
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            StyledText {
-                text: root.displayProfileLabel
-                color: Theme.surfaceText
-                font.pixelSize: Theme.fontSizeSmall
-                anchors.verticalCenter: parent.verticalCenter
-            }
-        }
-    }
-
-    verticalBarPill: Component {
-        Column {
-            spacing: Theme.spacingXXS
-            DankIcon {
-                name: "monitor"
-                color: Theme.primary
-                size: root.iconSize
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-            StyledText {
-                text: root.displayProfileLabel
-                color: Theme.surfaceText
-                font.pixelSize: Theme.fontSizeSmall
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-        }
-    }
 }

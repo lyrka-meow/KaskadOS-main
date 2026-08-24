@@ -2641,27 +2641,6 @@
     "conditionKey": "isNiri"
   },
   {
-    "section": "pluginVisibility",
-    "label": "Plugin Visibility",
-    "tabIndex": 9,
-    "category": "Launcher",
-    "keywords": [
-      "auto-hide",
-      "autohide",
-      "drawer",
-      "hidden",
-      "hide",
-      "launcher",
-      "menu",
-      "plugin",
-      "show",
-      "start",
-      "visibility",
-      "visible"
-    ],
-    "icon": "filter_list"
-  },
-  {
     "section": "recentApps",
     "label": "Recently Used Apps",
     "tabIndex": 9,
@@ -2788,14 +2767,12 @@
     "tabIndex": 9,
     "category": "Launcher",
     "keywords": [
-      "addons",
       "apps",
       "bar",
       "beside",
       "chips",
       "day",
       "drawer",
-      "extensions",
       "files",
       "input",
       "launcher",
@@ -2804,17 +2781,15 @@
       "mode",
       "modes",
       "panel",
-      "plugins",
       "show",
       "spotlight",
       "start",
       "statusbar",
       "tabs",
       "taskbar",
-      "topbar",
-      "widgets"
+      "topbar"
     ],
-    "description": "Show All, Apps, Files, and Plugins chips beside the Spotlight Bar input."
+    "description": "Show All, Apps, and Files chips beside the Spotlight Bar input."
   },
   {
     "section": "dankLauncherV2ShowSourceBadges",
@@ -2913,14 +2888,12 @@
     "tabIndex": 9,
     "category": "Launcher",
     "keywords": [
-      "addons",
       "apps",
       "bar",
       "beside",
       "chips",
       "day",
       "drawer",
-      "extensions",
       "files",
       "input",
       "launcher",
@@ -2928,18 +2901,16 @@
       "menu",
       "modes",
       "panel",
-      "plugins",
       "show",
       "spotlight",
       "start",
       "statusbar",
       "tabs",
       "taskbar",
-      "topbar",
-      "widgets"
+      "topbar"
     ],
     "icon": "search",
-    "description": "Show All, Apps, Files, and Plugins chips beside the Spotlight Bar input."
+    "description": "Show All, Apps, and Files chips beside the Spotlight Bar input."
   },
   {
     "section": "terminalOverride",
@@ -5206,23 +5177,8 @@
     "description": "Play a video when the screen locks."
   },
   {
-    "section": "_tab_12",
-    "label": "Plugins",
-    "tabIndex": 12,
-    "category": "Plugins",
-    "keywords": [
-      "addon",
-      "addons",
-      "extend",
-      "extensions",
-      "plugins",
-      "widgets"
-    ],
-    "icon": "extension"
-  },
-  {
     "section": "_tab_13",
-    "label": "About",
+    "label": "System Information",
     "tabIndex": 13,
     "category": "About",
     "keywords": [
@@ -5230,9 +5186,11 @@
       "credits",
       "help",
       "info",
+      "information",
+      "system",
       "version"
     ],
-    "icon": "info"
+    "icon": "computer"
   },
   {
     "section": "modalAnimationSpeed",
@@ -6893,6 +6851,28 @@
     "description": "How often the server polls for new updates."
   },
   {
+    "section": "automaticUpdates",
+    "label": "Автоматическое обновление",
+    "tabIndex": 20,
+    "category": "System Updater",
+    "keywords": [
+      "packages",
+      "system",
+      "updater",
+      "upgrade",
+      "автоматическое",
+      "выбранному",
+      "обновление",
+      "обновления",
+      "проверять",
+      "расписанию",
+      "терминала",
+      "устанавливать"
+    ],
+    "icon": "schedule",
+    "description": "Проверять и устанавливать обновления без терминала по выбранному расписанию."
+  },
+  {
     "section": "lockTimeout",
     "label": "Automatically lock after",
     "tabIndex": 21,
@@ -7776,6 +7756,28 @@
     ],
     "icon": "language",
     "description": "Change the locale used by the DMS interface."
+  },
+  {
+    "section": "keyboardLayoutToAdd",
+    "label": "Keyboard Layouts",
+    "tabIndex": 30,
+    "category": "Locale",
+    "keywords": [
+      "country",
+      "input",
+      "installed",
+      "keyboard",
+      "language",
+      "layout",
+      "layouts",
+      "locale",
+      "select",
+      "system",
+      "клавиатура",
+      "раскладка"
+    ],
+    "icon": "keyboard",
+    "description": "Select any layout installed by the system."
   },
   {
     "section": "_tab_30",
@@ -9621,19 +9623,121 @@
     "icon": "wifi"
   },
   {
+    "section": "regaliaApplicationRoutes",
+    "label": "Application routing",
+    "tabIndex": 41,
+    "category": "Network",
+    "keywords": [
+      "app",
+      "application",
+      "applications",
+      "connectivity",
+      "network",
+      "online",
+      "processPath",
+      "program",
+      "regalia",
+      "routing"
+    ],
+    "icon": "apps"
+  },
+  {
+    "section": "regaliaConfiguration",
+    "label": "Current configuration",
+    "tabIndex": 41,
+    "category": "Network",
+    "keywords": [
+      "config",
+      "configuration",
+      "configure",
+      "connectivity",
+      "current",
+      "network",
+      "online",
+      "profile",
+      "regalia",
+      "route",
+      "server",
+      "setup"
+    ],
+    "icon": "tune"
+  },
+  {
+    "section": "regaliaVpnEnabled",
+    "label": "Enable VPN",
+    "tabIndex": 41,
+    "category": "Network",
+    "keywords": [
+      "connectivity",
+      "enable",
+      "network",
+      "online",
+      "vpn"
+    ]
+  },
+  {
+    "section": "regaliaRoutes",
+    "label": "Routing profiles",
+    "tabIndex": 41,
+    "category": "Network",
+    "keywords": [
+      "connectivity",
+      "direct",
+      "network",
+      "online",
+      "profiles",
+      "proxy",
+      "regalia",
+      "routing"
+    ],
+    "icon": "route"
+  },
+  {
+    "section": "regaliaServers",
+    "label": "Servers",
+    "tabIndex": 41,
+    "category": "Network",
+    "keywords": [
+      "connectivity",
+      "network",
+      "online",
+      "protocol",
+      "regalia",
+      "servers"
+    ],
+    "icon": "dns"
+  },
+  {
+    "section": "regaliaSubscriptions",
+    "label": "Subscriptions",
+    "tabIndex": 41,
+    "category": "Network",
+    "keywords": [
+      "connectivity",
+      "network",
+      "online",
+      "profile",
+      "regalia",
+      "subscription",
+      "subscriptions",
+      "url"
+    ],
+    "icon": "link"
+  },
+  {
     "section": "networkVpn",
     "label": "VPN",
     "tabIndex": 41,
     "category": "Network",
     "keywords": [
       "connectivity",
-      "import",
       "network",
       "online",
-      "openvpn",
-      "profiles",
-      "vpn",
-      "wireguard"
+      "proxy",
+      "regalia",
+      "routing",
+      "tun",
+      "vpn"
     ],
     "icon": "vpn_key"
   },
@@ -10011,5 +10115,39 @@
     ],
     "icon": "mouse",
     "conditionKey": "isNiri"
+  },
+  {
+    "section": "_tab_45",
+    "label": "Subscriptions",
+    "tabIndex": 45,
+    "category": "Settings",
+    "keywords": [
+      "settings",
+      "subscriptions"
+    ],
+    "icon": "link"
+  },
+  {
+    "section": "_tab_46",
+    "label": "Servers",
+    "tabIndex": 46,
+    "category": "Settings",
+    "keywords": [
+      "servers",
+      "settings"
+    ],
+    "icon": "dns"
+  },
+  {
+    "section": "_tab_47",
+    "label": "Routing profiles",
+    "tabIndex": 47,
+    "category": "Settings",
+    "keywords": [
+      "profiles",
+      "routing",
+      "settings"
+    ],
+    "icon": "alt_route"
   }
 ]

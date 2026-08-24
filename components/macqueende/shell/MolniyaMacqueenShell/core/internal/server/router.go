@@ -11,19 +11,21 @@ import (
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/cups"
 	serverDbus "github.com/AvengeMedia/DankMaterialShell/core/internal/server/dbus"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/evdev"
+	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/files"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/freedesktop"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/location"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/loginctl"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/mime"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/models"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/network"
-	serverPlugins "github.com/AvengeMedia/DankMaterialShell/core/internal/server/plugins"
+	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/software"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/sysupdate"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/tailscale"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/thememode"
 	serverThemes "github.com/AvengeMedia/DankMaterialShell/core/internal/server/themes"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wallpaper"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wayland"
+	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/windowsapps"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wlroutput"
 )
 
@@ -34,11 +36,6 @@ func RouteRequest(conn *models.Conn, req models.Request) {
 			return
 		}
 		network.HandleRequest(conn, req, networkManager)
-		return
-	}
-
-	if strings.HasPrefix(req.Method, "plugins.") {
-		serverPlugins.HandleRequest(conn, req)
 		return
 	}
 
@@ -202,6 +199,33 @@ func RouteRequest(conn *models.Conn, req models.Request) {
 			return
 		}
 		sysupdate.HandleRequest(conn, req, sysUpdateManager)
+		return
+	}
+
+	if strings.HasPrefix(req.Method, "software.") {
+		if softwareManager == nil {
+			models.RespondError(conn, req.ID, "software manager not initialized")
+			return
+		}
+		software.HandleRequest(conn, req, softwareManager)
+		return
+	}
+
+	if strings.HasPrefix(req.Method, "windows.") {
+		if windowsAppsManager == nil {
+			models.RespondError(conn, req.ID, "windows applications manager not initialized")
+			return
+		}
+		windowsapps.HandleRequest(conn, req, windowsAppsManager)
+		return
+	}
+
+	if strings.HasPrefix(req.Method, "files.") {
+		if filesManager == nil {
+			models.RespondError(conn, req.ID, "file manager backend not initialized")
+			return
+		}
+		files.HandleRequest(conn, req, filesManager)
 		return
 	}
 

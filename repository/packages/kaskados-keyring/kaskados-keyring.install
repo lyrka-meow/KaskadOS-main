@@ -1,0 +1,9 @@
+post_install() {
+    if [[ -x /usr/bin/pacman-key ]]; then
+        /usr/bin/pacman-key --populate kaskados
+    fi
+}
+
+post_upgrade() {
+    post_install
+}

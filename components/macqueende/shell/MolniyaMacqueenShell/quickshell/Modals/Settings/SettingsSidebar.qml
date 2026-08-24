@@ -433,12 +433,6 @@ Rectangle {
             ]
         },
         {
-            "id": "plugins",
-            "text": I18n.tr("Plugins"),
-            "icon": "extension",
-            "tabIndex": 12
-        },
-        {
             "id": "separator",
             "separator": true
         },

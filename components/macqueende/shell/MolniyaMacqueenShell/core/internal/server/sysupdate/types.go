@@ -6,6 +6,8 @@ const (
 	PhaseIdle       Phase = "idle"
 	PhaseRefreshing Phase = "refreshing"
 	PhaseUpgrading  Phase = "upgrading"
+	PhaseVerifying  Phase = "verifying"
+	PhaseRetrying   Phase = "retrying"
 	PhaseError      Phase = "error"
 )
 
@@ -68,6 +70,14 @@ type State struct {
 	NextCheckUnix    int64         `json:"nextCheckUnix,omitempty"`
 	OperationID      string        `json:"operationId,omitempty"`
 	OperationStarted int64         `json:"operationStartedUnix,omitempty"`
+	OperationStage   string        `json:"operationStage,omitempty"`
+	UpgradeAttempt   int           `json:"upgradeAttempt,omitempty"`
+	UpgradeMax       int           `json:"upgradeMaxAttempts,omitempty"`
+	UpgradeCompleted int64         `json:"upgradeCompletedUnix,omitempty"`
+	DesktopVersion   string        `json:"desktopVersion,omitempty"`
+	PreviousDesktop  string        `json:"previousDesktopVersion,omitempty"`
+	DesktopUpdated   bool          `json:"desktopUpdated,omitempty"`
+	RestartSession   bool          `json:"restartSessionRequired,omitempty"`
 	RecentLog        []string      `json:"recentLog,omitempty"`
 	Error            *ErrorInfo    `json:"error,omitempty"`
 }
@@ -83,6 +93,7 @@ type UpgradeOptions struct {
 	TerminalArgs   []string
 	Targets        []Package
 	Ignored        []string
+	Automatic      bool
 }
 
 type RefreshOptions struct {

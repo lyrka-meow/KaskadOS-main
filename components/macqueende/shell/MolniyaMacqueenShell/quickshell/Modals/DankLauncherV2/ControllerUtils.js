@@ -134,32 +134,6 @@ function classifyAppSource(app) {
     return "system";
 }
 
-function sortPluginIdsByOrder(pluginIds, order) {
-    if (!order || order.length === 0)
-        return pluginIds;
-    var orderMap = {};
-    for (var i = 0; i < order.length; i++)
-        orderMap[order[i]] = i;
-    return pluginIds.slice().sort(function (a, b) {
-        var aOrder = orderMap[a] !== undefined ? orderMap[a] : 9999;
-        var bOrder = orderMap[b] !== undefined ? orderMap[b] : 9999;
-        return aOrder - bOrder;
-    });
-}
-
-function sortPluginsOrdered(plugins, order) {
-    if (!order || order.length === 0)
-        return plugins;
-    var orderMap = {};
-    for (var i = 0; i < order.length; i++)
-        orderMap[order[i]] = i;
-    return plugins.sort(function (a, b) {
-        var aOrder = orderMap[a.id] !== undefined ? orderMap[a.id] : 9999;
-        var bOrder = orderMap[b.id] !== undefined ? orderMap[b.id] : 9999;
-        return aOrder - bOrder;
-    });
-}
-
 function parseFileSearchPrefix(query) {
     if (!query || !query.startsWith("/"))
         return null;

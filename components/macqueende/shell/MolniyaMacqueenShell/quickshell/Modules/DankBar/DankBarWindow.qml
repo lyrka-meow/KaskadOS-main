@@ -751,18 +751,6 @@ PanelWindow {
         enabled: SessionService.idleInhibited || IdleService.externalInhibitActive
     }
 
-    Connections {
-        target: PluginService
-        function onPluginLoaded(pluginId) {
-            log.info("DankBar: Plugin loaded:", pluginId);
-            SettingsData.widgetDataChanged();
-        }
-        function onPluginUnloaded(pluginId) {
-            log.info("DankBar: Plugin unloaded:", pluginId);
-            SettingsData.widgetDataChanged();
-        }
-    }
-
     function updateGpuTempConfig() {
         const leftWidgets = barConfig?.leftWidgets || [];
         const centerWidgets = barConfig?.centerWidgets || [];

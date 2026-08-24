@@ -5,7 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import Quickshell.Hyprland
 import qs.Common
-import qs.Modules.Plugins
+import qs.Modules.DankBar.Components
 import qs.Services
 import qs.Widgets
 

@@ -609,6 +609,42 @@ Item {
     }
 
     LazyLoader {
+        id: updateScheduleConfirmationLoader
+        active: false
+
+        UpdateScheduleConfirmationModal {
+            id: updateScheduleConfirmationModal
+        }
+    }
+
+    Connections {
+        target: SystemUpdateService
+
+        function onScheduleConfirmationRequested() {
+            updateScheduleConfirmationLoader.active = true;
+            Qt.callLater(() => updateScheduleConfirmationLoader.item?.open());
+        }
+    }
+
+    LazyLoader {
+        id: fileManagerWindowLoader
+        active: false
+
+        FileManagerWindow {
+            id: fileManagerWindow
+        }
+    }
+
+    Connections {
+        target: FileManagerService
+
+        function onWindowRequested(path) {
+            fileManagerWindowLoader.active = true;
+            Qt.callLater(() => fileManagerWindowLoader.item?.showAt(path));
+        }
+    }
+
+    LazyLoader {
         id: appDrawerLoader
 
         active: false
@@ -765,14 +801,6 @@ Item {
                 if (themeId) {
                     PopoutService.pendingThemeInstall = themeId;
                     PopoutService.openSettingsWithTab("theme");
-                }
-                return;
-            }
-            if (url.startsWith("dms://plugin/install/")) {
-                var pluginId = url.replace("dms://plugin/install/", "").split(/[?#]/)[0];
-                if (pluginId) {
-                    PopoutService.pendingPluginInstall = pluginId;
-                    PopoutService.openSettingsWithTab("plugins");
                 }
                 return;
             }

@@ -195,20 +195,6 @@ Loader {
             } catch (e) {}
         }
 
-        if (item.pluginService !== undefined) {
-            var parts = widgetId.split(":");
-            var pluginId = parts[0];
-            var variantId = parts.length > 1 ? parts[1] : null;
-
-            if (item.pluginId !== undefined)
-                item.pluginId = pluginId;
-            if (item.variantId !== undefined)
-                item.variantId = variantId;
-            if (item.variantData !== undefined && variantId)
-                item.variantData = PluginService.getPluginVariantData(pluginId, variantId);
-            item.pluginService = PluginService;
-        }
-
         if (item.popoutService !== undefined)
             item.popoutService = PopoutService;
 
@@ -280,11 +266,7 @@ Loader {
             return componentMap[widgetId];
         }
 
-        var parts = widgetId.split(":");
-        var pluginId = parts[0];
-
-        let pluginMap = PluginService.getWidgetComponents();
-        return pluginMap[pluginId] || null;
+        return null;
     }
 
     function getWidgetVisible(widgetId, dgopAvailable) {

@@ -81,7 +81,7 @@ git config --global url."git@github.com:AvengeMedia/".pushInsteadOf "https://git
 
 Shared widgets read app-provided singletons (`Theme`, `SettingsData`, ...) through a documented contract — see the dank-qml-common README. If your change needs a new contract property, add it to the library's stub singletons in the same PR, then to `quickshell/Common/` here when you bump.
 
-Files in `quickshell/Widgets/`, `quickshell/Common/`, and `quickshell/Modals/FileBrowser/` that moved to the library remain in place as thin wrappers, so `import qs.Widgets`, `qs.Common`, and `qs.Modals.FileBrowser` keep working for the shell and for plugins.
+Files in `quickshell/Widgets/`, `quickshell/Common/`, and `quickshell/Modals/FileBrowser/` that moved to the library remain in place as thin wrappers, so `import qs.Widgets`, `qs.Common`, and `qs.Modals.FileBrowser` keep working for the shell.
 
 ## VSCode Setup
 

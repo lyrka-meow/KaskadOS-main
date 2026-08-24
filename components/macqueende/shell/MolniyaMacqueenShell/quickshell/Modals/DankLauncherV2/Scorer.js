@@ -9,7 +9,7 @@ const Weights = {
     frecency: 2000,
     typeBonus: {
         app: 1000,
-        plugin: 900,
+        system_action: 900,
         setting: 850,
         clipboard: 825,
         file: 800,

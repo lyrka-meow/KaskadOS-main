@@ -11,12 +11,6 @@ import qs.Widgets
 Column {
     id: root
 
-    Component.onCompleted: {
-        if (PluginService.isPluginLoaded("dankNotepadModule")) {
-            pluginHighlightedHtml = SettingsData.getBuiltInPluginSetting("dankNotepadModule", "highlightedHtml", "");
-        }
-    }
-
     property alias text: textArea.text
     property alias textArea: textArea
     property bool contentLoaded: false
@@ -27,10 +21,6 @@ Column {
     property var searchMatches: []
     property int currentMatchIndex: -1
     property int matchCount: 0
-    property bool inlinePreviewVisible: false
-    property string previewMode: "split" // split | full
-    property string pluginHighlightedHtml: ""
-    property string lastPluginContent: ""
     property int loadRequestId: 0
     property bool ignoreNextExternalChange: false
     property bool watcherReloadPending: false
@@ -53,7 +43,6 @@ Column {
     signal saveRequested
     signal openRequested
     signal newRequested
-    signal previewRequested
     signal escapePressed
     signal contentChanged
     signal settingsRequested
@@ -98,7 +87,6 @@ Column {
                 applyingShared = false;
                 loadedTabId = requestedTabId;
                 contentLoaded = true;
-                syncContentToPlugin();
                 applyDiskContent(content);
                 return;
             }
@@ -109,7 +97,6 @@ Column {
             applyingShared = false;
             loadedTabId = requestedTabId;
             contentLoaded = true;
-            syncContentToPlugin();
         });
     }
 
@@ -165,7 +152,6 @@ Column {
         contentLoaded = true;
         applyingShared = false;
         NotepadStorageService.clearSessionBuffer(loadedTabId);
-        syncContentToPlugin();
     }
 
     function setTextDocumentLineHeight() {
@@ -263,47 +249,6 @@ Column {
         });
     }
 
-    function togglePreview() {
-        if (!inlinePreviewVisible) {
-            inlinePreviewVisible = true;
-            previewMode = "split";
-        } else if (previewMode === "split") {
-            previewMode = "full";
-        } else {
-            inlinePreviewVisible = false;
-            previewMode = "split";
-        }
-        syncContentToPlugin();
-    }
-
-    function renderPreviewHtml() {
-        if (!inlinePreviewVisible)
-            return "";
-        return pluginHighlightedHtml.length > 0 ? pluginHighlightedHtml : "<p><i>Rendering preview…</i></p>";
-    }
-
-    function syncContentToPlugin() {
-        if (!PluginService.isPluginLoaded("dankNotepadModule"))
-            return;
-        if (!currentTab)
-            return;
-        const filePath = currentTab?.filePath || "";
-        const baseName = filePath.split('/').pop();
-        const ext = baseName.includes('.') ? baseName.split('.').pop().toLowerCase() : "";
-        const content = textArea.text;
-
-        if (content === lastPluginContent && SettingsData.getBuiltInPluginSetting("dankNotepadModule", "previewActive", false) === inlinePreviewVisible) {
-            return;
-        }
-
-        lastPluginContent = content;
-        SettingsData.setBuiltInPluginSetting("dankNotepadModule", "previewActive", inlinePreviewVisible);
-        SettingsData.setBuiltInPluginSetting("dankNotepadModule", "currentFilePath", filePath);
-        SettingsData.setBuiltInPluginSetting("dankNotepadModule", "currentFileExtension", ext);
-        SettingsData.setBuiltInPluginSetting("dankNotepadModule", "sourceContent", content);
-        SettingsData.setBuiltInPluginSetting("dankNotepadModule", "updatedAt", Date.now());
-    }
-
     function hideSearch() {
         searchVisible = false;
         searchQuery = "";
@@ -312,37 +257,6 @@ Column {
         currentMatchIndex = -1;
         textArea.select(0, 0);
         textArea.forceActiveFocus();
-    }
-
-    function copyPlainTextToClipboard() {
-        if (!inlinePreviewVisible || !textArea.text)
-            return;
-        const content = textArea.text;
-        if (content.length === 0)
-            return;
-        const proc = clipboardCopyProcComp.createObject(root, {
-            content: content,
-            running: true
-        });
-        proc.exited.connect(() => {
-            ToastService.showInfo(I18n.tr("Copied to clipboard"));
-            proc.destroy();
-        });
-    }
-
-    function copyHtmlToClipboard() {
-        if (!inlinePreviewVisible || !pluginHighlightedHtml)
-            return;
-        if (pluginHighlightedHtml.length === 0)
-            return;
-        const proc = clipboardCopyProcComp.createObject(root, {
-            content: pluginHighlightedHtml,
-            running: true
-        });
-        proc.exited.connect(() => {
-            ToastService.showInfo(I18n.tr("HTML copied to clipboard"));
-            proc.destroy();
-        });
     }
 
     Component {
@@ -512,10 +426,10 @@ Column {
 
             Item {
                 id: editorPane
-                visible: !inlinePreviewVisible || previewMode === "split"
+                visible: true
                 Layout.fillHeight: true
-                Layout.fillWidth: !inlinePreviewVisible || previewMode === "split"
-                Layout.preferredWidth: inlinePreviewVisible ? parent.width * 0.55 : parent.width
+                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width
                 clip: true
 
                 DankFlickable {
@@ -656,7 +570,6 @@ Column {
                             }
                             root.contentChanged();
                             root.updateLineModel();
-                            pluginSyncTimer.restart();
                         }
 
                         Keys.onEscapePressed: event => {
@@ -687,12 +600,6 @@ Column {
                                     event.accepted = true;
                                     root.showSearch();
                                     break;
-                                case Qt.Key_P:
-                                    if (PluginService.isPluginLoaded("dankNotepadModule")) {
-                                        event.accepted = true;
-                                        root.previewRequested();
-                                    }
-                                    break;
                                 }
                             }
                         }
@@ -718,104 +625,6 @@ Column {
                 }
             }
 
-            Rectangle {
-                id: previewDivider
-                visible: inlinePreviewVisible && previewMode === "split"
-                Layout.fillHeight: true
-                Layout.preferredWidth: 1
-                color: Theme.outlineMedium
-            }
-
-            Item {
-                id: previewPane
-                visible: inlinePreviewVisible
-                Layout.fillHeight: true
-                Layout.fillWidth: previewMode === "full"
-                Layout.preferredWidth: previewMode === "full" ? parent.width : parent.width * 0.45
-                clip: true
-
-                // Preview header with copy buttons
-                Rectangle {
-                    id: previewHeader
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 36
-                    color: Theme.withAlpha(Theme.surface, Theme.notepadTransparency)
-                    z: 2
-
-                    Row {
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.rightMargin: Theme.spacingM
-                        spacing: Theme.spacingS
-
-                        // Copy plain text button
-                        DankActionButton {
-                            iconName: "content_copy"
-                            iconSize: Theme.iconSize - 4
-                            iconColor: Theme.surfaceTextMedium
-                            onClicked: copyPlainTextToClipboard()
-                        }
-
-                        StyledText {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: I18n.tr("Copy Text")
-                            font.pixelSize: Theme.fontSizeSmall
-                            color: Theme.surfaceTextMedium
-                        }
-
-                        Rectangle {
-                            width: 1
-                            height: 20
-                            color: Theme.outlineVariant
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        // Copy HTML button
-                        DankActionButton {
-                            iconName: "code"
-                            iconSize: Theme.iconSize - 4
-                            iconColor: Theme.surfaceTextMedium
-                            onClicked: copyHtmlToClipboard()
-                        }
-
-                        StyledText {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: I18n.tr("Copy HTML")
-                            font.pixelSize: Theme.fontSizeSmall
-                            color: Theme.surfaceTextMedium
-                        }
-                    }
-                }
-
-                DankFlickable {
-                    id: previewFlickable
-                    anchors.top: previewHeader.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-                    anchors.topMargin: Theme.spacingS
-                    clip: true
-                    contentWidth: width - 11
-                    contentHeight: previewText.paintedHeight + Theme.spacingM * 2
-
-                    StyledText {
-                        id: previewText
-                        width: parent.width - Theme.spacingM
-                        padding: Theme.spacingM
-                        wrapMode: Text.WordWrap
-                        textFormat: Text.RichText
-                        text: inlinePreviewVisible ? renderPreviewHtml() : ""
-                        color: Theme.surfaceText
-                        font.family: SettingsData.notepadFontFamily || SettingsData.fontFamily
-                        font.pixelSize: Theme.fontSizeMedium
-                        linkColor: Theme.primary
-
-                        onLinkActivated: url => Qt.openUrlExternally(url)
-                    }
-                }
-            }
         }
     }
 
@@ -883,23 +692,6 @@ Column {
                     }
                 }
 
-                Row {
-                    spacing: Theme.spacingS
-                    visible: PluginService.isPluginLoaded("dankNotepadModule")
-                    DankActionButton {
-                        iconName: inlinePreviewVisible ? "visibility" : "visibility_off"
-                        iconSize: Theme.iconSize - 2
-                        iconColor: Theme.surfaceText
-                        enabled: textArea.text.length > 0
-                        onClicked: root.previewRequested()
-                    }
-                    StyledText {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: I18n.tr("Preview")
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceTextMedium
-                    }
-                }
             }
 
             Row {
@@ -1069,13 +861,6 @@ Column {
         }
     }
 
-    Timer {
-        id: pluginSyncTimer
-        interval: 350
-        repeat: false
-        onTriggered: syncContentToPlugin()
-    }
-
     FileView {
         id: externalWatch
         path: (!root.externalWatchPaused && currentTab && !currentTab.isTemporary && currentTab.filePath) ? currentTab.filePath : ""
@@ -1109,15 +894,6 @@ Column {
     }
 
     Connections {
-        target: SettingsData
-        function onBuiltInPluginSettingsChanged() {
-            if (PluginService.isPluginLoaded("dankNotepadModule")) {
-                pluginHighlightedHtml = SettingsData.getBuiltInPluginSetting("dankNotepadModule", "highlightedHtml", "");
-            }
-        }
-    }
-
-    Connections {
         target: NotepadStorageService
         function onSessionBufferRevisionChanged() {
             if (applyingShared || !contentLoaded || loadedTabId < 0)
@@ -1132,7 +908,6 @@ Column {
                 lastSavedContent = buffer.baseline;
                 textArea.text = buffer.content;
                 applyingShared = false;
-                syncContentToPlugin();
             }
         }
     }

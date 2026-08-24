@@ -981,7 +981,7 @@ Item {
 
         function tabs(): string {
             if (!PopoutService.settingsModal)
-                return "wallpaper\ntheme\ntypography\ntime_weather\nsounds\ndankbar\ndankbar_settings\ndankbar_appearance\ndankbar_widgets\nframe\nworkspaces\ncompositor\nmedia_player\nnotifications\nosd\nrunning_apps\nupdater\nmaintenance\ndock\nlauncher\nkeybinds\ndisplays\nnetwork\nnetwork_status\nnetwork_ethernet\nnetwork_wifi\nnetwork_vpn\nprinters\nlock_screen\npower_sleep\nplugins\nabout";
+                return "wallpaper\ntheme\ntypography\ntime_weather\nsounds\ndankbar\ndankbar_settings\ndankbar_appearance\ndankbar_widgets\nframe\nworkspaces\ncompositor\nmedia_player\nnotifications\nosd\nrunning_apps\nupdater\nmaintenance\ndock\nlauncher\nkeybinds\ndisplays\nnetwork\nnetwork_status\nnetwork_ethernet\nnetwork_wifi\nnetwork_vpn\nprinters\nlock_screen\npower_sleep\nabout";
             var modal = PopoutService.settingsModal;
             var ids = [];
             var structure = modal.sidebar?.categoryStructure ?? [];
@@ -1253,76 +1253,6 @@ Item {
         }
 
         target: "widget"
-    }
-
-    IpcHandler {
-        function reload(pluginId: string): string {
-            if (!pluginId)
-                return "ERROR: No plugin ID specified";
-
-            if (!PluginService.availablePlugins[pluginId])
-                return `PLUGIN_NOT_FOUND: ${pluginId}`;
-
-            if (!PluginService.isPluginLoaded(pluginId)) {
-                const success = PluginService.enablePlugin(pluginId);
-                return success ? `PLUGIN_RELOAD_SUCCESS: ${pluginId}` : `PLUGIN_RELOAD_FAILED: ${pluginId}`;
-            }
-
-            const success = PluginService.reloadPlugin(pluginId);
-            return success ? `PLUGIN_RELOAD_SUCCESS: ${pluginId}` : `PLUGIN_RELOAD_FAILED: ${pluginId}`;
-        }
-
-        function enable(pluginId: string): string {
-            if (!pluginId)
-                return "ERROR: No plugin ID specified";
-
-            if (!PluginService.availablePlugins[pluginId])
-                return `PLUGIN_NOT_FOUND: ${pluginId}`;
-
-            const success = PluginService.enablePlugin(pluginId);
-            return success ? `PLUGIN_ENABLE_SUCCESS: ${pluginId}` : `PLUGIN_ENABLE_FAILED: ${pluginId}`;
-        }
-
-        function disable(pluginId: string): string {
-            if (!pluginId)
-                return "ERROR: No plugin ID specified";
-
-            if (!PluginService.availablePlugins[pluginId])
-                return `PLUGIN_NOT_FOUND: ${pluginId}`;
-
-            const success = PluginService.disablePlugin(pluginId);
-            return success ? `PLUGIN_DISABLE_SUCCESS: ${pluginId}` : `PLUGIN_DISABLE_FAILED: ${pluginId}`;
-        }
-
-        function toggle(pluginId: string): string {
-            if (!pluginId)
-                return "ERROR: No plugin ID specified";
-
-            if (!PluginService.availablePlugins[pluginId])
-                return `PLUGIN_NOT_FOUND: ${pluginId}`;
-
-            const success = PluginService.togglePlugin(pluginId);
-            return success ? `PLUGIN_TOGGLE_SUCCESS: ${pluginId}` : `PLUGIN_TOGGLE_FAILED: ${pluginId}`;
-        }
-
-        function list(): string {
-            const plugins = PluginService.getAvailablePlugins();
-            if (plugins.length === 0)
-                return "No plugins available";
-            return plugins.map(p => `${p.id} [${p.loaded ? "loaded" : "disabled"}]`).join("\n");
-        }
-
-        function status(pluginId: string): string {
-            if (!pluginId)
-                return "ERROR: No plugin ID specified";
-
-            if (!PluginService.availablePlugins[pluginId])
-                return `PLUGIN_NOT_FOUND: ${pluginId}`;
-
-            return PluginService.isPluginLoaded(pluginId) ? "loaded" : "disabled";
-        }
-
-        target: "plugins"
     }
 
     IpcHandler {

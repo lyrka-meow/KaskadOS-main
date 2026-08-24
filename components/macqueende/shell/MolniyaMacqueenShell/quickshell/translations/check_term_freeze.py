@@ -20,19 +20,9 @@ SCRIPT_DIR = Path(__file__).parent
 ROOT_DIR = SCRIPT_DIR.parent
 FREEZE_FILE = SCRIPT_DIR / 'term_freeze.json'
 
-
-
-# dms-plugins is a separate checkout with its own release cadence; the freeze
-# only guards this repo's terms. Catalog extraction still includes plugins.
-def shell_terms(translations):
-    return {
-        term: info for term, info in translations.items()
-        if any(not occ['file'].startswith('dms-plugins/') for occ in info['occurrences'])
-    }
-
 def main():
     if '--update' in sys.argv:
-        translations = shell_terms(extract_qstr_strings(ROOT_DIR))
+        translations = extract_qstr_strings(ROOT_DIR)
         FREEZE_FILE.write_text(json.dumps(sorted(translations), indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
         print(f"Froze {len(translations)} terms to {FREEZE_FILE}")
         return 0
@@ -42,7 +32,7 @@ def main():
         return 0
 
     frozen = set(json.loads(FREEZE_FILE.read_text(encoding='utf-8')))
-    translations = shell_terms(extract_qstr_strings(ROOT_DIR))
+    translations = extract_qstr_strings(ROOT_DIR)
     new_terms = sorted(term for term in translations if term not in frozen)
     if not new_terms:
         return 0

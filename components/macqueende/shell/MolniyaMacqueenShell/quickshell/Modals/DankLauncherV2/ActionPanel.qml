@@ -13,20 +13,6 @@ Rectangle {
     property bool expanded: false
     property int selectedActionIndex: 0
 
-    function getPluginContextMenuActions() {
-        if (selectedItem?.type !== "plugin" || !selectedItem?.pluginId)
-            return [];
-        var instance = PluginService.pluginInstances[selectedItem.pluginId];
-        if (!instance)
-            return [];
-        if (typeof instance.getContextMenuActions !== "function")
-            return [];
-        var actions = instance.getContextMenuActions(selectedItem.data);
-        if (!Array.isArray(actions))
-            return [];
-        return actions;
-    }
-
     readonly property var actions: {
         var result = [];
         if (selectedItem?.primaryAction) {
@@ -34,25 +20,6 @@ Rectangle {
         }
 
         switch (selectedItem?.type) {
-        case "plugin":
-            var pluginActions = getPluginContextMenuActions();
-            for (var i = 0; i < pluginActions.length; i++) {
-                var act = pluginActions[i];
-                result.push({
-                    name: act.text || act.name || "",
-                    icon: act.icon || "play_arrow",
-                    action: "plugin_action",
-                    pluginAction: act.action
-                });
-            }
-            break;
-        case "plugin_browse":
-            if (selectedItem?.actions) {
-                for (var i = 0; i < selectedItem.actions.length; i++) {
-                    result.push(selectedItem.actions[i]);
-                }
-            }
-            break;
         case "app":
             if (selectedItem?.isCore)
                 break;
@@ -91,10 +58,6 @@ Rectangle {
         switch (selectedItem?.type) {
         case "app":
             return !selectedItem?.isCore;
-        case "plugin":
-            return getPluginContextMenuActions().length > 0;
-        case "plugin_browse":
-            return selectedItem?.actions?.length > 0;
         case "file":
             return selectedItem?.actions?.length > 0;
         default:
@@ -261,12 +224,6 @@ Rectangle {
         if (!controller || !selectedItem || selectedActionIndex >= actions.length)
             return;
         var action = actions[selectedActionIndex];
-        if (action.action === "plugin_action" && typeof action.pluginAction === "function") {
-            action.pluginAction();
-            controller.performSearch();
-            controller.itemExecuted();
-        } else {
-            controller.executeAction(selectedItem, action);
-        }
+        controller.executeAction(selectedItem, action);
     }
 }

@@ -524,8 +524,6 @@ Item {
                         default:
                             return "folder_open";
                         }
-                    case "plugins":
-                        return "extension";
                     case "apps":
                         return "apps";
                     default:
@@ -562,8 +560,6 @@ Item {
                         default:
                             return I18n.tr("No results found");
                         }
-                    case "plugins":
-                        return hasQuery ? I18n.tr("No plugin results") : I18n.tr("Browse or search plugins");
                     case "apps":
                         return I18n.tr("No apps found");
                     default:

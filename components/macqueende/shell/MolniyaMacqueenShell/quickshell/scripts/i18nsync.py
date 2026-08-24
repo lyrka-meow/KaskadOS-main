@@ -387,7 +387,6 @@ def main():
         prune = "--prune" in sys.argv[2:]
         if prune:
             warn("--prune deletes every POEditor term missing from the local en.json, including its translations.")
-            warn("Terms from dms-plugins/ are machine-dependent: make sure all official plugins are present before pruning.")
             warn("dank-qml-common terms are included from the submodule, so pruning keeps them as long as the submodule is current.")
             warn("dms-greeter terms are fetched from POEditor and re-included, so pruning keeps them.")
 

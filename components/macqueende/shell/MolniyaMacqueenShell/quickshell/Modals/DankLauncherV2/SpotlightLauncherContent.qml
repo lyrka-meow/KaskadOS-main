@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import qs.Common
+import qs.Modals.FileBrowser
 import qs.Services
 import qs.Widgets
 
@@ -14,6 +15,10 @@ FocusScope {
     readonly property alias activeContextMenu: contextMenu
     property var transientSurfaceTracker: null
 
+    readonly property bool softwareMode: searchController.searchMode === "store" || searchController.searchMode === "installed"
+    readonly property bool windowsMode: searchController.searchMode === "windows"
+    readonly property bool specialMode: softwareMode || windowsMode
+
     readonly property bool _hasQuery: searchInput.text.length > 0
     readonly property real _searchBarH: 56
     readonly property real _searchAreaH: _searchBarH
@@ -21,8 +26,9 @@ FocusScope {
     readonly property real _rowH: 64
     readonly property real _maxResultsH: Math.min(430, (parentModal?.screenHeight ?? 900) * 0.55)
     readonly property var _resultRows: _buildRows()
-    readonly property real _resultsContentH: _resultRows.length > 0 ? _resultRows.length * _rowH + resultsList.bottomInset : _statusH
-    readonly property real _resultsH: _hasQuery ? Math.min(_resultsContentH, _maxResultsH) : 0
+    readonly property real _resultsContentH: specialMode ? _maxResultsH
+        : (_resultRows.length > 0 ? _resultRows.length * _rowH + resultsList.bottomInset : _statusH)
+    readonly property real _resultsH: specialMode ? _maxResultsH : (_hasQuery ? Math.min(_resultsContentH, _maxResultsH) : 0)
     readonly property int _fastDuration: 90
     readonly property int _resizeDuration: Theme.expressiveDurations.fast
     readonly property bool _blurActive: Theme.blurForegroundLayers || Theme.transparentBlurLayers
@@ -55,7 +61,8 @@ FocusScope {
     }
 
     function resetScroll() {
-        resultsList.resetScroll();
+        if (!specialMode)
+            resultsList.resetScroll();
     }
 
     function closeTransientUi() {
@@ -73,8 +80,8 @@ FocusScope {
             if (!entry || entry.isHeader || !entry.item)
                 continue;
             const section = sections[entry.sectionIndex] || null;
-            // Plugin item ids embed result content, so key them by slot position instead
-            const base = entry.item.pluginId ? (entry.sectionId + ":" + entry.indexInSection) : (entry.item.id || (entry.sectionId + ":" + (entry.item.name || entry.indexInSection)));
+            // Dynamic action ids can embed result content, so key them by slot position instead.
+            const base = entry.item.id || (entry.sectionId + ":" + (entry.item.name || entry.indexInSection));
             const bump = seen[base] || 0;
             seen[base] = bump + 1;
             rows.push({
@@ -106,19 +113,11 @@ FocusScope {
 
         switch (event.key) {
         case Qt.Key_Escape:
-            if (searchController.clearPluginFilter()) {
-                event.accepted = true;
-                return;
-            }
             root.parentModal?.hide();
             event.accepted = true;
             return;
         case Qt.Key_Backspace:
             if (searchInput.text.length === 0) {
-                if (searchController.clearPluginFilter()) {
-                    event.accepted = true;
-                    return;
-                }
                 if (searchController.autoSwitchedToFiles) {
                     searchController.restorePreviousMode();
                     event.accepted = true;
@@ -128,11 +127,21 @@ FocusScope {
             event.accepted = false;
             return;
         case Qt.Key_Down:
-            searchController.selectNext();
+            if (softwareMode)
+                softwareCatalogView.selectNext();
+            else if (windowsMode)
+                windowsAppsView.selectNext();
+            else
+                searchController.selectNext();
             event.accepted = true;
             return;
         case Qt.Key_Up:
-            searchController.selectPrevious();
+            if (softwareMode)
+                softwareCatalogView.selectPrevious();
+            else if (windowsMode)
+                windowsAppsView.selectPrevious();
+            else
+                searchController.selectPrevious();
             event.accepted = true;
             return;
         case Qt.Key_PageDown:
@@ -167,7 +176,11 @@ FocusScope {
             return;
         case Qt.Key_Return:
         case Qt.Key_Enter:
-            if (event.modifiers & Qt.ShiftModifier) {
+            if (softwareMode) {
+                softwareCatalogView.activateSelected();
+            } else if (windowsMode) {
+                windowsAppsView.activateSelected();
+            } else if (event.modifiers & Qt.ShiftModifier) {
                 searchController.pasteSelected();
             } else {
                 searchController.executeSelected();
@@ -176,7 +189,7 @@ FocusScope {
             return;
         case Qt.Key_Menu:
         case Qt.Key_F10:
-            if (contextMenu.hasContextMenuActions(searchController.selectedItem)) {
+            if (!specialMode && contextMenu.hasContextMenuActions(searchController.selectedItem)) {
                 const scenePos = resultsList.getSelectedItemPosition();
                 _showContextMenu(searchController.selectedItem, scenePos.x, scenePos.y, true);
                 event.accepted = true;
@@ -206,7 +219,21 @@ FocusScope {
             break;
         case Qt.Key_4:
             if (hasCtrl || hasAlt) {
-                searchController.setMode("plugins");
+                searchController.setMode("store");
+                event.accepted = true;
+                return;
+            }
+            break;
+        case Qt.Key_5:
+            if (hasCtrl || hasAlt) {
+                searchController.setMode("installed");
+                event.accepted = true;
+                return;
+            }
+            break;
+        case Qt.Key_6:
+            if (hasCtrl || hasAlt) {
+                searchController.setMode("windows");
                 event.accepted = true;
                 return;
             }
@@ -303,7 +330,11 @@ FocusScope {
 
                 DankIcon {
                     anchors.centerIn: parent
-                    name: searchController.activePluginId ? "extension" : searchController.searchMode === "files" ? "folder" : "search"
+                    name: searchController.searchMode === "store" ? "storefront"
+                        : searchController.searchMode === "installed" ? "inventory_2"
+                        : searchController.searchMode === "windows" ? "window"
+                        : searchController.activePluginId ? "extension"
+                        : searchController.searchMode === "files" ? "folder" : "search"
                     size: 20
                     color: searchInput.activeFocus ? Theme.primary : Theme.surfaceVariantText
                 }
@@ -318,7 +349,7 @@ FocusScope {
 
                 Row {
                     id: categoryRow
-                    visible: SettingsData.spotlightBarShowModeChips || root._hasQuery
+                    visible: root.specialMode || SettingsData.spotlightBarShowModeChips || root._hasQuery
                     spacing: Theme.spacingXS
                     anchors.verticalCenter: parent.verticalCenter
 
@@ -377,7 +408,8 @@ FocusScope {
                     visible: searchInput.text.length > 0
                     onClicked: {
                         searchInput.text = "";
-                        searchController.reset();
+                        if (!root.specialMode)
+                            searchController.reset();
                         root._focusSearch();
                     }
                 }
@@ -389,7 +421,9 @@ FocusScope {
                 anchors.right: rightControls.left
                 anchors.rightMargin: Theme.spacingS
                 anchors.verticalCenter: parent.verticalCenter
-                text: I18n.tr("Spotlight Search")
+                text: root.softwareMode ? "Найти приложение или пакет"
+                    : root.windowsMode ? "Найти Windows-приложение"
+                    : I18n.tr("Spotlight Search")
                 font.pixelSize: 18
                 font.weight: Font.Medium
                 color: Theme.outlineButton
@@ -413,7 +447,9 @@ FocusScope {
                 focus: true
 
                 onTextChanged: {
-                    if (text.length > 0) {
+                    if (root.specialMode) {
+                        return;
+                    } else if (text.length > 0) {
                         searchController.setSearchQuery(text);
                     } else {
                         searchController.reset();
@@ -445,6 +481,7 @@ FocusScope {
         SpotlightResultsList {
             id: resultsList
             anchors.fill: parent
+            visible: !root.specialMode
             controller: searchController
             hasQuery: root._hasQuery
             rows: root._resultRows
@@ -452,6 +489,27 @@ FocusScope {
             onItemRightClicked: (index, item, sceneX, sceneY) => {
                 root._showContextMenu(item, sceneX, sceneY, false);
             }
+        }
+
+        SoftwareCatalogView {
+            id: softwareCatalogView
+            anchors.fill: parent
+            anchors.margins: Theme.spacingS
+            visible: root.softwareMode
+            focus: visible
+            mode: searchController.searchMode
+            query: searchInput.text
+            onLocalPackageRequested: localPackageBrowser.open()
+        }
+
+        WindowsAppsView {
+            id: windowsAppsView
+            anchors.fill: parent
+            anchors.margins: Theme.spacingS
+            visible: root.windowsMode
+            focus: visible
+            query: searchInput.text
+            onExecutableRequested: windowsExecutableBrowser.open()
         }
     }
 
@@ -469,8 +527,16 @@ FocusScope {
             "mode": "files"
         },
         {
-            "label": I18n.tr("Plugins"),
-            "mode": "plugins"
+            "label": "Каталог",
+            "mode": "store"
+        },
+        {
+            "label": "Установлено",
+            "mode": "installed"
+        },
+        {
+            "label": "Windows",
+            "mode": "windows"
         }
     ]
 
@@ -495,8 +561,34 @@ FocusScope {
         if (!cat)
             return;
         searchController.setMode(cat.mode, false);
-        if (root._hasQuery)
+        if (root._hasQuery && !root.specialMode)
             searchController.setSearchQuery(searchInput.text);
         root._focusSearch();
+    }
+
+    FileBrowserModal {
+        id: localPackageBrowser
+        browserTitle: "Установить пакет Arch Linux"
+        browserIcon: "package_2"
+        browserType: "generic"
+        showHiddenFiles: true
+        fileExtensions: ["*.pkg.tar.zst", "*.pkg.tar.xz", "*.pkg.tar.gz"]
+        onFileSelected: path => {
+            SoftwareService.installLocal(path);
+            close();
+        }
+    }
+
+    FileBrowserModal {
+        id: windowsExecutableBrowser
+        browserTitle: "Открыть Windows-приложение"
+        browserIcon: "window"
+        browserType: "generic"
+        showHiddenFiles: true
+        fileExtensions: ["*.exe", "*.EXE"]
+        onFileSelected: path => {
+            WindowsAppsService.openExecutable(path);
+            close();
+        }
     }
 }

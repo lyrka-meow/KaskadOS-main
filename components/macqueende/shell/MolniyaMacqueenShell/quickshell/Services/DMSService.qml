@@ -16,8 +16,6 @@ Singleton {
     property int apiVersion: 0
     property string cliVersion: ""
     readonly property int expectedApiVersion: 1
-    property var availablePlugins: []
-    property var installedPlugins: []
     property var availableThemes: []
     property var installedThemes: []
     property bool isConnected: false
@@ -33,9 +31,6 @@ Singleton {
     property string updateCommand: "dms update"
     property bool checkingUpdateCommand: false
 
-    signal pluginsListReceived(var plugins)
-    signal installedPluginsReceived(var plugins)
-    signal searchResultsReceived(var plugins)
     signal themesListReceived(var themes)
     signal installedThemesReceived(var themes)
     signal themeSearchResultsReceived(var themes)
@@ -63,13 +58,14 @@ Singleton {
     signal clipboardStateUpdate(var data)
     signal locationStateUpdate(var data)
     signal sysupdateStateUpdate(var data)
+    signal filesStateUpdate(var data)
     signal tailscaleStateUpdate(var data)
 
     property bool capsLockState: false
     property bool screensaverInhibited: false
     property var screensaverInhibitors: []
 
-    property var activeSubscriptions: ["network", "network.credentials", "loginctl", "freedesktop", "freedesktop.screensaver", "gamma", "theme.auto", "wallpaper", "bluetooth", "bluetooth.pairing", "brightness", "wlroutput", "evdev", "browser", "dbus", "clipboard", "sysupdate"]
+    property var activeSubscriptions: ["network", "network.credentials", "loginctl", "freedesktop", "freedesktop.screensaver", "gamma", "theme.auto", "wallpaper", "bluetooth", "bluetooth.pairing", "brightness", "wlroutput", "evdev", "browser", "dbus", "clipboard", "sysupdate", "files"]
 
     Component.onCompleted: {
         if (socketPath && socketPath.length > 0) {
@@ -399,6 +395,8 @@ Singleton {
             locationStateUpdate(data);
         } else if (service === "sysupdate") {
             sysupdateStateUpdate(data);
+        } else if (service === "files") {
+            filesStateUpdate(data);
         } else if (service === "tailscale") {
             tailscaleStateUpdate(data);
         }
@@ -448,93 +446,6 @@ Singleton {
 
     function ping(callback) {
         sendRequest("ping", null, callback);
-    }
-
-    function listPlugins(callback) {
-        sendRequest("plugins.list", null, response => {
-            if (response.result) {
-                availablePlugins = response.result;
-                pluginsListReceived(response.result);
-            }
-            if (callback) {
-                callback(response);
-            }
-        });
-    }
-
-    function listInstalled(callback) {
-        sendRequest("plugins.listInstalled", null, response => {
-            if (response.result) {
-                installedPlugins = response.result;
-                installedPluginsReceived(response.result);
-            }
-            if (callback) {
-                callback(response);
-            }
-        });
-    }
-
-    function search(query, category, compositor, capability, callback) {
-        const params = {
-            "query": query
-        };
-        if (category) {
-            params.category = category;
-        }
-        if (compositor) {
-            params.compositor = compositor;
-        }
-        if (capability) {
-            params.capability = capability;
-        }
-
-        sendRequest("plugins.search", params, response => {
-            if (response.result) {
-                searchResultsReceived(response.result);
-            }
-            if (callback) {
-                callback(response);
-            }
-        });
-    }
-
-    function install(pluginName, callback) {
-        sendRequest("plugins.install", {
-            "name": pluginName
-        }, response => {
-            if (callback) {
-                callback(response);
-            }
-            if (!response.error) {
-                listInstalled();
-            }
-        });
-    }
-
-    function uninstall(pluginName, callback) {
-        sendRequest("plugins.uninstall", {
-            "name": pluginName
-        }, response => {
-            if (callback) {
-                callback(response);
-            }
-            if (!response.error) {
-                listInstalled();
-            }
-        });
-    }
-
-    function update(pluginName, callback) {
-        sendRequest("plugins.update", {
-            "name": pluginName
-        }, response => {
-            if (callback) {
-                callback(response);
-            }
-            if (!response.error) {
-                listInstalled();
-            }
-        });
     }
 
     function listThemes(callback) {
@@ -762,6 +673,102 @@ Singleton {
 
     function sysupdateGetState(callback) {
         sendRequest("sysupdate.getState", null, callback);
+    }
+
+    function softwareSearch(query, callback) {
+        sendRequest("software.search", {"query": query || ""}, callback);
+    }
+
+    function softwareInstalled(callback) {
+        sendRequest("software.installed", null, callback);
+    }
+
+    function softwareState(callback) {
+        sendRequest("software.state", null, callback);
+    }
+
+    function softwareInstall(item, callback) {
+        sendRequest("software.install", item, callback);
+    }
+
+    function softwareRemove(item, callback) {
+        sendRequest("software.remove", item, callback);
+    }
+
+    function softwareInstallLocal(path, callback) {
+        sendRequest("software.installLocal", {"path": path}, callback);
+    }
+
+    function softwareCancel(callback) {
+        sendRequest("software.cancel", null, callback);
+    }
+
+    function windowsApps(callback) {
+        sendRequest("windows.apps", null, callback);
+    }
+
+    function windowsRuntimes(callback) {
+        sendRequest("windows.runtimes", null, callback);
+    }
+
+    function windowsReleases(callback) {
+        sendRequest("windows.releases", null, callback);
+    }
+
+    function windowsState(callback) {
+        sendRequest("windows.state", null, callback);
+    }
+
+    function windowsInstallRuntime(release, callback) {
+        sendRequest("windows.installRuntime", release, callback);
+    }
+
+    function windowsOpen(path, callback) {
+        sendRequest("windows.open", {"path": path}, callback);
+    }
+
+    function windowsLaunch(id, callback) {
+        sendRequest("windows.launch", {"id": id}, callback);
+    }
+
+    function windowsRemove(id, removePrefix, callback) {
+        sendRequest("windows.remove", {"id": id, "removePrefix": removePrefix === true}, callback);
+    }
+
+    function windowsCancel(callback) {
+        sendRequest("windows.cancel", null, callback);
+    }
+
+    function filesList(path, showHidden, callback) {
+        sendRequest("files.list", {"path": path, "showHidden": showHidden === true}, callback);
+    }
+
+    function filesShow(path, callback) {
+        sendRequest("files.show", {"path": path || ""}, callback);
+    }
+
+    function filesMkdir(parent, name, callback) {
+        sendRequest("files.mkdir", {"parent": parent, "name": name}, callback);
+    }
+
+    function filesRename(path, name, callback) {
+        sendRequest("files.rename", {"path": path, "name": name}, callback);
+    }
+
+    function filesTrash(path, callback) {
+        sendRequest("files.trash", {"path": path}, callback);
+    }
+
+    function filesOpen(path, callback) {
+        sendRequest("files.open", {"path": path}, callback);
+    }
+
+    function filesExtract(path, callback) {
+        sendRequest("files.extract", {"path": path}, callback);
+    }
+
+    function filesArchive(path, format, callback) {
+        sendRequest("files.archive", {"path": path, "format": format}, callback);
     }
 
     function sysupdateRefresh(force, callback) {

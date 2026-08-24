@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell.Services.Mpris
 import qs.Common
-import qs.Modules.Plugins
+import qs.Modules.DankBar.Components
 import qs.Services
 import qs.Widgets
 

@@ -36,7 +36,7 @@ make lint-qml  # Run from repo root; requires quickshell/.qmlls.ini (generated b
 
 **Panels & Bars**
 - `Modules/TopBar/` - Multi-monitor status bars with workspace switching
-- `Modules/DankBar/` - Customizable widget bar with plugin support
+- `Modules/DankBar/` - Customizable widget bar
 - `Modules/Dock/` - Application dock with window management
 
 **System Controls**
@@ -78,7 +78,6 @@ Singletons providing system integration:
 **Integration**
 - `NiriService` - Niri workspace integration
 - `HyprlandService` - Hyprland workspace integration
-- `PluginService` - Plugin discovery and lifecycle
 
 ## Widgets
 
@@ -137,32 +136,6 @@ Variants {
 ```
 
 Workspace switchers adapt to compositor (Niri/Hyprland).
-
-## Plugin System
-
-External plugins in `~/.config/DankMaterialShell/plugins/`:
-
-**Widget plugins** - UI components in DankBar
-**Daemon plugins** - Background processes without UI
-
-Plugin manifest (`plugin.json`):
-```json
-{
-    "id": "pluginId",
-    "name": "Plugin Name",
-    "version": "1.0.0",
-    "type": "widget",
-    "component": "./Widget.qml",
-    "settings": "./Settings.qml",
-    "permissions": ["settings_read", "settings_write"]
-}
-```
-
-Plugins access `pluginService` for persistent data:
-```qml
-pluginService.savePluginData("pluginId", "key", value)
-pluginService.loadPluginData("pluginId", "key", defaultValue)
-```
 
 ## IPC Integration
 

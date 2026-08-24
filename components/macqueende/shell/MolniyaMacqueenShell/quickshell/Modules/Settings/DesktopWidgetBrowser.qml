@@ -397,22 +397,6 @@ FloatingWindow {
                                             }
                                         }
 
-                                        Rectangle {
-                                            visible: delegateRoot.modelData.type === "plugin"
-                                            width: pluginLabel.implicitWidth + Theme.spacingXS * 2
-                                            height: 18
-                                            radius: 9
-                                            color: Theme.withAlpha(Theme.secondary, 0.15)
-                                            anchors.verticalCenter: parent.verticalCenter
-
-                                            StyledText {
-                                                id: pluginLabel
-                                                anchors.centerIn: parent
-                                                text: I18n.tr("Plugin")
-                                                font.pixelSize: Theme.fontSizeSmall - 2
-                                                color: Theme.secondary
-                                            }
-                                        }
                                     }
 
                                     StyledText {

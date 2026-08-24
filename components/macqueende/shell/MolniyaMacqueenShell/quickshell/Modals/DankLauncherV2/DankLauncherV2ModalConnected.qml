@@ -374,7 +374,6 @@ Item {
             spotlightContent.controller.searchMode = targetMode;
             spotlightContent.controller.activePluginId = "";
             spotlightContent.controller.activePluginName = "";
-            spotlightContent.controller.pluginFilter = "";
             spotlightContent.controller.fileSearchType = SessionData.launcherLastFileSearchType || "all";
             spotlightContent.controller.fileSearchExt = "";
             spotlightContent.controller.fileSearchFolder = "";

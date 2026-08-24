@@ -1,6 +1,7 @@
 package sysupdate
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -45,6 +46,9 @@ func (b pacmanBackend) Upgrade(ctx context.Context, opts UpgradeOptions, onLine 
 	}
 	if !BackendHasTargets(b, opts.Targets, opts.IncludeAUR, opts.IncludeFlatpak) {
 		return nil
+	}
+	if opts.Automatic && automaticUpdateHelperAvailable() {
+		return Run(ctx, automaticUpdateArgv("system"), RunOptions{OnLine: onLine})
 	}
 	return Run(ctx, pacmanUpgradeArgv(opts), RunOptions{OnLine: onLine, AttachStdio: opts.AttachStdio})
 }
@@ -118,7 +122,7 @@ func (b archHelperBackend) CheckUpdates(ctx context.Context) ([]Package, error) 
 	}
 	pkgs := parseArchUpdates(repoOut, b.id, RepoSystem)
 
-	aurOut, err := capturePermissive(ctx, b.id, "-Qua")
+	aurOut, err := captureNoUpdates(ctx, 1, b.id, "-Qua")
 	if err != nil {
 		return nil, err
 	}
@@ -133,6 +137,9 @@ func (b archHelperBackend) Upgrade(ctx context.Context, opts UpgradeOptions, onL
 	if !BackendHasTargets(b, opts.Targets, opts.IncludeAUR, opts.IncludeFlatpak) {
 		return nil
 	}
+	if opts.Automatic && automaticUpdateHelperAvailable() {
+		return Run(ctx, automaticUpdateArgv("system"), RunOptions{OnLine: onLine})
+	}
 	if os.Getenv("DMS_FORCE_PKEXEC") == "1" {
 		argv := append([]string{"pkexec"}, archHelperUpgradeArgv(b.id, opts.IncludeAUR, opts.Ignored)...)
 		return Run(ctx, argv, RunOptions{OnLine: onLine, AttachStdio: opts.AttachStdio})
@@ -144,6 +151,17 @@ func (b archHelperBackend) Upgrade(ctx context.Context, opts UpgradeOptions, onL
 	cmd := strings.Join(archHelperUpgradeArgv(b.id, opts.IncludeAUR, opts.Ignored), " ")
 	title := fmt.Sprintf("DMS — System Update (%s)", b.id)
 	return Run(ctx, wrapInTerminal(term, title, cmd, opts.TerminalArgs), RunOptions{OnLine: onLine})
+}
+
+const automaticUpdateHelper = "/usr/lib/kaskados/kaskados-system-update"
+
+func automaticUpdateHelperAvailable() bool {
+	info, err := os.Stat(automaticUpdateHelper)
+	return err == nil && info.Mode().IsRegular() && info.Mode()&0o111 != 0
+}
+
+func automaticUpdateArgv(mode string) []string {
+	return []string{"pkexec", automaticUpdateHelper, mode}
 }
 
 func archHelperUpgradeArgv(id string, includeAUR bool, ignored []string) []string {
@@ -160,7 +178,7 @@ func archHelperUpgradeArgv(id string, includeAUR bool, ignored []string) []strin
 
 func pacmanRepoUpdates(ctx context.Context) (string, error) {
 	if commandExists("checkupdates") {
-		return capturePermissive(ctx, "checkupdates")
+		return captureNoUpdates(ctx, 2, "checkupdates")
 	}
 	if commandExists("fakeroot") {
 		out, err := pacmanCheckViaFakeroot(ctx)
@@ -169,7 +187,7 @@ func pacmanRepoUpdates(ctx context.Context) (string, error) {
 		}
 		log.Warnf("[sysupdate] fakeroot db refresh failed, falling back to stale pacman -Qu: %v", err)
 	}
-	return capturePermissive(ctx, "pacman", "-Qu")
+	return captureNoUpdates(ctx, 1, "pacman", "-Qu")
 }
 
 func pacmanCheckViaFakeroot(ctx context.Context) (string, error) {
@@ -187,7 +205,7 @@ func pacmanCheckViaFakeroot(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("fakeroot pacman -Sy: %w (%s)", err, strings.TrimSpace(string(out)))
 	}
 
-	return capturePermissive(ctx, "pacman", "-Qu", "--dbpath", dir)
+	return captureNoUpdates(ctx, 1, "pacman", "-Qu", "--dbpath", dir)
 }
 
 func seedPacmanDB(dir string) error {
@@ -262,16 +280,18 @@ func pacmanPrivateDB() (string, error) {
 	return dir, nil
 }
 
-func capturePermissive(ctx context.Context, argv ...string) (string, error) {
+func captureNoUpdates(ctx context.Context, noUpdatesExit int, argv ...string) (string, error) {
 	cmd := exec.CommandContext(ctx, argv[0], argv[1:]...)
 	out, err := cmd.Output()
 	if err == nil {
 		return string(out), nil
 	}
 	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok {
-		switch exitErr.ExitCode() {
-		case 1, 2:
+		if exitErr.ExitCode() == noUpdatesExit && len(bytes.TrimSpace(exitErr.Stderr)) == 0 {
 			return string(out), nil
+		}
+		if stderr := strings.TrimSpace(string(exitErr.Stderr)); stderr != "" {
+			return "", fmt.Errorf("%s: %w: %s", argv[0], err, stderr)
 		}
 	}
 	return "", err

@@ -19,17 +19,20 @@ import (
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/cups"
 	serverDbus "github.com/AvengeMedia/DankMaterialShell/core/internal/server/dbus"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/evdev"
+	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/files"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/freedesktop"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/location"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/loginctl"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/models"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/network"
+	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/software"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/sysupdate"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/tailscale"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/thememode"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/trayrecovery"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wallpaper"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wayland"
+	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/windowsapps"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wlcontext"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wlroutput"
 	"github.com/AvengeMedia/dankgo/ipc"
@@ -75,6 +78,9 @@ var wallpaperManager *wallpaper.Manager
 var trayRecoveryManager *trayrecovery.Manager
 var locationManager *location.Manager
 var sysUpdateManager *sysupdate.Manager
+var softwareManager *software.Manager
+var windowsAppsManager *windowsapps.Manager
+var filesManager *files.Manager
 var geoClientInstance geolocation.Client
 
 const dbusClientID = "dms-dbus-client"
@@ -328,6 +334,26 @@ func InitializeSysUpdateManager() error {
 	return nil
 }
 
+func InitializeSoftwareManager() {
+	softwareManager = software.NewManager()
+	log.Info("Software catalog manager initialized")
+}
+
+func InitializeFilesManager() {
+	filesManager = files.NewManager()
+	log.Info("File manager backend initialized")
+}
+
+func InitializeWindowsAppsManager() error {
+	manager, err := windowsapps.NewManager()
+	if err != nil {
+		return err
+	}
+	windowsAppsManager = manager
+	log.Info("Windows applications manager initialized")
+	return nil
+}
+
 func routeHandler(_ context.Context, conn *models.Conn, req ipc.Request, _ *ipc.Subscriber) {
 	routeRequestRecovered(conn, models.Request(req))
 }
@@ -353,7 +379,7 @@ func routeRequestRecovered(conn *models.Conn, req models.Request) {
 }
 
 func getCapabilities() Capabilities {
-	caps := []string{"plugins"}
+	caps := []string{}
 
 	if networkManager != nil {
 		caps = append(caps, "network")
@@ -419,11 +445,23 @@ func getCapabilities() Capabilities {
 		caps = append(caps, "sysupdate")
 	}
 
+	if softwareManager != nil {
+		caps = append(caps, "software")
+	}
+
+	if windowsAppsManager != nil {
+		caps = append(caps, "windows")
+	}
+
+	if filesManager != nil {
+		caps = append(caps, "files")
+	}
+
 	return Capabilities{Capabilities: caps}
 }
 
 func getServerInfo() ServerInfo {
-	caps := []string{"plugins"}
+	caps := []string{}
 
 	if networkManager != nil {
 		caps = append(caps, "network")
@@ -491,6 +529,18 @@ func getServerInfo() ServerInfo {
 
 	if sysUpdateManager != nil {
 		caps = append(caps, "sysupdate")
+	}
+
+	if softwareManager != nil {
+		caps = append(caps, "software")
+	}
+
+	if windowsAppsManager != nil {
+		caps = append(caps, "windows")
+	}
+
+	if filesManager != nil {
+		caps = append(caps, "files")
 	}
 
 	return ServerInfo{
@@ -1185,6 +1235,30 @@ func handleSubscribe(conn *models.Conn, req models.Request) {
 		}()
 	}
 
+	if shouldSubscribe("files") && filesManager != nil {
+		wg.Add(1)
+		filesChannel := filesManager.Subscribe(clientID + "-files")
+		go func() {
+			defer wg.Done()
+			defer filesManager.Unsubscribe(clientID + "-files")
+			for {
+				select {
+				case event, ok := <-filesChannel:
+					if !ok {
+						return
+					}
+					select {
+					case eventChan <- ServiceEvent{Service: "files", Data: event}:
+					case <-stopChan:
+						return
+					}
+				case <-stopChan:
+					return
+				}
+			}
+		}()
+	}
+
 	if shouldSubscribe("dbus") && dbusManager != nil {
 		wg.Add(1)
 		dbusChan := dbusManager.SubscribeSignals(dbusClient)
@@ -1351,13 +1425,6 @@ func (s *Server) Serve(printDocs bool) error {
 		log.Info("  ping          - Test connection")
 		log.Info("  getServerInfo - Get server info (API version and capabilities)")
 		log.Info("  subscribe     - Subscribe to multiple services (params: services [default: all])")
-		log.Info("Plugins:")
-		log.Info(" plugins.list                - List all plugins")
-		log.Info(" plugins.listInstalled       - List installed plugins")
-		log.Info(" plugins.install             - Install plugin (params: name)")
-		log.Info(" plugins.uninstall           - Uninstall plugin (params: name)")
-		log.Info(" plugins.update              - Update plugin (params: name)")
-		log.Info(" plugins.search              - Search plugins (params: query, category?, compositor?, capability?)")
 		log.Info("Network:")
 		log.Info(" network.getState            - Get current network state")
 		log.Info(" network.wifi.scan           - Scan for WiFi networks (params: device?)")
@@ -1700,6 +1767,11 @@ func (s *Server) Serve(printDocs bool) error {
 
 	if err := InitializeSysUpdateManager(); err != nil {
 		log.Warnf("Sysupdate manager unavailable: %v", err)
+	}
+	InitializeSoftwareManager()
+	InitializeFilesManager()
+	if err := InitializeWindowsAppsManager(); err != nil {
+		log.Warnf("Windows applications manager unavailable: %v", err)
 	}
 
 	log.Info("")

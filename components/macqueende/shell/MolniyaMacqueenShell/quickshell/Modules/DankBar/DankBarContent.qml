@@ -623,8 +623,7 @@ Item {
             "powerMenuButton": powerMenuButtonComponent
         };
 
-        let pluginMap = PluginService.getWidgetComponents();
-        return Object.assign(baseMap, pluginMap);
+        return baseMap;
     }
 
     function getWidgetComponent(widgetId) {

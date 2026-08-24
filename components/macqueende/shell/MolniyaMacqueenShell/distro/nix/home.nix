@@ -14,12 +14,6 @@ let
       lib
       ;
   };
-  hasPluginSettings = lib.any (plugin: plugin.settings != { }) (
-    lib.attrValues (lib.filterAttrs (n: v: v.enable) cfg.plugins)
-  );
-  pluginSettings = lib.mapAttrs (name: plugin: { enabled = plugin.enable; } // plugin.settings) (
-    lib.filterAttrs (n: v: v.enable) cfg.plugins
-  );
 in
 {
   imports = [
@@ -66,12 +60,6 @@ in
       description = "DankMaterialShell session settings as an attribute set, to be written to ~/.local/state/DankMaterialShell/session.json.";
     };
 
-    managePluginSettings = lib.mkOption {
-      type = lib.types.bool;
-      default = hasPluginSettings;
-      description = ''Whether to manage plugin settings. Automatically enabled if any plugins have settings configured.'';
-    };
-
     systemd.target = lib.mkOption {
       type = lib.types.str;
       default = config.wayland.systemd.target;
@@ -112,17 +100,7 @@ in
       "DankMaterialShell/clsettings.json" = lib.mkIf (cfg.clipboardSettings != { }) {
         source = jsonFormat.generate "clsettings.json" cfg.clipboardSettings;
       };
-      "DankMaterialShell/plugin_settings.json" = lib.mkIf cfg.managePluginSettings {
-        source = jsonFormat.generate "plugin_settings.json" pluginSettings;
-      };
-    }
-    // (lib.mapAttrs' (name: value: {
-      name = "DankMaterialShell/plugins/${name}";
-      inherit value;
-    }) common.plugins);
-    warnings =
-      lib.optional (!cfg.managePluginSettings && hasPluginSettings)
-        "You have disabled managePluginSettings but provided plugin settings. These settings will be ignored.";
+    };
     home.packages = common.packages;
   };
 }

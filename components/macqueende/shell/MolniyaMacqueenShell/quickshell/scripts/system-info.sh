@@ -47,10 +47,22 @@ mem_kib()
 
 root=${MACQUEENDE_ROOT:-}
 version=
+release_channel=
+release_date=
 install_method=
+release_manifest=/usr/share/kaskados/release.json
+if [[ ! -r "$release_manifest" && -n "$root" && -r "$root/release/release.json" ]]; then
+    release_manifest="$root/release/release.json"
+fi
+if [[ -r "$release_manifest" ]]; then
+    version=$(sed -n 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$release_manifest" | head -n1)
+    release_channel=$(sed -n 's/^[[:space:]]*"channel"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$release_manifest" | head -n1)
+    release_date=$(sed -n 's/^[[:space:]]*"releaseDate"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$release_manifest" | head -n1)
+    install_method=kaskados
+fi
 if [[ -r "$root/INSTALL_INFO" ]]; then
-    version=$(sed -n 's/^VERSION=//p' "$root/INSTALL_INFO" | head -n1)
-    install_method=$(sed -n 's/^METHOD=//p' "$root/INSTALL_INFO" | head -n1)
+    [[ -n "$version" ]] || version=$(sed -n 's/^VERSION=//p' "$root/INSTALL_INFO" | head -n1)
+    [[ -n "$install_method" ]] || install_method=$(sed -n 's/^METHOD=//p' "$root/INSTALL_INFO" | head -n1)
 fi
 if [[ -z "$version" && -r "$root/VERSION" ]]; then
     version=$(head -n1 "$root/VERSION")
@@ -110,6 +122,8 @@ esac
 
 emit general de_name MacqueenDE
 emit general version "$version"
+emit general release_channel "$release_channel"
+emit general release_date "$release_date"
 emit general install_method "$install_method"
 emit general os "$distro"
 emit general hostname "$(hostname 2>/dev/null)"

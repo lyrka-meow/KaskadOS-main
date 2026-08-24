@@ -15,21 +15,6 @@ Singleton {
 
     Component.onCompleted: {
         registerBuiltins();
-        Qt.callLater(syncPluginWidgets);
-    }
-
-    Connections {
-        target: PluginService
-        function onPluginLoaded(pluginId) {
-            if (PluginService.pluginDesktopComponents[pluginId] !== undefined)
-                syncPluginWidgets();
-        }
-        function onPluginUnloaded(pluginId) {
-            syncPluginWidgets();
-        }
-        function onPluginListUpdated() {
-            syncPluginWidgets();
-        }
     }
 
     function registerBuiltins() {
@@ -155,53 +140,6 @@ Singleton {
         };
     }
 
-    function syncPluginWidgets() {
-        const desktopPlugins = PluginService.pluginDesktopComponents;
-        const availablePlugins = PluginService.availablePlugins;
-        const currentPluginIds = [];
-
-        for (const pluginId in desktopPlugins) {
-            currentPluginIds.push(pluginId);
-            const plugin = availablePlugins[pluginId];
-            if (!plugin)
-                continue;
-
-            if (registeredWidgets[pluginId]?.type === "plugin")
-                continue;
-
-            registerWidget({
-                id: pluginId,
-                name: plugin.name || pluginId,
-                icon: plugin.icon || "extension",
-                description: plugin.description || "",
-                type: "plugin",
-                component: null,
-                settingsComponent: plugin.settingsPath || null,
-                defaultConfig: {
-                    displayPreferences: ["all"]
-                },
-                defaultSize: {
-                    width: 200,
-                    height: 200
-                },
-                pluginInfo: plugin
-            });
-        }
-
-        const toRemove = [];
-        for (const widgetId in registeredWidgets) {
-            const widget = registeredWidgets[widgetId];
-            if (widget.type !== "plugin")
-                continue;
-            if (!currentPluginIds.includes(widgetId))
-                toRemove.push(widgetId);
-        }
-
-        for (const widgetId of toRemove) {
-            unregisterWidget(widgetId);
-        }
-    }
-
     function _updateWidgetsList() {
         const result = [];
         for (const key in registeredWidgets) {
@@ -219,10 +157,6 @@ Singleton {
 
     function getBuiltinWidgets() {
         return registeredWidgetsList.filter(w => w.type === "builtin");
-    }
-
-    function getPluginWidgets() {
-        return registeredWidgetsList.filter(w => w.type === "plugin");
     }
 
     function getAllWidgets() {

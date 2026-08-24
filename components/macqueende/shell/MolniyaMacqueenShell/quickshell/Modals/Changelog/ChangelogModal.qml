@@ -18,9 +18,11 @@ FloatingWindow {
     }
 
     objectName: "changelogModal"
-    title: i18n("What's New")
+    title: "Что нового"
     minimumSize: Qt.size(modalWidth, modalHeight)
     maximumSize: Qt.size(modalWidth, modalHeight)
+    implicitWidth: modalWidth
+    implicitHeight: modalHeight
     color: Theme.surfaceContainer
     visible: false
 
@@ -127,15 +129,16 @@ FloatingWindow {
                 spacing: Theme.spacingM
 
                 DankButton {
-                    text: i18n("Read Full Release Notes")
+                    visible: ChangelogService.releaseUrl.length > 0
+                    text: "Все изменения"
                     iconName: "open_in_new"
                     backgroundColor: Theme.surfaceContainerHighest
                     textColor: Theme.surfaceText
-                    onClicked: Qt.openUrlExternally("https://danklinux.com/blog/v1-5-release")
+                    onClicked: Qt.openUrlExternally(ChangelogService.releaseUrl)
                 }
 
                 DankButton {
-                    text: i18n("Got It")
+                    text: "Понятно"
                     iconName: "check"
                     backgroundColor: Theme.primary
                     textColor: Theme.primaryText

@@ -34,11 +34,11 @@ Suggests:       qt6ct
 %description
 DankMaterialShell (DMS) is a modern Wayland desktop shell built with Quickshell
 and optimized for the niri and hyprland compositors. Features notifications,
-app launcher, wallpaper customization, and fully customizable with plugins.
+app launcher, wallpaper customization, and flexible desktop configuration.
 
 Includes auto-theming for GTK/Qt apps with matugen, 20+ customizable widgets,
 process monitoring, notification center, clipboard history, dock, control center,
-lock screen, and comprehensive plugin system.
+lock screen, and desktop personalization.
 
 %package -n dms-cli
 Summary:        DankMaterialShell CLI tool

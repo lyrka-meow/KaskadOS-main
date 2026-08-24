@@ -376,22 +376,6 @@ FocusScope {
             }
         }
 
-        Loader {
-            id: pluginsLoader
-            anchors.fill: parent
-            active: root.currentIndex === 12
-            visible: active
-            focus: active
-
-            sourceComponent: PluginsTab {
-                parentModal: root.parentModal
-            }
-
-            onActiveChanged: {
-                if (active && item)
-                    Qt.callLater(() => item.forceActiveFocus());
-            }
-        }
 
         Loader {
             id: aboutLoader

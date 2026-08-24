@@ -57,10 +57,8 @@ Rectangle {
         if ((item.badgeLabel ?? "").length > 0)
             return item.badgeLabel;
         switch (item.type) {
-        case "plugin_browse":
-            return I18n.tr("Browse");
-        case "plugin":
-            return I18n.tr("Plugin");
+        case "system_action":
+            return I18n.tr("System action");
         case "setting":
             return I18n.tr("Setting");
         case "clipboard":
@@ -94,7 +92,7 @@ Rectangle {
         id: itemArea
         z: 2
         anchors.fill: parent
-        anchors.rightMargin: root.item?.type === "plugin_browse" ? 38 : 0
+        anchors.rightMargin: 0
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
@@ -218,44 +216,6 @@ Rectangle {
             }
         }
 
-        Rectangle {
-            visible: root.item?.type === "plugin_browse"
-            width: 28
-            height: 28
-            radius: height / 2
-            anchors.verticalCenter: parent.verticalCenter
-            color: quickToggleArea.containsMouse ? Theme.surfaceHover : Theme.withAlpha(Theme.surfaceHover, 0)
-
-            readonly property bool isAllowed: {
-                if (root.item?.type !== "plugin_browse")
-                    return false;
-                const pluginId = root.item?.data?.pluginId;
-                if (!pluginId)
-                    return false;
-                SettingsData.launcherPluginVisibility;
-                return SettingsData.getPluginAllowWithoutTrigger(pluginId);
-            }
-
-            DankIcon {
-                anchors.centerIn: parent
-                name: parent.isAllowed ? "visibility" : "visibility_off"
-                size: 17
-                color: parent.isAllowed ? Theme.primary : Theme.surfaceVariantText
-            }
-
-            MouseArea {
-                id: quickToggleArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    const pluginId = root.item?.data?.pluginId;
-                    if (!pluginId)
-                        return;
-                    SettingsData.setPluginAllowWithoutTrigger(pluginId, !parent.isAllowed);
-                }
-            }
-        }
 
         SourceBadge {
             visible: root.item?.type === "app"

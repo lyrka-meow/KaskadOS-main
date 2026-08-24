@@ -117,14 +117,6 @@ Item {
 
                 GreeterFeatureCard {
                     width: (parent.width - Theme.spacingS * 2) / 3
-                    iconName: "extension"
-                    title: I18n.tr("Plugins", "greeter feature card title")
-                    description: I18n.tr("Extensible architecture", "greeter feature card description")
-                    onClicked: PopoutService.openSettingsWithTab("plugins")
-                }
-
-                GreeterFeatureCard {
-                    width: (parent.width - Theme.spacingS * 2) / 3
                     iconName: "layers"
                     title: I18n.tr("Multi-Monitor", "greeter feature card title")
                     description: I18n.tr("Per-screen config", "greeter feature card description")

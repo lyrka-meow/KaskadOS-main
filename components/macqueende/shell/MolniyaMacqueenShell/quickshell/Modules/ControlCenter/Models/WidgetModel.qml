@@ -283,53 +283,6 @@ QtObject {
         }
     ]
 
-    function getPluginWidgets() {
-        const plugins = [];
-        const loadedPlugins = PluginService.getLoadedPlugins();
-
-        for (var i = 0; i < loadedPlugins.length; i++) {
-            const plugin = loadedPlugins[i];
-
-            if (plugin.type === "daemon") {
-                continue;
-            }
-
-            const pluginComponent = PluginService.pluginWidgetComponents[plugin.id];
-            if (!pluginComponent)
-                continue;
-
-            let tempInstance;
-            try {
-                tempInstance = pluginComponent.createObject(null);
-            } catch (e) {
-                PluginService.reloadPlugin(plugin.id);
-                continue;
-            }
-            if (!tempInstance)
-                continue;
-
-            const hasCCWidget = tempInstance.ccWidgetIcon && tempInstance.ccWidgetIcon.length > 0;
-            tempInstance.destroy();
-
-            if (!hasCCWidget) {
-                continue;
-            }
-
-            plugins.push({
-                "id": "plugin_" + plugin.id,
-                "pluginId": plugin.id,
-                "text": plugin.name || I18n.tr("Plugin"),
-                "description": plugin.description || "",
-                "icon": plugin.icon || "extension",
-                "type": "plugin",
-                "enabled": true,
-                "isPlugin": true
-            });
-        }
-
-        return plugins;
-    }
-
     readonly property var baseWidgetDefinitions: coreWidgetDefinitions
 
     function getWidgetForId(widgetId) {

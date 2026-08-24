@@ -63,18 +63,11 @@ Custom IPC via unix socket (JSON API) for shell communication.
 | evdev     | `/dev/input/event*` | Keyboard state (caps lock LED)     |
 | udev      | netlink monitor     | Backlight device updates (for OSD) |
 
-### Plugin System
-
-- Plugin registry integration
-- Plugin lifecycle management
-- Settings persistence
-
 ## CLI Commands
 
 - `dms run [-d]` - Start shell (optionally as daemon)
 - `dms restart` / `dms kill` - Manage running processes
 - `dms ipc <command>` - Send IPC commands (toggle launcher, notifications, etc.)
-- `dms plugins [install|browse|search]` - Plugin management
 - `dms brightness [list|set]` - Control display/monitor brightness
 - `dms color pick` - Native color picker (see below)
 - `dms update` - Update DMS and dependencies (disabled in distro packages)

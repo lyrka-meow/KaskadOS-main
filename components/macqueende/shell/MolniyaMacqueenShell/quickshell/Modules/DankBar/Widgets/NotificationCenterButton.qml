@@ -1,7 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Modules.Notifications.Center
-import qs.Modules.Plugins
+import qs.Modules.DankBar.Components
 import qs.Widgets
 
 BasePill {

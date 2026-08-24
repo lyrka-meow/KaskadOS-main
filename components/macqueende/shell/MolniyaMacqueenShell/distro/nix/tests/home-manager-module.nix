@@ -61,18 +61,6 @@ pkgs.testers.runNixOSTest {
         session = {
           startedFrom = "nixos-test";
         };
-
-        plugins.TestPlugin = {
-          enable = true;
-          src = pkgs.runCommand "dms-test-plugin" { } ''
-            mkdir -p "$out"
-            echo plugin > "$out/plugin.txt"
-          '';
-          settings = {
-            enabled = true;
-            source = "test";
-          };
-        };
       };
     };
 
@@ -87,21 +75,16 @@ pkgs.testers.runNixOSTest {
     machine.succeed("su -- danklinux -c 'command -v dms'")
     machine.succeed("su -- danklinux -c 'test -f ~/.config/DankMaterialShell/settings.json'")
     machine.succeed("su -- danklinux -c 'test -f ~/.config/DankMaterialShell/clsettings.json'")
-    machine.succeed("su -- danklinux -c 'test -f ~/.config/DankMaterialShell/plugin_settings.json'")
-    machine.succeed("su -- danklinux -c 'test -e ~/.config/DankMaterialShell/plugins/TestPlugin'")
     machine.succeed("su -- danklinux -c 'test -f ~/.local/state/DankMaterialShell/session.json'")
 
     settings = json.loads(machine.succeed("su -- danklinux -c 'cat ~/.config/DankMaterialShell/settings.json'"))
     clipboard = json.loads(machine.succeed("su -- danklinux -c 'cat ~/.config/DankMaterialShell/clsettings.json'"))
     session = json.loads(machine.succeed("su -- danklinux -c 'cat ~/.local/state/DankMaterialShell/session.json'"))
-    plugins = json.loads(machine.succeed("su -- danklinux -c 'cat ~/.config/DankMaterialShell/plugin_settings.json'"))
     doctor = json.loads(machine.succeed("su -- danklinux -c 'dms doctor --json'"))
 
     t.assertEqual(settings["theme"], "integration-test")
     t.assertEqual(clipboard["maxItems"], 10)
     t.assertEqual(session["startedFrom"], "nixos-test")
-    t.assertTrue(plugins["TestPlugin"]["enabled"])
-    t.assertEqual(plugins["TestPlugin"]["source"], "test")
     t.assertIsInstance(doctor.get("results"), list)
   '';
 }

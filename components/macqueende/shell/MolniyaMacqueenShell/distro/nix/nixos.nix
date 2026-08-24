@@ -50,11 +50,6 @@ in
 
     environment.systemPackages = [ cfg.quickshell.package ] ++ common.packages;
 
-    environment.etc = lib.mapAttrs' (name: value: {
-      name = "xdg/quickshell/dms-plugins/${name}";
-      inherit value;
-    }) common.plugins;
-
     # DMS's bundled U2F fallback stack references pam_u2f.so by name, which NixOS's
     # libpam cannot resolve; the dedicated service below uses the absolute store path
     # and is picked up automatically by the lock screen when present.

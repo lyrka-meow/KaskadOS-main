@@ -32,15 +32,6 @@ SettingsCard {
         DWS.SystemMonitorSettings {}
     }
 
-    property Component pluginSettingsComponent: Component {
-        DWS.PluginDesktopWidgetSettings {
-            instanceId: root.instanceId
-            instanceData: root.instanceData
-            widgetType: root.widgetType
-            widgetDef: root.widgetDef
-        }
-    }
-
     width: parent?.width ?? 400
     iconName: widgetDef?.icon ?? "widgets"
     title: widgetName
@@ -445,7 +436,7 @@ SettingsCard {
                 case "systemMonitor":
                     return systemMonitorSettingsComponent;
                 default:
-                    return pluginSettingsComponent;
+                    return null;
                 }
             }
 

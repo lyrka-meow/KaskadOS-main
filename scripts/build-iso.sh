@@ -12,11 +12,35 @@ die() {
   exit 1
 }
 
+sudo_keepalive_pid=''
+
+stop_sudo_keepalive() {
+  if [[ -n "${sudo_keepalive_pid}" ]]; then
+    kill "${sudo_keepalive_pid}" 2>/dev/null || true
+    wait "${sudo_keepalive_pid}" 2>/dev/null || true
+  fi
+}
+
+trap stop_sudo_keepalive EXIT
+
+if (( EUID != 0 )); then
+  command -v sudo >/dev/null 2>&1 || die 'не найдена команда sudo'
+  printf 'Для сборки ISO нужны права администратора.\n'
+  sudo -k
+  sudo -v
+  (
+    while sleep 60; do
+      sudo -n -v || exit
+    done
+  ) &
+  sudo_keepalive_pid=$!
+fi
+
 [[ "$(uname -m)" == 'x86_64' ]] || die 'сборка этого профиля поддерживается только на x86_64'
 command -v mkarchiso >/dev/null 2>&1 || die 'mkarchiso не найден; установите пакет archiso'
 
 if [[ -e "${WORK_DIR}" ]]; then
-  die "рабочий каталог уже существует: ${WORK_DIR}; после проверки монтирований выполните make clean"
+  "${SCRIPT_DIR}/clean-work.sh"
 fi
 
 "${SCRIPT_DIR}/prepare-live-profile.sh"
@@ -29,7 +53,7 @@ printf 'Рабочий каталог: %s\n' "${WORK_DIR}"
 printf 'Готовый ISO:     %s\n' "${OUT_DIR}"
 
 if (( EUID == 0 )); then
-  exec mkarchiso -v -r -w "${WORK_DIR}" -o "${OUT_DIR}" "${PROFILE_DIR}"
+  mkarchiso -v -r -w "${WORK_DIR}" -o "${OUT_DIR}" "${PROFILE_DIR}"
+else
+  sudo -n mkarchiso -v -r -w "${WORK_DIR}" -o "${OUT_DIR}" "${PROFILE_DIR}"
 fi
-
-exec sudo mkarchiso -v -r -w "${WORK_DIR}" -o "${OUT_DIR}" "${PROFILE_DIR}"

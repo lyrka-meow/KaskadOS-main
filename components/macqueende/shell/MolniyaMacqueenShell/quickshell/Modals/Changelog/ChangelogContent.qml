@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Effects
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -7,6 +6,9 @@ import qs.Widgets
 Column {
     id: root
 
+    readonly property var notes: ChangelogService.releaseNotes || ({})
+    readonly property var features: notes.features || []
+    readonly property var upgradeNotes: notes.notes || []
     readonly property real logoSize: Math.round(Theme.iconSize * 2.8)
     readonly property real badgeHeight: Math.round(Theme.fontSizeSmall * 1.7)
 
@@ -21,22 +23,18 @@ Column {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: Theme.spacingM
 
-            Image {
+            Rectangle {
                 width: root.logoSize
-                height: width * (569.94629 / 506.50931)
+                height: root.logoSize
+                radius: width / 2
+                color: Theme.primaryContainer
                 anchors.verticalCenter: parent.verticalCenter
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-                mipmap: true
-                asynchronous: true
-                source: "file://" + Theme.shellDir + "/assets/danklogonormal.svg"
-                layer.enabled: true
-                layer.smooth: true
-                layer.mipmap: true
-                layer.effect: MultiEffect {
-                    saturation: 0
-                    colorization: 1
-                    colorizationColor: Theme.primary
+
+                DankIcon {
+                    anchors.centerIn: parent
+                    name: "deployed_code_update"
+                    size: Theme.iconSizeLarge
+                    color: Theme.primary
                 }
             }
 
@@ -48,7 +46,7 @@ Column {
                     spacing: Theme.spacingS
 
                     StyledText {
-                        text: "DMS " + ChangelogService.currentVersion
+                        text: "MacqueenDE " + ChangelogService.currentVersion
                         font.pixelSize: Theme.fontSizeXLarge + 2
                         font.weight: Font.Bold
                         color: Theme.surfaceText
@@ -56,16 +54,17 @@ Column {
                     }
 
                     Rectangle {
-                        width: codenameText.implicitWidth + Theme.spacingM * 2
+                        visible: ChangelogService.channel.length > 0
+                        width: channelText.implicitWidth + Theme.spacingM * 2
                         height: root.badgeHeight
                         radius: root.badgeHeight / 2
                         color: Theme.primaryContainer
                         anchors.verticalCenter: parent.verticalCenter
 
                         StyledText {
-                            id: codenameText
+                            id: channelText
                             anchors.centerIn: parent
-                            text: "The Wolverine"
+                            text: ChangelogService.channel
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
                             color: Theme.primary
@@ -74,9 +73,11 @@ Column {
                 }
 
                 StyledText {
-                    text: "Frame Mode, DankCalendar, Spotlight, & more"
+                    width: Math.min(420, implicitWidth)
+                    text: root.notes.summary || "MacqueenDE обновлён."
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.surfaceVariantText
+                    wrapMode: Text.WordWrap
                 }
             }
         }
@@ -90,11 +91,12 @@ Column {
     }
 
     Column {
+        visible: root.features.length > 0
         width: parent.width
         spacing: Theme.spacingM
 
         StyledText {
-            text: "What's New"
+            text: "Что изменилось"
             font.pixelSize: Theme.fontSizeMedium
             font.weight: Font.Medium
             color: Theme.surfaceText
@@ -106,105 +108,23 @@ Column {
             rowSpacing: Theme.spacingS
             columnSpacing: Theme.spacingS
 
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "border_outer"
-                title: "Frame Mode"
-                description: "Connected shell surfaces"
-                onClicked: PopoutService.openSettingsWithTab("frame")
-            }
+            Repeater {
+                model: root.features
 
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "calendar_month"
-                title: "DankCalendar"
-                description: "Native calendar & events"
-                onClicked: Qt.openUrlExternally("https://github.com/AvengeMedia/dankcalendar")
-            }
+                delegate: ChangelogFeatureCard {
+                    required property var modelData
 
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "search"
-                title: "Spotlight"
-                description: "Lightweight launcher"
-                onClicked: PopoutService.openSpotlightBar()
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "window"
-                title: "Window Rules"
-                description: "Rules for many compositors"
-                onClicked: PopoutService.openSettingsWithTab("window_rules")
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "display_settings"
-                title: "Display Profiles"
-                description: "Auto-switch monitor layouts"
-                onClicked: PopoutService.openSettingsWithTab("display_config")
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "dvr"
-                title: "Multiplexer Launcher"
-                description: "Attach to tmux sessions"
-                onClicked: PopoutService.openSettingsWithTab("multiplexers")
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "edit_note"
-                title: "Notepad Rewrite"
-                description: "Popout & tiling support"
-                onClicked: PopoutService.openNotepad()
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "gradient"
-                title: "M3 Shadows"
-                description: "Reworked elevation system"
-                onClicked: PopoutService.openSettingsWithTab("theme")
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "login"
-                title: "Greeter Enhancements"
-                description: "Settings GUI & multi-user"
-                onClicked: PopoutService.openSettingsWithTab("greeter")
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "content_paste"
-                title: "Clipboard Filtering"
-                description: "Text, image & pinned filters"
-                onClicked: PopoutService.openSettingsWithTab("clipboard")
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "restart_alt"
-                title: "XDG Autostart"
-                description: "Manage apps at login"
-                onClicked: PopoutService.openSettingsWithTab("autostart")
-            }
-
-            ChangelogFeatureCard {
-                width: (parent.width - Theme.spacingS) / 2
-                iconName: "apps"
-                title: "Default Apps"
-                description: "Set preferred applications"
-                onClicked: PopoutService.openSettingsWithTab("default_apps")
+                    width: (root.width - Theme.spacingS) / 2
+                    iconName: String(modelData.icon || "new_releases")
+                    title: String(modelData.title || "")
+                    description: String(modelData.description || "")
+                }
             }
         }
     }
 
     Rectangle {
+        visible: root.upgradeNotes.length > 0
         width: parent.width
         height: 1
         color: Theme.outlineMedium
@@ -212,6 +132,7 @@ Column {
     }
 
     Column {
+        visible: root.upgradeNotes.length > 0
         width: parent.width
         spacing: Theme.spacingS
 
@@ -219,14 +140,16 @@ Column {
             spacing: Theme.spacingS
 
             DankIcon {
-                name: "warning"
+                name: ChangelogService.sessionRestartRequired ? "restart_alt" : "info"
                 size: Theme.iconSizeSmall
-                color: Theme.warning
+                color: Theme.primary
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             StyledText {
-                text: "Upgrade Notes"
+                text: ChangelogService.sessionRestartRequired
+                    ? "Завершение обновления"
+                    : "Примечания"
                 font.pixelSize: Theme.fontSizeMedium
                 font.weight: Font.Medium
                 color: Theme.surfaceText
@@ -236,32 +159,31 @@ Column {
 
         Rectangle {
             width: parent.width
-            height: upgradeNotesColumn.height + Theme.spacingM * 2
+            height: notesColumn.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
-            color: Theme.withAlpha(Theme.warning, 0.08)
+            color: Theme.primaryHover
             border.width: 1
-            border.color: Theme.withAlpha(Theme.warning, 0.2)
+            border.color: Theme.withAlpha(Theme.primary, 0.2)
 
             Column {
-                id: upgradeNotesColumn
+                id: notesColumn
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.margins: Theme.spacingM
                 spacing: Theme.spacingS
 
-                ChangelogUpgradeNote {
-                    width: parent.width
-                    text: "App ID changed to org.macqueende.molniya — update any compositor window rules targeting the old ID"
+                Repeater {
+                    model: root.upgradeNotes
+
+                    delegate: ChangelogUpgradeNote {
+                        required property var modelData
+
+                        width: notesColumn.width
+                        text: String(modelData)
+                    }
                 }
             }
         }
-
-        // StyledText {
-        //     text: "See full release notes for migration steps"
-        //     font.pixelSize: Theme.fontSizeSmall
-        //     color: Theme.surfaceVariantText
-        //     width: parent.width
-        // }
     }
 }

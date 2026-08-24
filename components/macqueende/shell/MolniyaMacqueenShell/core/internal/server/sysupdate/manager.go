@@ -3,6 +3,7 @@ package sysupdate
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -21,9 +22,12 @@ const (
 	recentLogCapacity        = 200
 	checkTimeout             = 5 * time.Minute
 	retryIntervalSeconds     = 5 * 60
-	upgradeTimeout           = 30 * time.Minute
+	upgradeTimeout           = 2 * time.Hour
 	postUpgradeCompleteDelay = 3 * time.Second
+	maxUpgradeAttempts       = 4
 )
+
+var upgradeRetryDelays = [...]time.Duration{0, 5 * time.Second, 20 * time.Second, 60 * time.Second}
 
 type Manager struct {
 	mu          sync.RWMutex
@@ -58,6 +62,10 @@ func NewManager() (*Manager, error) {
 		IntervalSeconds: defaultIntervalSeconds,
 		Backends:        []BackendInfo{},
 		Packages:        []Package{},
+	}
+	if release := readDesktopRelease(); release.Version != "" {
+		m.state.DesktopVersion = release.Version
+		m.state.RestartSession = release.SessionRestartRequired
 	}
 
 	id, pretty := readOSRelease()
@@ -144,7 +152,7 @@ func (m *Manager) Refresh(opts RefreshOptions) {
 	m.mu.RUnlock()
 
 	switch {
-	case phase == PhaseUpgrading:
+	case isOperationPhase(phase):
 		return
 	case phase == PhaseRefreshing && !opts.Force:
 		m.refreshSerial.Lock()
@@ -255,7 +263,7 @@ func (m *Manager) runRefresh(parent context.Context, manual bool) {
 	defer cancel()
 
 	m.mu.Lock()
-	if m.state.Phase == PhaseUpgrading {
+	if isOperationPhase(m.state.Phase) {
 		m.mu.Unlock()
 		return
 	}
@@ -339,6 +347,7 @@ func (m *Manager) runUpgrade(ctx context.Context, opts UpgradeOptions) {
 		m.runCustomUpgrade(ctx, opts)
 		return
 	}
+	previousRelease := readDesktopRelease()
 
 	if len(opts.Targets) == 0 {
 		m.mu.RLock()
@@ -365,34 +374,78 @@ func (m *Manager) runUpgrade(ctx context.Context, opts UpgradeOptions) {
 	m.state.Phase = PhaseUpgrading
 	m.state.OperationID = opID
 	m.state.OperationStarted = time.Now().Unix()
+	m.state.OperationStage = "preparing"
+	m.state.UpgradeAttempt = 1
+	m.state.UpgradeMax = maxUpgradeAttempts
 	m.state.RecentLog = m.state.RecentLog[:0]
 	m.state.Error = nil
+	m.state.DesktopUpdated = false
+	m.state.PreviousDesktop = ""
 	m.mu.Unlock()
 	m.markDirty()
 
 	onLine := func(line string) { m.appendLog(line) }
-	for _, b := range backends {
-		m.appendLog(fmt.Sprintf("== %s ==", b.DisplayName()))
-		if err := b.Upgrade(ctx, opts, onLine); err != nil {
-			code := ErrCodeBackendFailed
-			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-				code = ErrCodeTimeout
-			} else if errors.Is(ctx.Err(), context.Canceled) {
-				code = ErrCodeCancelled
+	currentTargets := append([]Package(nil), opts.Targets...)
+	for attempt := 1; attempt <= maxUpgradeAttempts; attempt++ {
+		if attempt > 1 {
+			if !m.waitForUpgradeRetry(ctx, attempt, upgradeRetryDelays[attempt-1]) {
+				m.finishUpgradeError(ctx, "обновление отменено", nil)
+				return
 			}
-			m.mu.Lock()
-			m.state.Phase = PhaseError
-			m.state.Error = &ErrorInfo{Code: code, Message: fmt.Sprintf("%s: %v", b.ID(), err)}
-			m.mu.Unlock()
-			m.markDirty()
+		}
+
+		attemptOpts := opts
+		attemptOpts.Targets = currentTargets
+		attemptBackends := upgradeBackends(m.selection, attemptOpts)
+		m.setUpgradeProgress(PhaseUpgrading, "installing", attempt)
+
+		var upgradeErr error
+		for _, b := range attemptBackends {
+			m.appendLog(fmt.Sprintf("== %s (attempt %d/%d) ==", b.DisplayName(), attempt, maxUpgradeAttempts))
+			if err := b.Upgrade(ctx, attemptOpts, onLine); err != nil {
+				upgradeErr = fmt.Errorf("%s: %w", b.ID(), err)
+				break
+			}
+		}
+		if upgradeErr != nil {
+			if attempt < maxUpgradeAttempts && isRetryableUpgradeError(upgradeErr) {
+				m.appendLog("Temporary update error; retrying in the same maintenance session.")
+				continue
+			}
+			m.finishUpgradeError(ctx, "не удалось завершить обновление", upgradeErr)
+			return
+		}
+
+		m.setUpgradeProgress(PhaseVerifying, "verifying", attempt)
+		verifyCtx, verifyCancel := context.WithTimeout(ctx, checkTimeout)
+		pending, verifyErr := checkPendingUpdates(verifyCtx, attemptBackends, attemptOpts)
+		verifyCancel()
+		if verifyErr != nil {
+			if attempt < maxUpgradeAttempts && isRetryableUpgradeError(verifyErr) {
+				m.appendLog("Update verification failed temporarily; retrying.")
+				continue
+			}
+			m.finishUpgradeError(ctx, "не удалось проверить результат обновления", verifyErr)
+			return
+		}
+
+		m.replacePendingPackages(pending)
+		if len(pending) == 0 {
+			m.finishSuccessfulUpgrade(previousRelease)
+			return
+		}
+
+		currentTargets = pending
+		m.appendLog(fmt.Sprintf("Verification found %d pending update(s).", len(pending)))
+		if attempt == maxUpgradeAttempts {
+			m.finishUpgradeError(ctx, "часть обновлений осталась не установлена", nil)
 			return
 		}
 	}
-
-	m.finishSuccessfulUpgrade(true)
 }
 
 func (m *Manager) runCustomUpgrade(ctx context.Context, opts UpgradeOptions) {
+	previousRelease := readDesktopRelease()
 	term := findTerminal(opts.Terminal)
 	if term == "" {
 		m.setError(ErrCodeBackendFailed, "no terminal found (pick one in DMS settings, set $TERMINAL, or install kitty/ghostty/foot/alacritty)")
@@ -427,11 +480,11 @@ func (m *Manager) runCustomUpgrade(ctx context.Context, opts UpgradeOptions) {
 		return
 	}
 
-	m.finishSuccessfulUpgrade(false)
+	m.finishSuccessfulUpgrade(previousRelease)
 	m.runRefresh(context.Background(), false)
 }
 
-func (m *Manager) finishSuccessfulUpgrade(clearPackages bool) {
+func (m *Manager) finishSuccessfulUpgrade(previous desktopRelease) {
 	m.appendLog("Upgrade complete.")
 
 	timer := time.NewTimer(postUpgradeCompleteDelay)
@@ -443,16 +496,177 @@ func (m *Manager) finishSuccessfulUpgrade(clearPackages bool) {
 	case <-timer.C:
 	}
 
+	current := readDesktopRelease()
+	now := time.Now().Unix()
 	m.mu.Lock()
 	m.state.Phase = PhaseIdle
 	m.state.OperationID = ""
 	m.state.OperationStarted = 0
-	if clearPackages {
-		m.state.Packages = m.state.Packages[:0]
-		m.state.Count = 0
+	m.state.OperationStage = "complete"
+	m.state.UpgradeCompleted = now
+	m.state.LastSuccessUnix = now
+	m.state.Packages = m.state.Packages[:0]
+	m.state.Count = 0
+	m.state.PreviousDesktop = previous.Version
+	m.state.DesktopVersion = current.Version
+	m.state.DesktopUpdated = previous.Version != "" && current.Version != "" && previous.Version != current.Version
+	m.state.RestartSession = current.SessionRestartRequired && m.state.DesktopUpdated
+	m.mu.Unlock()
+	m.markDirty()
+}
+
+func (m *Manager) setUpgradeProgress(phase Phase, stage string, attempt int) {
+	m.mu.Lock()
+	m.state.Phase = phase
+	m.state.OperationStage = stage
+	m.state.UpgradeAttempt = attempt
+	m.state.Error = nil
+	m.mu.Unlock()
+	m.markDirty()
+}
+
+func (m *Manager) waitForUpgradeRetry(ctx context.Context, attempt int, delay time.Duration) bool {
+	m.setUpgradeProgress(PhaseRetrying, "waiting-retry", attempt)
+	m.appendLog(fmt.Sprintf("Retrying in %s.", delay))
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-m.stopChan:
+		return false
+	case <-timer.C:
+		return true
+	}
+}
+
+func (m *Manager) finishUpgradeError(ctx context.Context, message string, technical error) {
+	code := ErrCodeBackendFailed
+	switch {
+	case errors.Is(ctx.Err(), context.DeadlineExceeded):
+		code = ErrCodeTimeout
+		message = "обновление заняло слишком много времени"
+	case errors.Is(ctx.Err(), context.Canceled):
+		code = ErrCodeCancelled
+		message = "обновление отменено"
+	}
+	if technical != nil {
+		m.appendLog("ERROR: " + technical.Error())
+	}
+	m.mu.Lock()
+	m.state.Phase = PhaseError
+	m.state.OperationID = ""
+	m.state.OperationStarted = 0
+	m.state.OperationStage = "failed"
+	m.state.Error = &ErrorInfo{
+		Code:    code,
+		Message: message,
+		Hint:    "Технический журнал сохранён. Повторите обновление или приложите отчёт при обращении к разработчику.",
 	}
 	m.mu.Unlock()
 	m.markDirty()
+}
+
+func (m *Manager) replacePendingPackages(packages []Package) {
+	m.mu.Lock()
+	m.state.Packages = append(m.state.Packages[:0], packages...)
+	m.state.Count = len(packages)
+	m.mu.Unlock()
+	m.markDirty()
+}
+
+func checkPendingUpdates(ctx context.Context, backends []Backend, opts UpgradeOptions) ([]Package, error) {
+	var pending []Package
+	for _, b := range backends {
+		packages, err := b.CheckUpdates(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", b.ID(), err)
+		}
+		for _, pkg := range packages {
+			if pkg.Repo == RepoAUR && !opts.IncludeAUR {
+				continue
+			}
+			if pkg.Repo == RepoFlatpak && !opts.IncludeFlatpak {
+				continue
+			}
+			pending = append(pending, pkg)
+		}
+	}
+	return dropIgnoredTargets(pending, opts.Ignored), nil
+}
+
+func isRetryableUpgradeError(err error) bool {
+	if err == nil {
+		return false
+	}
+	text := strings.ToLower(err.Error())
+	permanent := []string{
+		"invalid or corrupted package",
+		"signature",
+		"conflicting files",
+		"conflicts with",
+		"could not satisfy dependencies",
+		"not enough free disk space",
+		"disk full",
+		"authentication failed",
+		"permission denied",
+	}
+	for _, marker := range permanent {
+		if strings.Contains(text, marker) {
+			return false
+		}
+	}
+	retryable := []string{
+		"connection",
+		"could not resolve",
+		"failed to synchronize all databases",
+		"failed retrieving file",
+		"failed to download",
+		"download library error",
+		"the requested url returned error",
+		"operation too slow",
+		"operation timed out",
+		"temporary failure",
+		"network is unreachable",
+		"database is locked",
+		"unable to lock database",
+		"resource temporarily unavailable",
+		"unexpected eof",
+		"end of file",
+	}
+	for _, marker := range retryable {
+		if strings.Contains(text, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+func isOperationPhase(phase Phase) bool {
+	return phase == PhaseUpgrading || phase == PhaseVerifying || phase == PhaseRetrying
+}
+
+type desktopRelease struct {
+	Version                string `json:"version"`
+	SessionRestartRequired bool   `json:"sessionRestartRequired"`
+}
+
+func readDesktopRelease() desktopRelease {
+	paths := []string{
+		"/usr/share/kaskados/release.json",
+		"/opt/macqueende/release/release.json",
+	}
+	for _, path := range paths {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		var release desktopRelease
+		if json.Unmarshal(raw, &release) == nil && release.Version != "" {
+			return release
+		}
+	}
+	return desktopRelease{}
 }
 
 func dropIgnoredTargets(targets []Package, ignored []string) []Package {

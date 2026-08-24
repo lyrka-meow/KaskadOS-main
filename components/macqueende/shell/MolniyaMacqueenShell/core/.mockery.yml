@@ -58,9 +58,6 @@ packages:
       pkgname: mocks_wlclient
     interfaces:
       WaylandDisplay: {}
-  github.com/AvengeMedia/DankMaterialShell/core/internal/plugins:
-    interfaces:
-      GitClient: {}
   github.com/AvengeMedia/DankMaterialShell/core/internal/server/brightness:
     config:
       dir: internal/mocks/brightness

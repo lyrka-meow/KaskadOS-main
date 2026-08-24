@@ -57,6 +57,21 @@ Item {
         }
     }
 
+    function localizedReleaseChannel(channel) {
+        switch (String(channel || "").toLowerCase()) {
+        case "stable":
+            return "Стабильный";
+        case "beta":
+            return "Бета";
+        case "alpha":
+            return "Альфа";
+        case "development":
+            return "Разработка";
+        default:
+            return channel || "";
+        }
+    }
+
     function localizedGpuType(type) {
         return type === "Integrated" ? "Встроенная" : "Дискретная";
     }
@@ -111,6 +126,8 @@ Item {
         addRow(rows, "Архитектура", generalInfo.architecture);
         addRow(rows, "Графический протокол", generalInfo.session);
         addRow(rows, "Окружение рабочего стола", generalInfo.compositor || "MacqueenDE");
+        addRow(rows, "Канал обновлений", localizedReleaseChannel(generalInfo.release_channel));
+        addRow(rows, "Дата выпуска", generalInfo.release_date);
         addRow(rows, "Способ установки", localizedInstallMethod(generalInfo.install_method));
         addRow(rows, "Пакетный менеджер", generalInfo.package_manager);
         addRow(rows, "AUR-помощник", generalInfo.package_helper);

@@ -25,8 +25,6 @@ Item {
     }
 
     property bool hasMultipleBars: SettingsData.barConfigs.length > 1
-    property int pluginCatalogRevision: 0
-
     property string highlightedId: ""
     property string highlightedSection: ""
 
@@ -48,7 +46,6 @@ Item {
     }
 
     property var baseWidgetDefinitions: {
-        pluginCatalogRevision;
         var coreWidgets = [
             {
                 "id": "layout",
@@ -276,19 +273,6 @@ Item {
             },
         ];
 
-        var allPluginVariants = PluginService.getAllPluginVariants();
-        for (var i = 0; i < allPluginVariants.length; i++) {
-            var variant = allPluginVariants[i];
-            coreWidgets.push({
-                "id": variant.fullId,
-                "text": variant.name,
-                "description": variant.description,
-                "icon": variant.icon,
-                "enabled": variant.loaded,
-                "warning": !variant.loaded ? I18n.tr("Plugin is disabled - enable in Plugins settings to use") : undefined
-            });
-        }
-
         return coreWidgets;
     }
 
@@ -334,30 +318,6 @@ Item {
         }
     }
 
-    Connections {
-        target: PluginService
-
-        function onPluginDataChanged() {
-            widgetsTab.pluginCatalogRevision++;
-        }
-
-        function onPluginListUpdated() {
-            widgetsTab.pluginCatalogRevision++;
-        }
-
-        function onPluginLoaded() {
-            widgetsTab.pluginCatalogRevision++;
-        }
-
-        function onPluginStateChanged() {
-            widgetsTab.pluginCatalogRevision++;
-        }
-
-        function onPluginUnloaded() {
-            widgetsTab.pluginCatalogRevision++;
-        }
-    }
-
     property var defaultLeftWidgets: [
         {
             "id": "launcherButton",
@@ -393,6 +353,10 @@ Item {
         },
         {
             "id": "clipboard",
+            "enabled": true
+        },
+        {
+            "id": "systemUpdate",
             "enabled": true
         },
         {
@@ -444,8 +408,6 @@ Item {
 
     function getWidgetsForPopup() {
         return baseWidgetDefinitions.filter(widget => {
-            if (widget.warning && widget.warning.includes("Plugin is disabled"))
-                return false;
             if (widget.enabled === false)
                 return false;
             return true;
@@ -526,7 +488,7 @@ Item {
             "id": widget.id,
             "enabled": widget.enabled
         };
-        var keys = ["size", "selectedGpuIndex", "pciId", "mountPath", "diskUsageMode", "minimumWidth", "showSwap", "showInGb", "mediaSize", "clockCompactMode", "focusedWindowSize", "focusedWindowCompactMode", "focusedWindowShowIcon", "runningAppsCompactMode", "keyboardLayoutNameCompactMode", "keyboardLayoutNameShowIcon", "runningAppsGroupByApp", "runningAppsCurrentWorkspace", "runningAppsCurrentMonitor", "showNetworkIcon", "showBluetoothIcon", "showAudioIcon", "showAudioPercent", "showVpnIcon", "showBrightnessIcon", "showBrightnessPercent", "showMicIcon", "showMicPercent", "showBatteryIcon", "showBatteryPercent", "showBatteryPercentOnlyOnBattery", "showBatteryTime", "showBatteryTimeOnlyOnBattery", "batteryPillStyle", "batteryPillPercentSign", "showPrinterIcon", "showScreenSharingIcon", "showIdleInhibitorIcon", "showDoNotDisturbIcon", "controlCenterGroupOrder", "barMaxVisibleApps", "barMaxVisibleRunningApps", "barShowOverflowBadge", "trayCollapseAll", "trayUseInlineExpansion", "trayPopupSingleLine", "trayAutoOverflow", "trayMaxVisibleItems", "hideWhenIdle"];
+        var keys = ["size", "selectedGpuIndex", "pciId", "mountPath", "diskUsageMode", "minimumWidth", "showSwap", "showInGb", "mediaSize", "clockCompactMode", "focusedWindowSize", "focusedWindowCompactMode", "focusedWindowShowIcon", "runningAppsCompactMode", "keyboardLayoutNameCompactMode", "keyboardLayoutNameShowIcon", "runningAppsGroupByApp", "runningAppsCurrentWorkspace", "runningAppsCurrentMonitor", "showNetworkIcon", "showBluetoothIcon", "showAudioIcon", "showAudioPercent", "showVpnIcon", "showBrightnessIcon", "showBrightnessPercent", "showMicIcon", "showMicPercent", "showBatteryIcon", "showBatteryPercent", "showBatteryPercentOnlyOnBattery", "showBatteryTime", "showBatteryTimeOnlyOnBattery", "batteryPillStyle", "batteryPillPercentSign", "showPrinterIcon", "showScreenSharingIcon", "showIdleInhibitorIcon", "showDoNotDisturbIcon", "controlCenterGroupOrder", "barMaxVisibleApps", "barMaxVisibleRunningApps", "barShowOverflowBadge", "trayCollapseAll", "trayUseInlineExpansion", "trayPopupSingleLine", "trayAutoOverflow", "trayMaxVisibleItems"];
         for (var i = 0; i < keys.length; i++) {
             if (widget[keys[i]] !== undefined)
                 result[keys[i]] = widget[keys[i]];
@@ -557,7 +519,7 @@ Item {
         return sectionId === "left" ? leftSection : sectionId === "center" ? centerSection : sectionId === "right" ? rightSection : null;
     }
 
-    // Id-based reorder; rebuilds from authoritative objects so every prop (incl. hideWhenIdle) survives.
+    // Id-based reorder; rebuilds from authoritative objects so every prop survives.
     // Consumes one entry per occurrence so duplicate ids (e.g. two spacers) don't collapse, and
     // appends unconsumed entries so nothing is silently dropped from the config array.
     function reorderSection(sectionId, orderedIds) {
@@ -884,17 +846,6 @@ Item {
         setWidgetsForSection(sectionId, widgets);
     }
 
-    function handleHideWhenIdleChanged(sectionId, widgetIndex, enabled) {
-        var widgets = getWidgetsForSection(sectionId).slice();
-        if (widgetIndex < 0 || widgetIndex >= widgets.length) {
-            return;
-        }
-        var newWidget = cloneWidgetData(widgets[widgetIndex]);
-        newWidget.hideWhenIdle = enabled;
-        widgets[widgetIndex] = newWidget;
-        setWidgetsForSection(sectionId, widgets);
-    }
-
     function handleDiskUsageModeChanged(sectionId, widgetIndex, mode) {
         var widgets = getWidgetsForSection(sectionId).slice();
         if (widgetIndex < 0 || widgetIndex >= widgets.length) {
@@ -1090,8 +1041,6 @@ Item {
                     item.trayAutoOverflow = widget.trayAutoOverflow;
                 if (widget.trayMaxVisibleItems !== undefined)
                     item.trayMaxVisibleItems = widget.trayMaxVisibleItems;
-                if (widget.hideWhenIdle !== undefined)
-                    item.hideWhenIdle = widget.hideWhenIdle;
             }
             widgets.push(item);
         });
@@ -1398,9 +1347,6 @@ Item {
                         onOverflowSettingChanged: (sectionId, widgetIndex, settingName, value) => {
                             widgetsTab.handleOverflowSettingChanged(sectionId, widgetIndex, settingName, value);
                         }
-                        onHideWhenIdleChanged: (sectionId, widgetIndex, enabled) => {
-                            widgetsTab.handleHideWhenIdleChanged(sectionId, widgetIndex, enabled);
-                        }
                     }
                 }
 
@@ -1485,9 +1431,6 @@ Item {
                         onOverflowSettingChanged: (sectionId, widgetIndex, settingName, value) => {
                             widgetsTab.handleOverflowSettingChanged(sectionId, widgetIndex, settingName, value);
                         }
-                        onHideWhenIdleChanged: (sectionId, widgetIndex, enabled) => {
-                            widgetsTab.handleHideWhenIdleChanged(sectionId, widgetIndex, enabled);
-                        }
                     }
                 }
 
@@ -1571,9 +1514,6 @@ Item {
                         }
                         onOverflowSettingChanged: (sectionId, widgetIndex, settingName, value) => {
                             widgetsTab.handleOverflowSettingChanged(sectionId, widgetIndex, settingName, value);
-                        }
-                        onHideWhenIdleChanged: (sectionId, widgetIndex, enabled) => {
-                            widgetsTab.handleHideWhenIdleChanged(sectionId, widgetIndex, enabled);
                         }
                     }
                 }

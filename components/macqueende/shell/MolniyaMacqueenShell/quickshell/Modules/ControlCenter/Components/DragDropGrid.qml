@@ -35,8 +35,6 @@ Column {
     property real currentRowWidth: 0
     property int expandedRowIndex: -1
     property var colorPickerModal: null
-    property var activePluginDetailInstance: null
-
     readonly property real _maxDetailHeight: {
         const rows = layoutResult.rows;
         let totalRowHeight = 0;
@@ -71,7 +69,7 @@ Column {
     }
 
     function detailHeightForSection(section) {
-        return DetailHeightUtils.detailHeightForSection(section, _maxDetailHeight, activePluginDetailInstance);
+        return DetailHeightUtils.detailHeightForSection(section, _maxDetailHeight);
     }
 
     function calculateRowsAndWidgets() {
@@ -249,8 +247,6 @@ Column {
         const widgetWidth = widgetData.width || 50;
         if (id.startsWith("builtin_"))
             return builtinPluginWidgetComponent;
-        if (id.startsWith("plugin_"))
-            return pluginWidgetComponent;
         switch (id) {
         case "wifi":
         case "bluetooth":
@@ -393,19 +389,9 @@ Column {
                     retainedWidgetData = root.expandedWidgetData;
                 }
 
-                function syncActivePluginDetail() {
-                    if (active) {
-                        root.activePluginDetailInstance = pluginDetailInstance;
-                    } else if (root.activePluginDetailInstance === pluginDetailInstance) {
-                        root.activePluginDetailInstance = null;
-                    }
-                }
-
                 onActiveChanged: {
                     retainActiveDetail();
-                    syncActivePluginDetail();
                 }
-                onPluginDetailInstanceChanged: syncActivePluginDetail()
                 onHeightChanged: {
                     if (!active && height <= 0.5) {
                         retainedSection = "";
@@ -1065,161 +1051,6 @@ Column {
                     return;
                 if (builtinInstance) {
                     builtinInstance.ccWidgetToggled();
-                }
-            }
-        }
-    }
-
-    Component {
-        id: pluginWidgetComponent
-        Loader {
-            property var widgetData: parent.widgetData || {}
-            property int widgetIndex: parent.widgetIndex || 0
-            property int widgetWidth: widgetData.width || 50
-            width: parent.width
-            height: 60
-
-            property var pluginInstance: null
-            property string pluginId: widgetData.id?.replace("plugin_", "") || ""
-
-            sourceComponent: {
-                if (!pluginInstance)
-                    return null;
-
-                const hasDetail = pluginInstance.ccDetailContent !== null;
-
-                if (widgetWidth <= 25) {
-                    return pluginSmallToggleComponent;
-                } else if (hasDetail) {
-                    return pluginCompoundPillComponent;
-                } else {
-                    return pluginToggleComponent;
-                }
-            }
-
-            function tryCreatePluginInstance() {
-                const pluginComponent = PluginService.pluginWidgetComponents[pluginId];
-                if (!pluginComponent)
-                    return false;
-                try {
-                    const instance = pluginComponent.createObject(null, {
-                        "pluginId": pluginId,
-                        "pluginService": PluginService,
-                        "visible": false,
-                        "width": 0,
-                        "height": 0
-                    });
-                    if (instance) {
-                        pluginInstance = instance;
-                        return true;
-                    }
-                } catch (e) {
-                    log.warn("stale plugin component for", pluginId, "- reloading");
-                    PluginService.reloadPlugin(pluginId);
-                }
-                return false;
-            }
-
-            Component.onCompleted: {
-                Qt.callLater(() => tryCreatePluginInstance());
-            }
-
-            Connections {
-                target: PluginService
-                function onPluginDataChanged(changedPluginId) {
-                    if (changedPluginId === pluginId && pluginInstance) {
-                        pluginInstance.loadPluginData();
-                    }
-                }
-                function onPluginLoaded(loadedPluginId) {
-                    if (loadedPluginId !== pluginId || pluginInstance)
-                        return;
-                    Qt.callLater(() => tryCreatePluginInstance());
-                }
-            }
-
-            Component.onDestruction: {
-                if (pluginInstance) {
-                    pluginInstance.destroy();
-                }
-            }
-        }
-    }
-
-    Component {
-        id: pluginCompoundPillComponent
-        CompoundPill {
-            property var widgetData: parent.widgetData || {}
-            property int widgetIndex: parent.widgetIndex || 0
-            property var pluginInstance: parent.pluginInstance
-
-            iconName: pluginInstance?.ccWidgetIcon || "extension"
-            primaryText: pluginInstance?.ccWidgetPrimaryText || "Plugin"
-            secondaryText: pluginInstance?.ccWidgetSecondaryText || ""
-            isActive: pluginInstance?.ccWidgetIsActive || false
-
-            onToggled: {
-                if (root.editMode)
-                    return;
-                if (pluginInstance) {
-                    pluginInstance.ccWidgetToggled();
-                }
-            }
-
-            onExpandClicked: {
-                if (root.editMode)
-                    return;
-                if (pluginInstance) {
-                    pluginInstance.ccWidgetExpanded();
-                }
-                root.expandClicked(widgetData, widgetIndex);
-            }
-        }
-    }
-
-    Component {
-        id: pluginToggleComponent
-        ToggleButton {
-            property var widgetData: parent.widgetData || {}
-            property int widgetIndex: parent.widgetIndex || 0
-            property var pluginInstance: parent.pluginInstance
-            property var widgetDef: root.model?.getWidgetForId(widgetData.id || "")
-
-            iconName: pluginInstance?.ccWidgetIcon || widgetDef?.icon || "extension"
-            text: pluginInstance?.ccWidgetPrimaryText || widgetDef?.text || "Plugin"
-            secondaryText: pluginInstance?.ccWidgetSecondaryText || ""
-            isActive: pluginInstance?.ccWidgetIsActive || false
-            enabled: !root.editMode
-
-            onClicked: {
-                if (root.editMode)
-                    return;
-                if (pluginInstance) {
-                    pluginInstance.ccWidgetToggled();
-                }
-            }
-        }
-    }
-
-    Component {
-        id: pluginSmallToggleComponent
-        SmallToggleButton {
-            property var widgetData: parent.widgetData || {}
-            property int widgetIndex: parent.widgetIndex || 0
-            property var pluginInstance: parent.pluginInstance
-            property var widgetDef: root.model?.getWidgetForId(widgetData.id || "")
-
-            iconName: pluginInstance?.ccWidgetIcon || widgetDef?.icon || "extension"
-            isActive: pluginInstance?.ccWidgetIsActive || false
-            enabled: !root.editMode
-
-            onClicked: {
-                if (root.editMode)
-                    return;
-                if (pluginInstance && pluginInstance.ccDetailContent) {
-                    root.expandClicked(widgetData, widgetIndex);
-                } else if (pluginInstance) {
-                    pluginInstance.ccWidgetToggled();
                 }
             }
         }

@@ -58,7 +58,6 @@ Singleton {
     property var notepadSlideouts: []
 
     property string pendingThemeInstall: ""
-    property string pendingPluginInstall: ""
 
     // Deferred unload: keep popouts warm while the session is active and reclaim them on lock/monitors-off.
     property var _pendingUnloads: ({})
@@ -232,8 +231,8 @@ Singleton {
         _dankDashHasPosition = hasPos;
     }
 
-    // `tab` is a view id ("weather"); a numeric index into the visible tabs is
-    // still accepted for plugin compatibility.
+    // `tab` is a view id ("weather"); numeric indices remain accepted for
+    // callers that still use the older API.
     function _dankDashTabId(tab) {
         if (typeof tab === "string" && tab !== "")
             return tab;

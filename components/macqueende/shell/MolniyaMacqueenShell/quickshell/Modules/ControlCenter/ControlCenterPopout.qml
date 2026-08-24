@@ -288,7 +288,7 @@ DankPopout {
                             if (!editMode)
                                 return [];
                             const existingIds = (SettingsData.controlCenterWidgets || []).map(w => w.id);
-                            const allWidgets = widgetModel.baseWidgetDefinitions.concat(widgetModel.getPluginWidgets());
+                            const allWidgets = widgetModel.baseWidgetDefinitions;
                             return allWidgets.filter(w => w.allowMultiple || !existingIds.includes(w.id));
                         }
                         onAddWidget: widgetId => widgetModel.addWidget(widgetId)

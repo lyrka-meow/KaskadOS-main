@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -61,13 +62,51 @@ func Run(ctx context.Context, argv []string, opts RunOptions) error {
 		return err
 	}
 
+	var collector recentOutput
+	onLine := func(line string) {
+		collector.add(line)
+		if opts.OnLine != nil {
+			opts.OnLine(line)
+		}
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go pump(stdout, opts.OnLine, &wg)
-	go pump(stderr, opts.OnLine, &wg)
+	go pump(stdout, onLine, &wg)
+	go pump(stderr, onLine, &wg)
 	wg.Wait()
 
-	return cmd.Wait()
+	if err := cmd.Wait(); err != nil {
+		if output := collector.text(); output != "" {
+			return fmt.Errorf("%w: %s", err, output)
+		}
+		return err
+	}
+	return nil
+}
+
+type recentOutput struct {
+	mu    sync.Mutex
+	lines []string
+}
+
+func (r *recentOutput) add(line string) {
+	line = strings.TrimSpace(line)
+	if line == "" {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.lines = append(r.lines, line)
+	if len(r.lines) > 24 {
+		r.lines = append([]string(nil), r.lines[len(r.lines)-24:]...)
+	}
+}
+
+func (r *recentOutput) text() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return strings.Join(r.lines, " | ")
 }
 
 func pump(r io.Reader, onLine func(string), wg *sync.WaitGroup) {

@@ -127,6 +127,8 @@ CALAMARES_BUILD_DIR=/tmp/kaskados-calamares-build CALAMARES_JOBS=8 make calamare
 - `components/regalia/` — исходный код встроенного VPN-компонента Regalia;
 - `components/kaskad-installer-compositor/` — отдельная копия MacqueenDE для
   live-установщика;
+- `site/` — официальный сайт `kaskados.xyz` на Next.js;
+- `repository/` — устройство пакетного репозитория `repo.kaskados.xyz`;
 - `profile/airootfs/usr/local/bin/kaskados-installer-session` — запуск
   Wayland-сессии;
 - `profile/airootfs/usr/share/kaskados-installer/config/` — правила окна

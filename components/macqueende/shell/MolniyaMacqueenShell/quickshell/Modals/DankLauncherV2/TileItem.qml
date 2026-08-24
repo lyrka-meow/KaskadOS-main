@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import Quickshell.Wayland
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -23,21 +22,8 @@ Rectangle {
     border.width: isSelected ? 2 : 0
     border.color: Theme.primary
 
-    readonly property string toplevelId: item?.data?.toplevelId ?? ""
-    readonly property var waylandToplevel: {
-        if (!toplevelId || !item?.pluginId)
-            return null;
-        const pluginInstance = PluginService.pluginInstances[item.pluginId];
-        if (!pluginInstance?.getToplevelById)
-            return null;
-        return pluginInstance.getToplevelById(toplevelId);
-    }
-    readonly property bool hasScreencopy: waylandToplevel !== null
-
     readonly property string iconValue: {
         if (!item)
-            return "";
-        if (hasScreencopy)
             return "";
         var data = item.data;
         if (data?.imageUrl)
@@ -84,26 +70,13 @@ Rectangle {
             color: Theme.surfaceContainerHigh
             clip: true
 
-            ScreencopyView {
-                id: screencopyView
-                anchors.fill: parent
-                captureSource: root.waylandToplevel
-                live: root.hasScreencopy
-                visible: root.hasScreencopy
-
-                Rectangle {
-                    anchors.fill: parent
-                    color: root.isHovered ? Theme.withAlpha(Theme.surfaceVariant, 0.2) : Theme.withAlpha(Theme.surfaceVariant, 0)
-                }
-            }
-
             AppIconRenderer {
                 anchors.fill: parent
                 iconValue: root.iconValue
                 iconSize: Math.min(parent.width, parent.height)
                 fallbackText: (root.item?.name?.length > 0) ? root.item.name.charAt(0).toUpperCase() : "?"
                 materialIconSizeAdjustment: iconSize * 0.3
-                visible: !root.hasScreencopy
+                visible: true
             }
 
             Rectangle {
@@ -152,17 +125,17 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.margins: Theme.spacingXS
-                width: root.hasScreencopy ? 28 : 40
-                height: root.hasScreencopy ? 28 : 16
-                radius: root.hasScreencopy ? 14 : 4
-                color: root.hasScreencopy ? Theme.surfaceContainer : Theme.withAlpha(Theme.surfaceContainer, 0)
+                width: 40
+                height: 16
+                radius: 4
+                color: Theme.withAlpha(Theme.surfaceContainer, 0)
                 visible: attributionImage.status === Image.Ready
                 opacity: 0.95
 
                 Image {
                     id: attributionImage
                     anchors.fill: parent
-                    anchors.margins: root.hasScreencopy ? 4 : 0
+                    anchors.margins: 0
                     fillMode: Image.PreserveAspectFit
                     source: root.item?.data?.attribution || ""
                     asynchronous: true

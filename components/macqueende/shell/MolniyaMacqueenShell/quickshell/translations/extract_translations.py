@@ -108,9 +108,7 @@ def area_tags(occurrences):
     tags = set()
     for occ in occurrences:
         path = occ['file']
-        if path.startswith('dms-plugins/'):
-            tags.add('plugin-' + path.split('/')[1].lower())
-        elif path.startswith(('Modules/Settings/', 'Modals/Settings/')):
+        if path.startswith(('Modules/Settings/', 'Modals/Settings/')):
             tags.add('settings')
         else:
             tags.add('shell')

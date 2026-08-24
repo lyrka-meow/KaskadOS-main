@@ -491,10 +491,6 @@ Singleton {
         qtToolsDetectionProcess.running = true;
     }
 
-    function checkPluginSettings() {
-        pluginSettingsCheckProcess.running = true;
-    }
-
     property var qtToolsDetectionProcess: Process {
         command: ["sh", "-c", "echo -n 'qt5ct:'; command -v qt5ct >/dev/null && echo 'true' || echo 'false'; echo -n 'qt6ct:'; command -v qt6ct >/dev/null && echo 'true' || echo 'false'; echo -n 'gtk:'; (command -v gsettings >/dev/null || command -v dconf >/dev/null) && echo 'true' || echo 'false'"]
         running: false
@@ -748,14 +744,4 @@ Singleton {
         onLoadFailed: root.u2fKeysText = ""
     }
 
-    property var pluginSettingsCheckProcess: Process {
-        command: ["test", "-f", settingsRoot?.pluginSettingsPath || ""]
-        running: false
-
-        onExited: function (exitCode) {
-            if (!settingsRoot)
-                return;
-            settingsRoot.pluginSettingsFileExists = (exitCode === 0);
-        }
-    }
 }

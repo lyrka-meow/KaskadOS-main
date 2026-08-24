@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.I3
 import qs.Common
-import qs.Modules.Plugins
+import qs.Modules.DankBar.Components
 import qs.Services
 import qs.Widgets
 import "../../../DankCommon/Common/LayoutCodes.js" as LayoutCodes

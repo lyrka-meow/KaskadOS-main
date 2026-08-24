@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import qs.Common
+import qs.Modals.FileBrowser
 import qs.Services
 import qs.Widgets
 
@@ -19,6 +20,9 @@ FocusScope {
     property alias actionPanel: actionPanel
     readonly property alias activeContextMenu: contextMenu
     property var transientSurfaceTracker: null
+    readonly property bool softwareMode: controller.searchMode === "store" || controller.searchMode === "installed"
+    readonly property bool windowsMode: controller.searchMode === "windows"
+    readonly property bool specialMode: softwareMode || windowsMode
 
     property bool editMode: false
     property var editingApp: null
@@ -127,6 +131,52 @@ FocusScope {
             return;
         }
 
+        if (root.softwareMode) {
+            switch (event.key) {
+            case Qt.Key_Escape:
+                if (root.parentModal)
+                    root.parentModal.hide();
+                event.accepted = true;
+                return;
+            case Qt.Key_Down:
+                softwareCatalogView.selectNext();
+                event.accepted = true;
+                return;
+            case Qt.Key_Up:
+                softwareCatalogView.selectPrevious();
+                event.accepted = true;
+                return;
+            case Qt.Key_Return:
+            case Qt.Key_Enter:
+                softwareCatalogView.activateSelected();
+                event.accepted = true;
+                return;
+            }
+        }
+
+        if (root.windowsMode) {
+            switch (event.key) {
+            case Qt.Key_Escape:
+                if (root.parentModal)
+                    root.parentModal.hide();
+                event.accepted = true;
+                return;
+            case Qt.Key_Down:
+                windowsAppsView.selectNext();
+                event.accepted = true;
+                return;
+            case Qt.Key_Up:
+                windowsAppsView.selectPrevious();
+                event.accepted = true;
+                return;
+            case Qt.Key_Return:
+            case Qt.Key_Enter:
+                windowsAppsView.activateSelected();
+                event.accepted = true;
+                return;
+            }
+        }
+
         var hasCtrl = event.modifiers & Qt.ControlModifier;
         var hasAlt = event.modifiers & Qt.AltModifier;
         event.accepted = true;
@@ -137,15 +187,11 @@ FocusScope {
                 actionPanel.hide();
                 return;
             }
-            if (controller.clearPluginFilter())
-                return;
             if (root.parentModal)
                 root.parentModal.hide();
             return;
         case Qt.Key_Backspace:
             if (searchField.text.length === 0) {
-                if (controller.clearPluginFilter())
-                    return;
                 if (controller.autoSwitchedToFiles) {
                     controller.restorePreviousMode();
                     return;
@@ -277,7 +323,21 @@ FocusScope {
             return;
         case Qt.Key_4:
             if (hasCtrl || hasAlt) {
-                controller.setMode("plugins");
+                controller.setMode("store");
+                return;
+            }
+            event.accepted = false;
+            return;
+        case Qt.Key_5:
+            if (hasCtrl || hasAlt) {
+                controller.setMode("installed");
+                return;
+            }
+            event.accepted = false;
+            return;
+        case Qt.Key_6:
+            if (hasCtrl || hasAlt) {
+                controller.setMode("windows");
                 return;
             }
             event.accepted = false;
@@ -345,9 +405,19 @@ FocusScope {
                             icon: "folder"
                         },
                         {
-                            id: "plugins",
-                            label: I18n.tr("Plugins"),
-                            icon: "extension"
+                            id: "store",
+                            label: "Каталог",
+                            icon: "storefront"
+                        },
+                        {
+                            id: "installed",
+                            label: "Установлено",
+                            icon: "inventory_2"
+                        },
+                        {
+                            id: "windows",
+                            label: "Windows",
+                            icon: "window"
                         }
                     ]
 
@@ -374,6 +444,7 @@ FocusScope {
 
                             StyledText {
                                 anchors.verticalCenter: parent.verticalCenter
+                                visible: footerBar.width >= 920 || controller.searchMode === modelData.id
                                 text: modelData.label
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: controller.searchMode === modelData.id ? Theme.buttonText : Theme.surfaceText
@@ -486,7 +557,8 @@ FocusScope {
                 textColor: Theme.surfaceText
                 font.pixelSize: Theme.fontSizeLarge
                 enabled: root.parentModal ? (root.parentModal.spotlightOpen || root.parentModal.isClosing) : true
-                placeholderText: ""
+                placeholderText: root.softwareMode ? "Найти приложение или пакет"
+                    : root.windowsMode ? "Найти Windows-приложение" : ""
                 ignoreUpDownKeys: true
                 ignoreTabKeys: true
                 keyForwardTargets: [root]
@@ -528,65 +600,6 @@ FocusScope {
             anchors.bottomMargin: contentHolder.inverted ? contentStack.gap : 0
             readonly property real gap: Theme.spacingXS
             clip: false
-
-            Row {
-                id: categoryRow
-                width: parent.width
-                readonly property bool showPluginCategories: controller.activePluginCategories.length > 0
-                height: showPluginCategories ? 36 : 0
-                visible: showPluginCategories
-                spacing: Theme.spacingS
-                anchors.top: parent.top
-                anchors.topMargin: 0
-
-                clip: true
-
-                Behavior on height {
-                    NumberAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-                }
-
-                DankDropdown {
-                    id: categoryDropdown
-                    visible: categoryRow.showPluginCategories
-                    width: Math.min(200, parent.width)
-                    compactMode: true
-                    dropdownWidth: 200
-                    popupWidth: 240
-                    maxPopupHeight: 300
-                    enableFuzzySearch: controller.activePluginCategories.length > 8
-                    currentValue: {
-                        const cats = controller.activePluginCategories;
-                        const current = controller.activePluginCategory;
-                        if (!current)
-                            return cats.length > 0 ? cats[0].name : "";
-                        for (let i = 0; i < cats.length; i++) {
-                            if (cats[i].id === current)
-                                return cats[i].name;
-                        }
-                        return cats.length > 0 ? cats[0].name : "";
-                    }
-                    options: {
-                        const cats = controller.activePluginCategories;
-                        const names = [];
-                        for (let i = 0; i < cats.length; i++)
-                            names.push(cats[i].name);
-                        return names;
-                    }
-
-                    onValueChanged: value => {
-                        const cats = controller.activePluginCategories;
-                        for (let i = 0; i < cats.length; i++) {
-                            if (cats[i].name === value) {
-                                controller.setActivePluginCategory(cats[i].id);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
 
             Item {
                 id: fileFilterRow
@@ -736,8 +749,8 @@ FocusScope {
             Item {
                 id: resultsSlot
                 width: parent.width
-                anchors.top: fileFilterRow.visible ? fileFilterRow.bottom : (categoryRow.visible ? categoryRow.bottom : parent.top)
-                anchors.topMargin: (fileFilterRow.visible || categoryRow.visible) ? contentStack.gap : 0
+                anchors.top: fileFilterRow.visible ? fileFilterRow.bottom : parent.top
+                anchors.topMargin: fileFilterRow.visible ? contentStack.gap : 0
                 anchors.bottom: actionPanel.top
                 anchors.bottomMargin: actionPanel.height > 0 || !contentHolder.inverted ? contentStack.gap : 0
                 opacity: {
@@ -751,6 +764,7 @@ FocusScope {
                 ResultsList {
                     id: resultsList
                     anchors.fill: parent
+                    visible: !root.specialMode
                     controller: root.controller
                     leadingSectionHeaderAtBottom: contentHolder.inverted
                     transientSurfaceTracker: root.transientSurfaceTracker
@@ -762,6 +776,25 @@ FocusScope {
                         }
                     }
                 }
+
+                SoftwareCatalogView {
+                    id: softwareCatalogView
+                    anchors.fill: parent
+                    visible: root.softwareMode
+                    focus: visible
+                    mode: controller.searchMode
+                    query: controller.searchQuery
+                    onLocalPackageRequested: localPackageBrowser.open()
+                }
+
+                WindowsAppsView {
+                    id: windowsAppsView
+                    anchors.fill: parent
+                    visible: root.windowsMode
+                    focus: visible
+                    query: controller.searchQuery
+                    onExecutableRequested: windowsExecutableBrowser.open()
+                }
             }
 
             ActionPanel {
@@ -770,7 +803,34 @@ FocusScope {
                 anchors.bottom: parent.bottom
                 selectedItem: controller.selectedItem
                 controller: controller
+                visible: !root.specialMode
             }
+        }
+    }
+
+    FileBrowserModal {
+        id: localPackageBrowser
+        browserTitle: "Установить пакет Arch Linux"
+        browserIcon: "package_2"
+        browserType: "generic"
+        showHiddenFiles: true
+        fileExtensions: ["*.pkg.tar.zst", "*.pkg.tar.xz", "*.pkg.tar.gz"]
+        onFileSelected: path => {
+            SoftwareService.installLocal(path);
+            close();
+        }
+    }
+
+    FileBrowserModal {
+        id: windowsExecutableBrowser
+        browserTitle: "Открыть Windows-приложение"
+        browserIcon: "window"
+        browserType: "generic"
+        showHiddenFiles: true
+        fileExtensions: ["*.exe", "*.EXE"]
+        onFileSelected: path => {
+            WindowsAppsService.openExecutable(path);
+            close();
         }
     }
 

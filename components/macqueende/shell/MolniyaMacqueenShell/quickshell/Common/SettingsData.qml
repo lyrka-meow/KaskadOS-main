@@ -15,7 +15,7 @@ Singleton {
     id: root
     readonly property var log: Log.scoped("SettingsData")
 
-    readonly property int settingsConfigVersion: 12
+    readonly property int settingsConfigVersion: 13
 
     enum Position {
         Top,
@@ -76,18 +76,13 @@ Singleton {
     readonly property string _homeUrl: StandardPaths.writableLocation(StandardPaths.HomeLocation)
     readonly property string _configUrl: StandardPaths.writableLocation(StandardPaths.ConfigLocation)
     readonly property string _configDir: Paths.strip(_configUrl)
-    readonly property string pluginSettingsPath: _configDir + "/MolniyaMacqueenShell/plugin_settings.json"
-
     property bool _loading: false
-    property bool _pluginSettingsLoading: false
     property bool _parseError: false
-    property bool _pluginParseError: false
     property bool _hasLoaded: false
     property bool _isReadOnly: false
     property bool _hasUnsavedChanges: false
     property bool _selfWrite: false
     property var _loadedSettingsSnapshot: null
-    property var pluginSettings: ({})
     property var builtInPluginSettings: ({})
 
     function getBuiltInPluginSetting(pluginId, key, defaultValue) {
@@ -110,45 +105,6 @@ Singleton {
     property bool clipboardRememberTypeFilter: false
     property string clipboardTypeFilter: "all"
     property var clipboardVisibleEntryActions: ["pin", "edit", "delete"]
-
-    property var launcherPluginVisibility: ({})
-
-    function getPluginAllowWithoutTrigger(pluginId) {
-        if (!launcherPluginVisibility[pluginId])
-            return true;
-        return launcherPluginVisibility[pluginId].allowWithoutTrigger !== false;
-    }
-
-    function setPluginAllowWithoutTrigger(pluginId, allow) {
-        const updated = JSON.parse(JSON.stringify(launcherPluginVisibility));
-        if (!updated[pluginId])
-            updated[pluginId] = {};
-        updated[pluginId].allowWithoutTrigger = allow;
-        launcherPluginVisibility = updated;
-        saveSettings();
-    }
-
-    property var launcherPluginOrder: []
-    onLauncherPluginOrderChanged: saveSettings()
-
-    function setLauncherPluginOrder(order) {
-        launcherPluginOrder = order;
-    }
-
-    function getOrderedLauncherPlugins(allPlugins) {
-        if (!launcherPluginOrder || launcherPluginOrder.length === 0)
-            return allPlugins;
-        const orderMap = {};
-        for (let i = 0; i < launcherPluginOrder.length; i++)
-            orderMap[launcherPluginOrder[i]] = i;
-        return allPlugins.slice().sort((a, b) => {
-            const aOrder = orderMap[a.id] ?? 9999;
-            const bOrder = orderMap[b.id] ?? 9999;
-            if (aOrder !== bOrder)
-                return aOrder - bOrder;
-            return a.name.localeCompare(b.name);
-        });
-    }
 
     property alias dankBarLeftWidgetsModel: leftWidgetsModel
     property alias dankBarCenterWidgetsModel: centerWidgetsModel
@@ -984,6 +940,17 @@ Singleton {
     property bool updaterIncludeFlatpak: true
     property bool updaterAllowAUR: true
     property var updaterIgnoredPackages: []
+    property bool updaterAutomaticEnabled: true
+    property bool updaterScheduleConfirmed: false
+    property int updaterScheduleHour: 3
+    property int updaterScheduleMinute: 0
+    property int updaterScheduleDays: 1
+    property string updaterScheduleStartDate: ""
+    property bool updaterIdleFallbackEnabled: true
+    property int updaterIdleMinutes: 30
+    property bool updaterOnlyOnAC: true
+    property int updaterLastAutomaticUnix: 0
+    property int updaterPostponedUntilUnix: 0
 
     property string displayNameMode: "system"
     property var screenPreferences: ({})
@@ -1009,7 +976,7 @@ Singleton {
             "showOnLastDisplay": true,
             "leftWidgets": ["launcherButton", "workspaceSwitcher", "focusedWindow"],
             "centerWidgets": ["music", "clock", "weather"],
-            "rightWidgets": ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"],
+            "rightWidgets": ["systemTray", "clipboard", "systemUpdate", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"],
             "spacing": 4,
             "innerPadding": 4,
             "barInsetPadding": -1,
@@ -1464,7 +1431,6 @@ Singleton {
         loadSettings();
         initializeListModels();
         refreshAuthAvailability();
-        Processes.checkPluginSettings();
     }
 
     function applyStoredTheme() {
@@ -1817,7 +1783,6 @@ Singleton {
         } finally {
             _loading = false;
         }
-        loadPluginSettings();
         Qt.callLater(() => _reconcileConnectedFrameBarStyles());
     }
 
@@ -1856,67 +1821,6 @@ Singleton {
         return JSON.stringify(Store.toJson(root), null, 2);
     }
 
-    function _resetPluginSettings() {
-        _pluginParseError = false;
-        pluginSettings = {};
-    }
-
-    function _pluginSettingsErrorCode(error) {
-        if (typeof error === "number")
-            return error;
-        if (error && typeof error === "object") {
-            if (typeof error.code === "number")
-                return error.code;
-            if (typeof error.errno === "number")
-                return error.errno;
-        }
-
-        const msg = String(error || "").trim();
-        if (/^\d+$/.test(msg))
-            return Number(msg);
-
-        return -1;
-    }
-
-    function _isMissingPluginSettingsError(error) {
-        if (_pluginSettingsErrorCode(error) === 2)
-            return true;
-
-        const msg = String(error || "").toLowerCase();
-        return msg.indexOf("file does not exist") !== -1 || msg.indexOf("no such file") !== -1 || msg.indexOf("enoent") !== -1;
-    }
-
-    function loadPluginSettings() {
-        try {
-            parsePluginSettings(pluginSettingsFile.text());
-        } catch (e) {
-            const msg = e.message || String(e);
-            if (!_isMissingPluginSettingsError(e))
-                log.warn("Failed to load plugin_settings.json. Error:", msg);
-            _resetPluginSettings();
-        }
-    }
-
-    function parsePluginSettings(content) {
-        _pluginSettingsLoading = true;
-        _pluginParseError = false;
-        try {
-            if (content && content.trim()) {
-                pluginSettings = JSON.parse(content);
-            } else {
-                pluginSettings = {};
-            }
-        } catch (e) {
-            _pluginParseError = true;
-            const msg = e.message;
-            log.error("Failed to parse plugin_settings.json - file will not be overwritten. Error:", msg);
-            Qt.callLater(() => ToastService.showError(I18n.tr("Failed to parse %1").arg("plugin_settings.json"), msg));
-            pluginSettings = {};
-        } finally {
-            _pluginSettingsLoading = false;
-        }
-    }
-
     function saveSettings() {
         if (_loading || _parseError || !_hasLoaded)
             return;
@@ -1924,12 +1828,6 @@ Singleton {
         settingsFile.setText(JSON.stringify(Store.toJson(root), null, 2));
         if (_isReadOnly)
             _checkSettingsWritable();
-    }
-
-    function savePluginSettings() {
-        if (_pluginSettingsLoading || _pluginParseError)
-            return;
-        pluginSettingsFile.setText(JSON.stringify(pluginSettings, null, 2));
     }
 
     function _connectedFrameBarStyleSnapshot(config) {
@@ -3434,35 +3332,6 @@ Singleton {
         setShowDock(!showDock);
     }
 
-    function getPluginSetting(pluginId, key, defaultValue) {
-        if (!pluginSettings[pluginId]) {
-            return defaultValue;
-        }
-        return pluginSettings[pluginId][key] !== undefined ? pluginSettings[pluginId][key] : defaultValue;
-    }
-
-    function setPluginSetting(pluginId, key, value) {
-        const updated = JSON.parse(JSON.stringify(pluginSettings));
-        if (!updated[pluginId]) {
-            updated[pluginId] = {};
-        }
-        updated[pluginId][key] = value;
-        pluginSettings = updated;
-        savePluginSettings();
-    }
-
-    function removePluginSettings(pluginId) {
-        if (pluginSettings[pluginId]) {
-            delete pluginSettings[pluginId];
-            savePluginSettings();
-        }
-    }
-
-    function getPluginSettingsForPlugin(pluginId) {
-        const settings = pluginSettings[pluginId];
-        return settings ? JSON.parse(JSON.stringify(settings)) : {};
-    }
-
     function getNiriOutputSetting(outputId, key, defaultValue) {
         if (!niriOutputSettings[outputId])
             return defaultValue;
@@ -3707,28 +3576,6 @@ Singleton {
             root._hasUnsavedChanges = root._checkForUnsavedChanges();
         }
     }
-
-    FileView {
-        id: pluginSettingsFile
-
-        path: pluginSettingsPath
-        blockLoading: true
-        blockWrites: true
-        atomicWrites: true
-        printErrors: false
-        watchChanges: true
-        onLoaded: {
-            parsePluginSettings(pluginSettingsFile.text());
-        }
-        onLoadFailed: error => {
-            const msg = String(error || "");
-            if (!_isMissingPluginSettingsError(error))
-                log.warn("Failed to load plugin_settings.json. Error:", msg);
-            _resetPluginSettings();
-        }
-    }
-
-    property bool pluginSettingsFileExists: false
 
     Process {
         id: settingsWritableCheckProcess

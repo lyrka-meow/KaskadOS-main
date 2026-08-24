@@ -8,6 +8,7 @@ Rectangle {
     property string iconName: ""
     property string title: ""
     property string description: ""
+    property bool interactive: false
 
     signal clicked
 
@@ -21,7 +22,7 @@ Rectangle {
         anchors.fill: parent
         radius: parent.radius
         color: Theme.primary
-        opacity: mouseArea.containsMouse ? 0.12 : 0
+        opacity: root.interactive && mouseArea.containsMouse ? 0.12 : 0
     }
 
     Row {
@@ -72,7 +73,11 @@ Rectangle {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
+        enabled: root.interactive
+        cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
+        onClicked: {
+            if (root.interactive)
+                root.clicked();
+        }
     }
 }

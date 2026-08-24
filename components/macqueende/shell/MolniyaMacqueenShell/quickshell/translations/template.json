@@ -28,13 +28,6 @@
     "comment": ""
   },
   {
-    "term": "%1 Startup Failed",
-    "translation": "",
-    "context": "%1 Startup Failed",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "%1 active session",
     "translation": "",
     "context": "%1 active session",
@@ -175,11 +168,32 @@
     "comment": ""
   },
   {
+    "term": "%1 of %2 servers",
+    "translation": "",
+    "context": "%1 of %2 servers",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "%1 online",
     "translation": "",
     "context": "%1 online",
     "reference": "",
     "comment": "Number of online Tailscale peers"
+  },
+  {
+    "term": "%1 processes",
+    "translation": "",
+    "context": "%1 processes",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "%1 servers",
+    "translation": "",
+    "context": "%1 servers",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "%1 tasks",
@@ -581,13 +595,6 @@
     "comment": "wallpaper interval"
   },
   {
-    "term": "3rd party",
-    "translation": "",
-    "context": "3rd party",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "4 hours",
     "translation": "",
     "context": "4 hours",
@@ -714,13 +721,6 @@
     "comment": ""
   },
   {
-    "term": "<a href=\"https://github.com/AvengeMedia/DankMaterialShell/blob/master/LICENSE\" style=\"text-decoration:none; color:%1;\">MIT License</a>",
-    "translation": "",
-    "context": "<a href=\"https://github.com/AvengeMedia/DankMaterialShell/blob/master/LICENSE\" style=\"text-decoration:none; color:%1;\">MIT License</a>",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "A modern desktop shell for Wayland compositors",
     "translation": "",
     "context": "A modern desktop shell for Wayland compositors",
@@ -756,13 +756,6 @@
     "comment": ""
   },
   {
-    "term": "API",
-    "translation": "",
-    "context": "API",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "AUR helpers are interactive — see the terminal window for prompts. This popout will return to idle when the upgrade exits.",
     "translation": "",
     "context": "AUR helpers are interactive — see the terminal window for prompts. This popout will return to idle when the upgrade exits.",
@@ -777,25 +770,11 @@
     "comment": ""
   },
   {
-    "term": "About",
+    "term": "Acceleration Profile",
     "translation": "",
-    "context": "About",
+    "context": "Acceleration Profile",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Accent Color",
-    "translation": "",
-    "context": "Accent Color",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Accept",
-    "translation": "",
-    "context": "Accept",
-    "reference": "",
-    "comment": "KDE Connect accept pairing button"
   },
   {
     "term": "Accept Jobs",
@@ -896,13 +875,6 @@
     "comment": ""
   },
   {
-    "term": "Activation",
-    "translation": "",
-    "context": "Activation",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Active",
     "translation": "",
     "context": "Active",
@@ -962,6 +934,13 @@
     "term": "Adapters",
     "translation": "",
     "context": "Adapters",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Adaptive",
+    "translation": "",
+    "context": "Adaptive",
     "reference": "",
     "comment": ""
   },
@@ -1050,6 +1029,13 @@
     "comment": ""
   },
   {
+    "term": "Add a VPN subscription link. Regalia stores it privately and downloads the server list.",
+    "translation": "",
+    "context": "Add a VPN subscription link. Regalia stores it privately and downloads the server list.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Add a border around the dock",
     "translation": "",
     "context": "Add a border around the dock",
@@ -1078,11 +1064,32 @@
     "comment": ""
   },
   {
+    "term": "Add and download",
+    "translation": "",
+    "context": "Add and download",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Add application",
+    "translation": "",
+    "context": "Add application",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Add by Address",
     "translation": "",
     "context": "Add by Address",
     "reference": "",
     "comment": "Toggle button to manually add a printer by IP or hostname"
+  },
+  {
+    "term": "Add keyboard layout",
+    "translation": "",
+    "context": "Add keyboard layout",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Add location",
@@ -1127,6 +1134,20 @@
     "comment": ""
   },
   {
+    "term": "Adjust pointer sensitivity speed",
+    "translation": "",
+    "context": "Adjust pointer sensitivity speed",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Adjust scrolling sensitivity multiplier",
+    "translation": "",
+    "context": "Adjust scrolling sensitivity multiplier",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Adjust the bar height via inner padding",
     "translation": "",
     "context": "Adjust the bar height via inner padding",
@@ -1137,6 +1158,13 @@
     "term": "Adjust the number of columns in grid view mode.",
     "translation": "",
     "context": "Adjust the number of columns in grid view mode.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Adjust touchpad pointer speed",
+    "translation": "",
+    "context": "Adjust touchpad pointer speed",
     "reference": "",
     "comment": ""
   },
@@ -1194,7 +1222,7 @@
     "translation": "",
     "context": "All",
     "reference": "",
-    "comment": "Tailscale filter: all devices | notification history filter | plugin browser category filter"
+    "comment": "Tailscale filter: all devices | notification history filter"
   },
   {
     "term": "All checks passed",
@@ -1214,6 +1242,13 @@
     "term": "All displays",
     "translation": "",
     "context": "All displays",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "All traffic through VPN",
+    "translation": "",
+    "context": "All traffic through VPN",
     "reference": "",
     "comment": ""
   },
@@ -1281,13 +1316,6 @@
     "comment": "U2F mode option: key works as standalone unlock method"
   },
   {
-    "term": "Always Active",
-    "translation": "",
-    "context": "Always Active",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Always Show Percentage",
     "translation": "",
     "context": "Always Show Percentage",
@@ -1333,6 +1361,13 @@
     "term": "Always show when there's only one connected display",
     "translation": "",
     "context": "Always show when there's only one connected display",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Always use the durations above, even if an app requests a shorter or longer one",
+    "translation": "",
+    "context": "Always use the durations above, even if an app requests a shorter or longer one",
     "reference": "",
     "comment": ""
   },
@@ -1421,6 +1456,13 @@
     "comment": ""
   },
   {
+    "term": "Another TUN VPN is active. Disconnect Throne or another VPN and try again.",
+    "translation": "",
+    "context": "Another TUN VPN is active. Disconnect Throne or another VPN and try again.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Any window",
     "translation": "",
     "context": "Any window",
@@ -1498,6 +1540,13 @@
     "comment": ""
   },
   {
+    "term": "AppImage is not supported because its executable path changes on every launch.",
+    "translation": "",
+    "context": "AppImage is not supported because its executable path changes on every launch.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Appearance",
     "translation": "",
     "context": "Appearance",
@@ -1515,6 +1564,13 @@
     "term": "Application Dock",
     "translation": "",
     "context": "Application Dock",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Application routing",
+    "translation": "",
+    "context": "Application routing",
     "reference": "",
     "comment": ""
   },
@@ -1592,6 +1648,13 @@
     "term": "Apply warm color temperature to reduce eye strain. Use automation settings below to control when it activates.",
     "translation": "",
     "context": "Apply warm color temperature to reduce eye strain. Use automation settings below to control when it activates.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Applying VPN state",
+    "translation": "",
+    "context": "Applying VPN state",
     "reference": "",
     "comment": ""
   },
@@ -2219,13 +2282,6 @@
     "comment": ""
   },
   {
-    "term": "Available Plugins",
-    "translation": "",
-    "context": "Available Plugins",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Available Screens (%1)",
     "translation": "",
     "context": "Available Screens (%1)",
@@ -2233,16 +2289,9 @@
     "comment": ""
   },
   {
-    "term": "Available Updates (%1)",
+    "term": "Average connection",
     "translation": "",
-    "context": "Available Updates (%1)",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Available in Detailed and Forecast view modes",
-    "translation": "",
-    "context": "Available in Detailed and Forecast view modes",
+    "context": "Average connection",
     "reference": "",
     "comment": ""
   },
@@ -2292,13 +2341,6 @@
     "term": "Background Effect",
     "translation": "",
     "context": "Background Effect",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Background Opacity",
-    "translation": "",
-    "context": "Background Opacity",
     "reference": "",
     "comment": ""
   },
@@ -2426,7 +2468,7 @@
     "translation": "",
     "context": "Battery",
     "reference": "",
-    "comment": "KDE Connect battery label"
+    "comment": ""
   },
   {
     "term": "Battery %1",
@@ -2814,20 +2856,6 @@
     "comment": "theme category option"
   },
   {
-    "term": "Browse Files",
-    "translation": "",
-    "context": "Browse Files",
-    "reference": "",
-    "comment": "KDE Connect browse tooltip"
-  },
-  {
-    "term": "Browse Plugins",
-    "translation": "",
-    "context": "Browse Plugins",
-    "reference": "",
-    "comment": "plugin browser header | plugin browser window title"
-  },
-  {
     "term": "Browse Themes",
     "translation": "",
     "context": "Browse Themes",
@@ -2842,16 +2870,16 @@
     "comment": ""
   },
   {
-    "term": "Browse or search plugins",
+    "term": "Button Color",
     "translation": "",
-    "context": "Browse or search plugins",
+    "context": "Button Color",
     "reference": "",
     "comment": ""
   },
   {
-    "term": "Button Color",
+    "term": "Bypass VPN by default",
     "translation": "",
-    "context": "Button Color",
+    "context": "Bypass VPN by default",
     "reference": "",
     "comment": ""
   },
@@ -3024,13 +3052,6 @@
     "comment": ""
   },
   {
-    "term": "Capabilities",
-    "translation": "",
-    "context": "Capabilities",
-    "reference": "",
-    "comment": "plugin detail section"
-  },
-  {
     "term": "Capacity",
     "translation": "",
     "context": "Capacity",
@@ -3064,13 +3085,6 @@
     "context": "Cast Target",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Category",
-    "translation": "",
-    "context": "Category",
-    "reference": "",
-    "comment": "plugin browser sort option"
   },
   {
     "term": "Center Section",
@@ -3164,6 +3178,13 @@
     "comment": "battery status"
   },
   {
+    "term": "Check again",
+    "translation": "",
+    "context": "Check again",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Check for system updates",
     "translation": "",
     "context": "Check for system updates",
@@ -3188,6 +3209,13 @@
     "term": "Check your custom command in Settings → Dock → Trash.",
     "translation": "",
     "context": "Check your custom command in Settings → Dock → Trash.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Checking Regalia",
+    "translation": "",
+    "context": "Checking Regalia",
     "reference": "",
     "comment": ""
   },
@@ -3248,9 +3276,23 @@
     "comment": "wallpaper color picker title"
   },
   {
+    "term": "Choose a VPN server in Settings",
+    "translation": "",
+    "context": "Choose a VPN server in Settings",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Choose a color",
     "translation": "",
     "context": "Choose a color",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Choose a layout…",
+    "translation": "",
+    "context": "Choose a layout…",
     "reference": "",
     "comment": ""
   },
@@ -3262,16 +3304,16 @@
     "comment": ""
   },
   {
-    "term": "Choose colors from palette",
+    "term": "Choose an application, then confirm its exact running process. Regalia reads processPath directly from /proc, just like a process path viewer.",
     "translation": "",
-    "context": "Choose colors from palette",
+    "context": "Choose an application, then confirm its exact running process. Regalia reads processPath directly from /proc, just like a process path viewer.",
     "reference": "",
     "comment": ""
   },
   {
-    "term": "Choose how the weather widget is displayed",
+    "term": "Choose colors from palette",
     "translation": "",
-    "context": "Choose how the weather widget is displayed",
+    "context": "Choose colors from palette",
     "reference": "",
     "comment": ""
   },
@@ -3318,6 +3360,13 @@
     "comment": ""
   },
   {
+    "term": "Choose the languages used for typing. Click a layout to make it active.",
+    "translation": "",
+    "context": "Choose the languages used for typing. Click a layout to make it active.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Choose the logo displayed on the launcher button in DankBar",
     "translation": "",
     "context": "Choose the logo displayed on the launcher button in DankBar",
@@ -3328,6 +3377,13 @@
     "term": "Choose wallpaper folder",
     "translation": "",
     "context": "Choose wallpaper folder",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Choose when to generate scrolling events",
+    "translation": "",
+    "context": "Choose when to generate scrolling events",
     "reference": "",
     "comment": ""
   },
@@ -3360,23 +3416,9 @@
     "comment": ""
   },
   {
-    "term": "Choose which displays show this widget",
-    "translation": "",
-    "context": "Choose which displays show this widget",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Choose which monitors show the lock screen interface. Other monitors will display a solid color for OLED burn-in protection.",
     "translation": "",
     "context": "Choose which monitors show the lock screen interface. Other monitors will display a solid color for OLED burn-in protection.",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Chroma Style",
-    "translation": "",
-    "context": "Chroma Style",
     "reference": "",
     "comment": ""
   },
@@ -3454,6 +3496,20 @@
     "term": "Clear at Startup",
     "translation": "",
     "context": "Clear at Startup",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Clear history",
+    "translation": "",
+    "context": "Clear history",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Clear search",
+    "translation": "",
+    "context": "Clear search",
     "reference": "",
     "comment": ""
   },
@@ -3563,13 +3619,6 @@
     "comment": ""
   },
   {
-    "term": "Clipboard sent",
-    "translation": "",
-    "context": "Clipboard sent",
-    "reference": "",
-    "comment": "Phone Connect clipboard action"
-  },
-  {
     "term": "Clipboard works but nothing saved to disk",
     "translation": "",
     "context": "Clipboard works but nothing saved to disk",
@@ -3643,6 +3692,13 @@
     "term": "Codec switching is unavailable. WirePlumber wpexec was not found.",
     "translation": "",
     "context": "Codec switching is unavailable. WirePlumber wpexec was not found.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Collapsible Tray",
+    "translation": "",
+    "context": "Collapsible Tray",
     "reference": "",
     "comment": ""
   },
@@ -3727,20 +3783,6 @@
     "term": "Color temperature for night mode",
     "translation": "",
     "context": "Color temperature for night mode",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Color theme for syntax highlighting.",
-    "translation": "",
-    "context": "Color theme for syntax highlighting.",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Color theme for syntax highlighting. %1 themes available.",
-    "translation": "",
-    "context": "Color theme for syntax highlighting. %1 themes available.",
     "reference": "",
     "comment": ""
   },
@@ -3846,6 +3888,20 @@
     "term": "Compact Mode",
     "translation": "",
     "context": "Compact Mode",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Compare",
+    "translation": "",
+    "context": "Compare",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Complete the Regalia configuration before enabling VPN.",
+    "translation": "",
+    "context": "Complete the Regalia configuration before enabling VPN.",
     "reference": "",
     "comment": ""
   },
@@ -3976,6 +4032,13 @@
     "comment": ""
   },
   {
+    "term": "Configured applications",
+    "translation": "",
+    "context": "Configured applications",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Confirm",
     "translation": "",
     "context": "Confirm",
@@ -4081,9 +4144,23 @@
     "comment": ""
   },
   {
+    "term": "Connected through Regalia TUN",
+    "translation": "",
+    "context": "Connected through Regalia TUN",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Connected to %1",
     "translation": "",
     "context": "Connected to %1",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Connecting",
+    "translation": "",
+    "context": "Connecting",
     "reference": "",
     "comment": ""
   },
@@ -4116,6 +4193,20 @@
     "comment": "Status message when test connection to printer fails"
   },
   {
+    "term": "Connection quality",
+    "translation": "",
+    "context": "Connection quality",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Connection test failed",
+    "translation": "",
+    "context": "Connection test failed",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Contains",
     "translation": "",
     "context": "Contains",
@@ -4130,13 +4221,6 @@
     "comment": "matugen color scheme option"
   },
   {
-    "term": "Content copied",
-    "translation": "",
-    "context": "Content copied",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Contrast",
     "translation": "",
     "context": "Contrast",
@@ -4144,11 +4228,11 @@
     "comment": ""
   },
   {
-    "term": "Contributor",
+    "term": "Contrast by variant",
     "translation": "",
-    "context": "Contributor",
+    "context": "Contrast by variant",
     "reference": "",
-    "comment": "plugin browser sort option"
+    "comment": "WCAG breakdown popup heading"
   },
   {
     "term": "Control Center",
@@ -4184,13 +4268,6 @@
     "context": "Control what notification information is shown on the lock screen",
     "reference": "",
     "comment": "lock screen notification privacy setting"
-  },
-  {
-    "term": "Control which plugins appear in 'All' mode without requiring a trigger prefix. Drag to reorder.",
-    "translation": "",
-    "context": "Control which plugins appear in 'All' mode without requiring a trigger prefix. Drag to reorder.",
-    "reference": "",
-    "comment": ""
   },
   {
     "term": "Control workspaces and columns by scrolling on the bar",
@@ -4270,27 +4347,6 @@
     "comment": ""
   },
   {
-    "term": "Copied GIF",
-    "translation": "",
-    "context": "Copied GIF",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Copied MP4",
-    "translation": "",
-    "context": "Copied MP4",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Copied WebP",
-    "translation": "",
-    "context": "Copied WebP",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Copied to clipboard",
     "translation": "",
     "context": "Copied to clipboard",
@@ -4312,23 +4368,9 @@
     "comment": "Copy to clipboard"
   },
   {
-    "term": "Copy Content",
-    "translation": "",
-    "context": "Copy Content",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Copy Full Command",
     "translation": "",
     "context": "Copy Full Command",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Copy HTML",
-    "translation": "",
-    "context": "Copy HTML",
     "reference": "",
     "comment": ""
   },
@@ -4343,13 +4385,6 @@
     "term": "Copy PID",
     "translation": "",
     "context": "Copy PID",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Copy Text",
-    "translation": "",
-    "context": "Copy Text",
     "reference": "",
     "comment": ""
   },
@@ -4382,6 +4417,27 @@
     "comment": ""
   },
   {
+    "term": "Could not connect to the Regalia service",
+    "translation": "",
+    "context": "Could not connect to the Regalia service",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Could not download this wallpaper",
+    "translation": "",
+    "context": "Could not download this wallpaper",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Could not load online wallpapers. Check your connection.",
+    "translation": "",
+    "context": "Could not load online wallpapers. Check your connection.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Couldn't load hotspot password",
     "translation": "",
     "context": "Couldn't load hotspot password",
@@ -4406,13 +4462,6 @@
     "term": "Create",
     "translation": "",
     "context": "Create",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Create Dir",
-    "translation": "",
-    "context": "Create Dir",
     "reference": "",
     "comment": ""
   },
@@ -4445,6 +4494,13 @@
     "comment": ""
   },
   {
+    "term": "Create routing profile",
+    "translation": "",
+    "context": "Create routing profile",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Create rule for:",
     "translation": "",
     "context": "Create rule for:",
@@ -4455,13 +4511,6 @@
     "term": "Create rules to mute, ignore, hide from history, or override notification priority. Default only overrides priority; notifications still show normally.",
     "translation": "",
     "context": "Create rules to mute, ignore, hide from history, or override notification priority. Default only overrides priority; notifications still show normally.",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Created plugin directory: %1",
-    "translation": "",
-    "context": "Created plugin directory: %1",
     "reference": "",
     "comment": ""
   },
@@ -4557,13 +4606,6 @@
     "comment": "notification center tab"
   },
   {
-    "term": "Current Items",
-    "translation": "",
-    "context": "Current Items",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Current Locale",
     "translation": "",
     "context": "Current Locale",
@@ -4620,9 +4662,30 @@
     "comment": "Running apps filter: only show apps from the active workspace"
   },
   {
+    "term": "Current configuration",
+    "translation": "",
+    "context": "Current configuration",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Current route",
+    "translation": "",
+    "context": "Current route",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Current time and date display",
     "translation": "",
     "context": "Current time and date display",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Current track",
+    "translation": "",
+    "context": "Current track",
     "reference": "",
     "comment": ""
   },
@@ -4865,13 +4928,6 @@
     "comment": ""
   },
   {
-    "term": "DMS Plugin Manager Unavailable",
-    "translation": "",
-    "context": "DMS Plugin Manager Unavailable",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "DMS Settings",
     "translation": "",
     "context": "DMS Settings",
@@ -5003,13 +5059,6 @@
     "context": "DankCalendar isn't running",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "DankMaterialShell is ready to use",
-    "translation": "",
-    "context": "DankMaterialShell is ready to use",
-    "reference": "",
-    "comment": "greeter completion page subtitle"
   },
   {
     "term": "DankShell & System Icons (requires restart)",
@@ -5201,6 +5250,13 @@
     "comment": ""
   },
   {
+    "term": "Default route",
+    "translation": "",
+    "context": "Default route",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Default selected action",
     "translation": "",
     "context": "Default selected action",
@@ -5232,6 +5288,13 @@
     "term": "Delete",
     "translation": "",
     "context": "Delete",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Delete \"%1\" and all of its servers?",
+    "translation": "",
+    "context": "Delete \"%1\" and all of its servers?",
     "reference": "",
     "comment": ""
   },
@@ -5295,6 +5358,20 @@
     "term": "Delete profile \"%1\"?",
     "translation": "",
     "context": "Delete profile \"%1\"?",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Delete routing profile",
+    "translation": "",
+    "context": "Delete routing profile",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Delete subscription",
+    "translation": "",
+    "context": "Delete subscription",
     "reference": "",
     "comment": ""
   },
@@ -5369,13 +5446,6 @@
     "comment": "notification rule match field option"
   },
   {
-    "term": "Desktop Widget",
-    "translation": "",
-    "context": "Desktop Widget",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Desktop Widgets",
     "translation": "",
     "context": "Desktop Widgets",
@@ -5386,13 +5456,6 @@
     "term": "Desktop background images",
     "translation": "",
     "context": "Desktop background images",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Detailed",
-    "translation": "",
-    "context": "Detailed",
     "reference": "",
     "comment": ""
   },
@@ -5450,19 +5513,12 @@
     "translation": "",
     "context": "Device paired",
     "reference": "",
-    "comment": "Phone Connect pairing action"
+    "comment": ""
   },
   {
-    "term": "Device unpaired",
+    "term": "Diagnostics",
     "translation": "",
-    "context": "Device unpaired",
-    "reference": "",
-    "comment": "Phone Connect unpair action"
-  },
-  {
-    "term": "Diff",
-    "translation": "",
-    "context": "Diff",
+    "context": "Diagnostics",
     "reference": "",
     "comment": ""
   },
@@ -5470,6 +5526,20 @@
     "term": "Digital",
     "translation": "",
     "context": "Digital",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Direct",
+    "translation": "",
+    "context": "Direct",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Direct by default",
+    "translation": "",
+    "context": "Direct by default",
     "reference": "",
     "comment": ""
   },
@@ -5519,6 +5589,27 @@
     "term": "Disable Output",
     "translation": "",
     "context": "Disable Output",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Disable While Typing",
+    "translation": "",
+    "context": "Disable While Typing",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Disable on External Mouse",
+    "translation": "",
+    "context": "Disable on External Mouse",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Disable touchpad when an external mouse is connected",
+    "translation": "",
+    "context": "Disable touchpad when an external mouse is connected",
     "reference": "",
     "comment": ""
   },
@@ -5579,6 +5670,13 @@
     "comment": "Tailscale disconnect button"
   },
   {
+    "term": "Disconnect VPN before changing subscriptions or servers.",
+    "translation": "",
+    "context": "Disconnect VPN before changing subscriptions or servers.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Disconnected",
     "translation": "",
     "context": "Disconnected",
@@ -5589,6 +5687,13 @@
     "term": "Disconnected from WiFi",
     "translation": "",
     "context": "Disconnected from WiFi",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Disconnecting...",
+    "translation": "",
+    "context": "Disconnecting...",
     "reference": "",
     "comment": ""
   },
@@ -5677,13 +5782,6 @@
     "comment": ""
   },
   {
-    "term": "Display Settings",
-    "translation": "",
-    "context": "Display Settings",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Display a dock with pinned and running applications",
     "translation": "",
     "context": "Display a dock with pinned and running applications",
@@ -5729,13 +5827,6 @@
     "term": "Display currently focused application title",
     "translation": "",
     "context": "Display currently focused application title",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Display hourly weather predictions",
-    "translation": "",
-    "context": "Display hourly weather predictions",
     "reference": "",
     "comment": ""
   },
@@ -5897,6 +5988,34 @@
     "term": "Door Open",
     "translation": "",
     "context": "Door Open",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Download and apply",
+    "translation": "",
+    "context": "Download and apply",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Download measurement failed because the connection was interrupted",
+    "translation": "",
+    "context": "Download measurement failed because the connection was interrupted",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Downloading…",
+    "translation": "",
+    "context": "Downloading…",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Drag Lock",
+    "translation": "",
+    "context": "Drag Lock",
     "reference": "",
     "comment": ""
   },
@@ -6069,6 +6188,13 @@
     "comment": ""
   },
   {
+    "term": "Edge",
+    "translation": "",
+    "context": "Edge",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Edge Hover Reveal",
     "translation": "",
     "context": "Edge Hover Reveal",
@@ -6181,6 +6307,13 @@
     "comment": ""
   },
   {
+    "term": "Emulate middle click by pressing left and right buttons",
+    "translation": "",
+    "context": "Emulate middle click by pressing left and right buttons",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Enable 10-bit color depth for wider color gamut and HDR support",
     "translation": "",
     "context": "Enable 10-bit color depth for wider color gamut and HDR support",
@@ -6240,6 +6373,13 @@
     "term": "Enable System Sounds",
     "translation": "",
     "context": "Enable System Sounds",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Enable VPN",
+    "translation": "",
+    "context": "Enable VPN",
     "reference": "",
     "comment": ""
   },
@@ -6335,6 +6475,13 @@
     "comment": "bluetooth status"
   },
   {
+    "term": "Enabled, waiting for the engine",
+    "translation": "",
+    "context": "Enabled, waiting for the engine",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Enabling WiFi...",
     "translation": "",
     "context": "Enabling WiFi...",
@@ -6389,13 +6536,6 @@
     "context": "Enter PIN for ",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Enter URI or text to share",
-    "translation": "",
-    "context": "Enter URI or text to share",
-    "reference": "",
-    "comment": "KDE Connect share input placeholder"
   },
   {
     "term": "Enter a new name for session \"%1\"",
@@ -6538,6 +6678,13 @@
     "comment": "greeter doctor page status card"
   },
   {
+    "term": "Errors %1%",
+    "translation": "",
+    "context": "Errors %1%",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Estimated Time",
     "translation": "",
     "context": "Estimated Time",
@@ -6592,6 +6739,13 @@
     "context": "Exact",
     "reference": "",
     "comment": "notification rule match type option"
+  },
+  {
+    "term": "Excellent connection",
+    "translation": "",
+    "context": "Excellent connection",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Excluded Players",
@@ -6664,13 +6818,6 @@
     "comment": "power profile description"
   },
   {
-    "term": "Extensible architecture",
-    "translation": "",
-    "context": "Extensible architecture",
-    "reference": "",
-    "comment": "greeter feature card description"
-  },
-  {
     "term": "External Wallpaper Management",
     "translation": "",
     "context": "External Wallpaper Management",
@@ -6720,11 +6867,11 @@
     "comment": ""
   },
   {
-    "term": "Failed to accept pairing",
+    "term": "Failed",
     "translation": "",
-    "context": "Failed to accept pairing",
+    "context": "Failed",
     "reference": "",
-    "comment": "Phone Connect error"
+    "comment": ""
   },
   {
     "term": "Failed to activate configuration",
@@ -6767,13 +6914,6 @@
     "context": "Failed to apply profile",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Failed to browse device",
-    "translation": "",
-    "context": "Failed to browse device",
-    "reference": "",
-    "comment": "Phone Connect error"
   },
   {
     "term": "Failed to cancel all jobs",
@@ -6867,13 +7007,6 @@
     "comment": ""
   },
   {
-    "term": "Failed to disable plugin: %1",
-    "translation": "",
-    "context": "Failed to disable plugin: %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Failed to disconnect VPN",
     "translation": "",
     "context": "Failed to disconnect VPN",
@@ -6958,13 +7091,6 @@
     "comment": ""
   },
   {
-    "term": "Failed to launch SMS app",
-    "translation": "",
-    "context": "Failed to launch SMS app",
-    "reference": "",
-    "comment": "Phone Connect error"
-  },
-  {
     "term": "Failed to load VPN config",
     "translation": "",
     "context": "Failed to load VPN config",
@@ -7028,20 +7154,6 @@
     "comment": ""
   },
   {
-    "term": "Failed to reject pairing",
-    "translation": "",
-    "context": "Failed to reject pairing",
-    "reference": "",
-    "comment": "Phone Connect error"
-  },
-  {
-    "term": "Failed to reload plugin: %1",
-    "translation": "",
-    "context": "Failed to reload plugin: %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Failed to remove QR code at %1: %2",
     "translation": "",
     "context": "Failed to remove QR code at %1: %2",
@@ -7091,13 +7203,6 @@
     "comment": ""
   },
   {
-    "term": "Failed to ring device",
-    "translation": "",
-    "context": "Failed to ring device",
-    "reference": "",
-    "comment": "Phone Connect error"
-  },
-  {
     "term": "Failed to run 'dms-greeter status'. Ensure the dms-greeter package is installed.",
     "translation": "",
     "context": "Failed to run 'dms-greeter status'. Ensure the dms-greeter package is installed.",
@@ -7140,32 +7245,11 @@
     "comment": ""
   },
   {
-    "term": "Failed to send SMS",
+    "term": "Failed to scan running processes",
     "translation": "",
-    "context": "Failed to send SMS",
+    "context": "Failed to scan running processes",
     "reference": "",
-    "comment": "Phone Connect error"
-  },
-  {
-    "term": "Failed to send clipboard",
-    "translation": "",
-    "context": "Failed to send clipboard",
-    "reference": "",
-    "comment": "Phone Connect error"
-  },
-  {
-    "term": "Failed to send file",
-    "translation": "",
-    "context": "Failed to send file",
-    "reference": "",
-    "comment": "Phone Connect error"
-  },
-  {
-    "term": "Failed to send ping",
-    "translation": "",
-    "context": "Failed to send ping",
-    "reference": "",
-    "comment": "Phone Connect error"
+    "comment": ""
   },
   {
     "term": "Failed to set brightness",
@@ -7217,11 +7301,11 @@
     "comment": ""
   },
   {
-    "term": "Failed to share",
+    "term": "Failed to start Regalia service",
     "translation": "",
-    "context": "Failed to share",
+    "context": "Failed to start Regalia service",
     "reference": "",
-    "comment": "Phone Connect error"
+    "comment": ""
   },
   {
     "term": "Failed to start connection to %1",
@@ -7255,13 +7339,6 @@
     "term": "Failed to unpin entry",
     "translation": "",
     "context": "Failed to unpin entry",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Failed to update %1: %2",
-    "translation": "",
-    "context": "Failed to update %1: %2",
     "reference": "",
     "comment": ""
   },
@@ -7343,13 +7420,6 @@
     "comment": "greeter welcome page section header"
   },
   {
-    "term": "Feels",
-    "translation": "",
-    "context": "Feels",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Feels Like",
     "translation": "",
     "context": "Feels Like",
@@ -7382,7 +7452,7 @@
     "translation": "",
     "context": "File",
     "reference": "",
-    "comment": "KDE Connect send file button"
+    "comment": ""
   },
   {
     "term": "File Manager",
@@ -7404,13 +7474,6 @@
     "context": "File manager used to open the trash. Pick \"custom\" to enter your own command.",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "File received from %1",
-    "translation": "",
-    "context": "File received from %1",
-    "reference": "",
-    "comment": "Phone Connect file share notification"
   },
   {
     "term": "File search requires dsearch\nInstall from github.com/AvengeMedia/danksearch",
@@ -7455,13 +7518,6 @@
     "comment": "wallpaper fill mode setting"
   },
   {
-    "term": "Filter",
-    "translation": "",
-    "context": "Filter",
-    "reference": "",
-    "comment": "plugin browser category filter label"
-  },
-  {
     "term": "Filter by type",
     "translation": "",
     "context": "Filter by type",
@@ -7479,6 +7535,13 @@
     "term": "Find in note...",
     "translation": "",
     "context": "Find in note...",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Find process",
+    "translation": "",
+    "context": "Find process",
     "reference": "",
     "comment": ""
   },
@@ -7556,6 +7619,20 @@
     "term": "Flags",
     "translation": "",
     "context": "Flags",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Flat",
+    "translation": "",
+    "context": "Flat",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Flat uses constant speed; Adaptive scales with movement speed",
+    "translation": "",
+    "context": "Flat uses constant speed; Adaptive scales with movement speed",
     "reference": "",
     "comment": ""
   },
@@ -7903,20 +7980,6 @@
     "comment": ""
   },
   {
-    "term": "Forecast",
-    "translation": "",
-    "context": "Forecast",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Forecast Days",
-    "translation": "",
-    "context": "Forecast Days",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Forecast Not Available",
     "translation": "",
     "context": "Forecast Not Available",
@@ -7992,13 +8055,6 @@
     "context": "Format the date on the login screen",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Forward 10s",
-    "translation": "",
-    "context": "Forward 10s",
-    "reference": "",
-    "comment": "Media forward tooltip"
   },
   {
     "term": "Frame",
@@ -8260,13 +8316,6 @@
     "comment": "greeter first page button"
   },
   {
-    "term": "GitHub",
-    "translation": "",
-    "context": "GitHub",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Global fonts can be configured in Settings → Personalization",
     "translation": "",
     "context": "Global fonts can be configured in Settings → Personalization",
@@ -8291,6 +8340,13 @@
     "term": "Good",
     "translation": "",
     "context": "Good",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Good connection",
+    "translation": "",
+    "context": "Good connection",
     "reference": "",
     "comment": ""
   },
@@ -8533,13 +8589,6 @@
     "comment": ""
   },
   {
-    "term": "HTML copied to clipboard",
-    "translation": "",
-    "context": "HTML copied to clipboard",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Handles geo: location links",
     "translation": "",
     "context": "Handles geo: location links",
@@ -8673,13 +8722,6 @@
     "comment": ""
   },
   {
-    "term": "Hide 3rd Party",
-    "translation": "",
-    "context": "Hide 3rd Party",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Hide App",
     "translation": "",
     "context": "Hide App",
@@ -8708,9 +8750,9 @@
     "comment": ""
   },
   {
-    "term": "Hide When Windows Open",
+    "term": "Hide application picker",
     "translation": "",
-    "context": "Hide When Windows Open",
+    "context": "Hide application picker",
     "reference": "",
     "comment": ""
   },
@@ -8743,13 +8785,6 @@
     "comment": ""
   },
   {
-    "term": "Hide installed",
-    "translation": "",
-    "context": "Hide installed",
-    "reference": "",
-    "comment": "plugin browser filter chip"
-  },
-  {
     "term": "Hide notification content until expanded",
     "translation": "",
     "context": "Hide notification content until expanded",
@@ -8771,23 +8806,16 @@
     "comment": ""
   },
   {
+    "term": "Hide the bar only while a window overlaps its area",
+    "translation": "",
+    "context": "Hide the bar only while a window overlaps its area",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Hide the bar when the pointer leaves even if a popout is still open",
     "translation": "",
     "context": "Hide the bar when the pointer leaves even if a popout is still open",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Hide when no updates: OFF",
-    "translation": "",
-    "context": "Hide when no updates: OFF",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Hide when no updates: ON",
-    "translation": "",
-    "context": "Hide when no updates: ON",
     "reference": "",
     "comment": ""
   },
@@ -8974,13 +9002,6 @@
     "comment": ""
   },
   {
-    "term": "Hourly Forecast Count",
-    "translation": "",
-    "context": "Hourly Forecast Count",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Hover Popouts",
     "translation": "",
     "context": "Hover Popouts",
@@ -9023,23 +9044,9 @@
     "comment": ""
   },
   {
-    "term": "Hyprland Discord Server",
-    "translation": "",
-    "context": "Hyprland Discord Server",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Hyprland Options",
     "translation": "",
     "context": "Hyprland Options",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Hyprland Website",
-    "translation": "",
-    "context": "Hyprland Website",
     "reference": "",
     "comment": ""
   },
@@ -9061,13 +9068,6 @@
     "term": "Hyprland config include missing",
     "translation": "",
     "context": "Hyprland config include missing",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "I Understand",
-    "translation": "",
-    "context": "I Understand",
     "reference": "",
     "comment": ""
   },
@@ -9212,6 +9212,13 @@
     "comment": ""
   },
   {
+    "term": "Ignore App-Requested Timeout",
+    "translation": "",
+    "context": "Ignore App-Requested Timeout",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Ignore Completely",
     "translation": "",
     "context": "Ignore Completely",
@@ -9341,13 +9348,6 @@
     "term": "Include desktop actions (shortcuts) in search results.",
     "translation": "",
     "context": "Include desktop actions (shortcuts) in search results.",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Incompatible Plugins Loaded",
-    "translation": "",
-    "context": "Incompatible Plugins Loaded",
     "reference": "",
     "comment": ""
   },
@@ -9492,13 +9492,6 @@
     "comment": "greeter action confirmation"
   },
   {
-    "term": "Install Plugin",
-    "translation": "",
-    "context": "Install Plugin",
-    "reference": "",
-    "comment": "plugin installation dialog title"
-  },
-  {
     "term": "Install Theme",
     "translation": "",
     "context": "Install Theme",
@@ -9541,20 +9534,6 @@
     "comment": "matugen installation hint"
   },
   {
-    "term": "Install plugin '%1' from the DMS registry?",
-    "translation": "",
-    "context": "Install plugin '%1' from the DMS registry?",
-    "reference": "",
-    "comment": "plugin installation confirmation"
-  },
-  {
-    "term": "Install plugins from the DMS plugin registry",
-    "translation": "",
-    "context": "Install plugins from the DMS plugin registry",
-    "reference": "",
-    "comment": "plugin browser description"
-  },
-  {
     "term": "Install the DMS greeter? A terminal will open for sudo authentication.",
     "translation": "",
     "context": "Install the DMS greeter? A terminal will open for sudo authentication.",
@@ -9581,13 +9560,6 @@
     "context": "Installed",
     "reference": "",
     "comment": "installed status"
-  },
-  {
-    "term": "Installed first",
-    "translation": "",
-    "context": "Installed first",
-    "reference": "",
-    "comment": "plugin browser filter chip"
   },
   {
     "term": "Installed: %1",
@@ -9758,6 +9730,13 @@
     "comment": ""
   },
   {
+    "term": "Keep dragging when finger is briefly lifted",
+    "translation": "",
+    "context": "Keep dragging when finger is briefly lifted",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Keep in Bar",
     "translation": "",
     "context": "Keep in Bar",
@@ -9770,6 +9749,13 @@
     "context": "Keep the clipboard type filter when reopening history",
     "reference": "",
     "comment": "Clipboard behavior setting description"
+  },
+  {
+    "term": "Keep this setting after logout and reboot",
+    "translation": "",
+    "context": "Keep this setting after logout and reboot",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Keep typing",
@@ -9800,13 +9786,6 @@
     "comment": ""
   },
   {
-    "term": "Keybind Sources",
-    "translation": "",
-    "context": "Keybind Sources",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Keybinds",
     "translation": "",
     "context": "Keybinds",
@@ -9814,23 +9793,16 @@
     "comment": "greeter settings link"
   },
   {
-    "term": "Keybinds Search Settings",
-    "translation": "",
-    "context": "Keybinds Search Settings",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Keybinds shown alongside regular search results",
-    "translation": "",
-    "context": "Keybinds shown alongside regular search results",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Keyboard Layout Name",
     "translation": "",
     "context": "Keyboard Layout Name",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Keyboard Layouts",
+    "translation": "",
+    "context": "Keyboard Layouts",
     "reference": "",
     "comment": ""
   },
@@ -9870,30 +9842,9 @@
     "comment": ""
   },
   {
-    "term": "Ko-fi",
-    "translation": "",
-    "context": "Ko-fi",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "LED device",
     "translation": "",
     "context": "LED device",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "LabWC IRC Channel",
-    "translation": "",
-    "context": "LabWC IRC Channel",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "LabWC Website",
-    "translation": "",
-    "context": "LabWC Website",
     "reference": "",
     "comment": ""
   },
@@ -9971,6 +9922,20 @@
     "term": "Last launched just now",
     "translation": "",
     "context": "Last launched just now",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Last test: %1 · history %2/20 · 30 days",
+    "translation": "",
+    "context": "Last test: %1 · history %2/20 · 30 days",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Latency is sampled alternately; speed is tested sequentially (~14 MB via Cloudflare). Other applications keep their routes.",
+    "translation": "",
+    "context": "Latency is sampled alternately; speed is tested sequentially (~14 MB via Cloudflare). Other applications keep their routes.",
     "reference": "",
     "comment": ""
   },
@@ -10069,6 +10034,13 @@
     "term": "Left Section",
     "translation": "",
     "context": "Left Section",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Left-Handed Mode",
+    "translation": "",
+    "context": "Left-Handed Mode",
     "reference": "",
     "comment": ""
   },
@@ -10213,9 +10185,16 @@
     "comment": ""
   },
   {
-    "term": "Loading trending...",
+    "term": "Loading lyrics…",
     "translation": "",
-    "context": "Loading trending...",
+    "context": "Loading lyrics…",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Loading wallpapers…",
+    "translation": "",
+    "context": "Loading wallpapers…",
     "reference": "",
     "comment": ""
   },
@@ -10402,6 +10381,27 @@
     "comment": "setting title under power & sleep tab"
   },
   {
+    "term": "Lyrics",
+    "translation": "",
+    "context": "Lyrics",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Lyrics are available, but not synchronized",
+    "translation": "",
+    "context": "Lyrics are available, but not synchronized",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Lyrics not found",
+    "translation": "",
+    "context": "Lyrics not found",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "MAC",
     "translation": "",
     "context": "MAC",
@@ -10430,23 +10430,9 @@
     "comment": ""
   },
   {
-    "term": "Make sure KDE Connect or Valent is running on your other devices",
-    "translation": "",
-    "context": "Make sure KDE Connect or Valent is running on your other devices",
-    "reference": "",
-    "comment": "Phone Connect hint message"
-  },
-  {
     "term": "Make the bar background fully transparent",
     "translation": "",
     "context": "Make the bar background fully transparent",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Manage and configure plugins for extending DMS functionality",
-    "translation": "",
-    "context": "Manage and configure plugins for extending DMS functionality",
     "reference": "",
     "comment": ""
   },
@@ -10871,6 +10857,27 @@
     "comment": ""
   },
   {
+    "term": "Measuring download speed…",
+    "translation": "",
+    "context": "Measuring download speed…",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Measuring latency…",
+    "translation": "",
+    "context": "Measuring latency…",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Measuring upload speed…",
+    "translation": "",
+    "context": "Measuring upload speed…",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Media",
     "translation": "",
     "context": "Media",
@@ -10990,13 +10997,6 @@
     "comment": ""
   },
   {
-    "term": "Message",
-    "translation": "",
-    "context": "Message",
-    "reference": "",
-    "comment": "KDE Connect SMS message input placeholder"
-  },
-  {
     "term": "Message Content",
     "translation": "",
     "context": "Message Content",
@@ -11035,6 +11035,13 @@
     "term": "Microphone volume control",
     "translation": "",
     "context": "Microphone volume control",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Middle Click Emulation",
+    "translation": "",
+    "context": "Middle Click Emulation",
     "reference": "",
     "comment": ""
   },
@@ -11137,6 +11144,13 @@
     "comment": "greeter feature card description"
   },
   {
+    "term": "MolniyaMacqueenShell is ready to use",
+    "translation": "",
+    "context": "MolniyaMacqueenShell is ready to use",
+    "reference": "",
+    "comment": "greeter completion page subtitle"
+  },
+  {
     "term": "Monitor",
     "translation": "",
     "context": "Monitor",
@@ -11219,6 +11233,27 @@
     "context": "Mount Points",
     "reference": "",
     "comment": "mount points header in system monitor"
+  },
+  {
+    "term": "Mountains, space, minimalism…",
+    "translation": "",
+    "context": "Mountains, space, minimalism…",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Mouse & Touchpad",
+    "translation": "",
+    "context": "Mouse & Touchpad",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Mouse Settings",
+    "translation": "",
+    "context": "Mouse Settings",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Mouse clicks pass through the bar to windows behind it",
@@ -11351,7 +11386,7 @@
     "translation": "",
     "context": "Name",
     "reference": "",
-    "comment": "plugin browser sort option"
+    "comment": ""
   },
   {
     "term": "Named Workspace Icons",
@@ -11371,6 +11406,13 @@
     "term": "Native: platform renderer (FreeType).",
     "translation": "",
     "context": "Native: platform renderer (FreeType).",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Natural Scrolling",
+    "translation": "",
+    "context": "Natural Scrolling",
     "reference": "",
     "comment": ""
   },
@@ -11429,13 +11471,6 @@
     "context": "Network Speed Monitor",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Network Type",
-    "translation": "",
-    "context": "Network Type",
-    "reference": "",
-    "comment": "KDE Connect network type label"
   },
   {
     "term": "Network download and upload speed display",
@@ -11533,7 +11568,7 @@
     "translation": "",
     "context": "Next",
     "reference": "",
-    "comment": "Media next tooltip | greeter next button"
+    "comment": "greeter next button"
   },
   {
     "term": "Next Transition",
@@ -11711,6 +11746,13 @@
     "comment": ""
   },
   {
+    "term": "No Scroll",
+    "translation": "",
+    "context": "No Scroll",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "No Shadow",
     "translation": "",
     "context": "No Shadow",
@@ -11728,13 +11770,6 @@
     "term": "No Weather",
     "translation": "",
     "context": "No Weather",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "No Weather Data",
-    "translation": "",
-    "context": "No Weather Data",
     "reference": "",
     "comment": ""
   },
@@ -11784,6 +11819,13 @@
     "term": "No app customizations.",
     "translation": "",
     "context": "No app customizations.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "No application rules. The profile default is used for every application.",
+    "translation": "",
+    "context": "No application rules. The profile default is used for every application.",
     "reference": "",
     "comment": ""
   },
@@ -11876,14 +11918,14 @@
     "translation": "",
     "context": "No devices",
     "reference": "",
-    "comment": "Phone Connect no devices status | bluetooth status"
+    "comment": "bluetooth status"
   },
   {
     "term": "No devices found",
     "translation": "",
     "context": "No devices found",
     "reference": "",
-    "comment": "KDE Connect no devices message"
+    "comment": ""
   },
   {
     "term": "No disk data",
@@ -11970,13 +12012,6 @@
     "comment": ""
   },
   {
-    "term": "No images found",
-    "translation": "",
-    "context": "No images found",
-    "reference": "",
-    "comment": "No recent images found message"
-  },
-  {
     "term": "No info items",
     "translation": "",
     "context": "No info items",
@@ -12005,23 +12040,9 @@
     "comment": "Audio settings empty state"
   },
   {
-    "term": "No items added yet",
-    "translation": "",
-    "context": "No items added yet",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "No keybinds found",
     "translation": "",
     "context": "No keybinds found",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "No launcher plugins installed.",
-    "translation": "",
-    "context": "No launcher plugins installed.",
     "reference": "",
     "comment": ""
   },
@@ -12036,6 +12057,13 @@
     "term": "No matches",
     "translation": "",
     "context": "No matches",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "No matching applications",
+    "translation": "",
+    "context": "No matching applications",
     "reference": "",
     "comment": ""
   },
@@ -12103,20 +12131,6 @@
     "comment": "No Tailscale peers found"
   },
   {
-    "term": "No plugin results",
-    "translation": "",
-    "context": "No plugin results",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "No plugins found",
-    "translation": "",
-    "context": "No plugins found",
-    "reference": "",
-    "comment": "empty plugin list"
-  },
-  {
     "term": "No printer found",
     "translation": "",
     "context": "No printer found",
@@ -12180,11 +12194,25 @@
     "comment": ""
   },
   {
-    "term": "No screenshot provided",
+    "term": "No server selected",
     "translation": "",
-    "context": "No screenshot provided",
+    "context": "No server selected",
     "reference": "",
-    "comment": "plugin browser no screenshot"
+    "comment": ""
+  },
+  {
+    "term": "No servers match your search.",
+    "translation": "",
+    "context": "No servers match your search.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "No servers yet. Update the subscription to download them.",
+    "translation": "",
+    "context": "No servers yet. Update the subscription to download them.",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "No session selected",
@@ -12227,20 +12255,6 @@
     "context": "No themes installed. Browse themes to install from the registry.",
     "reference": "",
     "comment": "no registry themes installed hint"
-  },
-  {
-    "term": "No trigger",
-    "translation": "",
-    "context": "No trigger",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "No updates available.",
-    "translation": "",
-    "context": "No updates available.",
-    "reference": "",
-    "comment": ""
   },
   {
     "term": "No user specified",
@@ -12425,11 +12439,11 @@
     "comment": ""
   },
   {
-    "term": "Not paired",
+    "term": "Not selected",
     "translation": "",
-    "context": "Not paired",
+    "context": "Not selected",
     "reference": "",
-    "comment": "KDE Connect not paired status"
+    "comment": ""
   },
   {
     "term": "Not set",
@@ -12437,6 +12451,13 @@
     "context": "Not set",
     "reference": "",
     "comment": "wallpaper not set label"
+  },
+  {
+    "term": "Not tested yet",
+    "translation": "",
+    "context": "Not tested yet",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Notepad",
@@ -12472,6 +12493,13 @@
     "context": "Nothing",
     "reference": "",
     "comment": "media scroll wheel option"
+  },
+  {
+    "term": "Nothing found",
+    "translation": "",
+    "context": "Nothing found",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Nothing to see here",
@@ -12541,7 +12569,7 @@
     "translation": "",
     "context": "Notifications",
     "reference": "",
-    "comment": "KDE Connect notifications label | greeter settings link"
+    "comment": "greeter settings link"
   },
   {
     "term": "Notify when limit is reached",
@@ -12614,13 +12642,6 @@
     "comment": ""
   },
   {
-    "term": "Offline",
-    "translation": "",
-    "context": "Offline",
-    "reference": "",
-    "comment": "KDE Connect offline status | Phone Connect offline status"
-  },
-  {
     "term": "Offline Report",
     "translation": "",
     "context": "Offline Report",
@@ -12638,6 +12659,13 @@
     "term": "On",
     "translation": "",
     "context": "On",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "On Button Down",
+    "translation": "",
+    "context": "On Button Down",
     "reference": "",
     "comment": ""
   },
@@ -12675,6 +12703,13 @@
     "context": "Online",
     "reference": "",
     "comment": "Tailscale filter: all online devices"
+  },
+  {
+    "term": "Online wallpapers",
+    "translation": "",
+    "context": "Online wallpapers",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Only adjust gamma based on time or location rules.",
@@ -12733,23 +12768,9 @@
     "comment": ""
   },
   {
-    "term": "Open App",
-    "translation": "",
-    "context": "Open App",
-    "reference": "",
-    "comment": "KDE Connect open SMS app button"
-  },
-  {
     "term": "Open Delay",
     "translation": "",
     "context": "Open Delay",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Open Dir",
-    "translation": "",
-    "context": "Open Dir",
     "reference": "",
     "comment": ""
   },
@@ -12817,13 +12838,6 @@
     "comment": ""
   },
   {
-    "term": "Open in Browser",
-    "translation": "",
-    "context": "Open in Browser",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Open in terminal",
     "translation": "",
     "context": "Open in terminal",
@@ -12864,20 +12878,6 @@
     "context": "Open with...",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Opening SMS app",
-    "translation": "",
-    "context": "Opening SMS app",
-    "reference": "",
-    "comment": "Phone Connect SMS action"
-  },
-  {
-    "term": "Opening file browser",
-    "translation": "",
-    "context": "Opening file browser",
-    "reference": "",
-    "comment": "Phone Connect browse action"
   },
   {
     "term": "Opening terminal: ",
@@ -13188,6 +13188,13 @@
     "comment": ""
   },
   {
+    "term": "Page",
+    "translation": "",
+    "context": "Page",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Pair",
     "translation": "",
     "context": "Pair",
@@ -13213,35 +13220,21 @@
     "translation": "",
     "context": "Pairing failed",
     "reference": "",
-    "comment": "Phone Connect error"
-  },
-  {
-    "term": "Pairing request from %1",
-    "translation": "",
-    "context": "Pairing request from %1",
-    "reference": "",
-    "comment": "Phone Connect pairing request notification"
-  },
-  {
-    "term": "Pairing request sent",
-    "translation": "",
-    "context": "Pairing request sent",
-    "reference": "",
-    "comment": "Phone Connect pairing action"
-  },
-  {
-    "term": "Pairing requested",
-    "translation": "",
-    "context": "Pairing requested",
-    "reference": "",
-    "comment": "KDE Connect pairing requested status"
+    "comment": ""
   },
   {
     "term": "Pairing...",
     "translation": "",
     "context": "Pairing...",
     "reference": "",
-    "comment": "KDE Connect pairing in progress status"
+    "comment": ""
+  },
+  {
+    "term": "Partial",
+    "translation": "",
+    "context": "Partial",
+    "reference": "",
+    "comment": "contrast badge suffix: only some variants pass"
   },
   {
     "term": "Partly Cloudy",
@@ -13314,6 +13307,13 @@
     "comment": ""
   },
   {
+    "term": "Paste subscription URL",
+    "translation": "",
+    "context": "Paste subscription URL",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Path copied to clipboard",
     "translation": "",
     "context": "Path copied to clipboard",
@@ -13339,7 +13339,7 @@
     "translation": "",
     "context": "Pause",
     "reference": "",
-    "comment": "Media pause tooltip"
+    "comment": ""
   },
   {
     "term": "Paused",
@@ -13426,20 +13426,6 @@
     "comment": ""
   },
   {
-    "term": "Phone Connect Not Available",
-    "translation": "",
-    "context": "Phone Connect Not Available",
-    "reference": "",
-    "comment": "Phone Connect unavailable error title"
-  },
-  {
-    "term": "Phone number",
-    "translation": "",
-    "context": "Phone number",
-    "reference": "",
-    "comment": "KDE Connect SMS phone input placeholder"
-  },
-  {
     "term": "Pick a different file manager in Settings → Dock → Trash.",
     "translation": "",
     "context": "Pick a different file manager in Settings → Dock → Trash.",
@@ -13475,20 +13461,6 @@
     "comment": ""
   },
   {
-    "term": "Ping",
-    "translation": "",
-    "context": "Ping",
-    "reference": "",
-    "comment": "KDE Connect ping tooltip"
-  },
-  {
-    "term": "Ping sent to %1",
-    "translation": "",
-    "context": "Ping sent to %1",
-    "reference": "",
-    "comment": "Phone Connect ping action"
-  },
-  {
     "term": "Pinned",
     "translation": "",
     "context": "Pinned",
@@ -13517,20 +13489,6 @@
     "comment": ""
   },
   {
-    "term": "Place plugin directories here. Each plugin should have a plugin.json manifest file.",
-    "translation": "",
-    "context": "Place plugin directories here. Each plugin should have a plugin.json manifest file.",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Place plugins in %1",
-    "translation": "",
-    "context": "Place plugins in %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Place the bar on the Wayland overlay layer",
     "translation": "",
     "context": "Place the bar on the Wayland overlay layer",
@@ -13543,13 +13501,6 @@
     "context": "Place the dock on the Wayland overlay layer",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Play",
-    "translation": "",
-    "context": "Play",
-    "reference": "",
-    "comment": "Media play tooltip"
   },
   {
     "term": "Play a video when the screen locks.",
@@ -13608,6 +13559,13 @@
     "comment": "Plays audio files"
   },
   {
+    "term": "Please wait",
+    "translation": "",
+    "context": "Please wait",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Please wait...",
     "translation": "",
     "context": "Please wait...",
@@ -13629,90 +13587,6 @@
     "comment": "battery status"
   },
   {
-    "term": "Plugin",
-    "translation": "",
-    "context": "Plugin",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin Directory",
-    "translation": "",
-    "context": "Plugin Directory",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin Management",
-    "translation": "",
-    "context": "Plugin Management",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin Visibility",
-    "translation": "",
-    "context": "Plugin Visibility",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin dependency missing",
-    "translation": "",
-    "context": "Plugin dependency missing",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin disabled: %1",
-    "translation": "",
-    "context": "Plugin disabled: %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin enabled: %1",
-    "translation": "",
-    "context": "Plugin enabled: %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin is disabled - enable in Plugins settings to use",
-    "translation": "",
-    "context": "Plugin is disabled - enable in Plugins settings to use",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin reloaded: %1",
-    "translation": "",
-    "context": "Plugin reloaded: %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin uninstalled: %1",
-    "translation": "",
-    "context": "Plugin uninstalled: %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugin updated: %1",
-    "translation": "",
-    "context": "Plugin updated: %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Plugins",
-    "translation": "",
-    "context": "Plugins",
-    "reference": "",
-    "comment": "greeter feature card title | greeter plugins link"
-  },
-  {
     "term": "Pointer",
     "translation": "",
     "context": "Pointer",
@@ -13720,9 +13594,23 @@
     "comment": ""
   },
   {
+    "term": "Pointer Speed",
+    "translation": "",
+    "context": "Pointer Speed",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Polkit integration is disabled. User management requires Polkit to elevate privileges.",
     "translation": "",
     "context": "Polkit integration is disabled. User management requires Polkit to elevate privileges.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Poor connection",
+    "translation": "",
+    "context": "Poor connection",
     "reference": "",
     "comment": ""
   },
@@ -13937,13 +13825,6 @@
     "comment": ""
   },
   {
-    "term": "Precip",
-    "translation": "",
-    "context": "Precip",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Precipitation",
     "translation": "",
     "context": "Precipitation",
@@ -13961,6 +13842,13 @@
     "term": "Preference",
     "translation": "",
     "context": "Preference",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Preparing test…",
+    "translation": "",
+    "context": "Preparing test…",
     "reference": "",
     "comment": ""
   },
@@ -14007,6 +13895,13 @@
     "comment": ""
   },
   {
+    "term": "Prevent accidental cursor jumps while typing",
+    "translation": "",
+    "context": "Prevent accidental cursor jumps while typing",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Prevent screen timeout",
     "translation": "",
     "context": "Prevent screen timeout",
@@ -14017,13 +13912,6 @@
     "term": "Prevent specific applications from displaying in the media controllers (e.g., browser audio streams, background tools). Matches player identity or desktop file name case-insensitively.",
     "translation": "",
     "context": "Prevent specific applications from displaying in the media controllers (e.g., browser audio streams, background tools). Matches player identity or desktop file name case-insensitively.",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Preview",
-    "translation": "",
-    "context": "Preview",
     "reference": "",
     "comment": ""
   },
@@ -14039,7 +13927,7 @@
     "translation": "",
     "context": "Previous",
     "reference": "",
-    "comment": "Media previous tooltip"
+    "comment": ""
   },
   {
     "term": "Previous page",
@@ -14483,13 +14371,6 @@
     "comment": ""
   },
   {
-    "term": "Recent Images",
-    "translation": "",
-    "context": "Recent Images",
-    "reference": "",
-    "comment": "Recent Images title"
-  },
-  {
     "term": "Recently Used Apps",
     "translation": "",
     "context": "Recently Used Apps",
@@ -14518,9 +14399,65 @@
     "comment": ""
   },
   {
+    "term": "Refresh status",
+    "translation": "",
+    "context": "Refresh status",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Refreshing...",
     "translation": "",
     "context": "Refreshing...",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Regalia is not installed",
+    "translation": "",
+    "context": "Regalia is not installed",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Regalia is unavailable",
+    "translation": "",
+    "context": "Regalia is unavailable",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Regalia needs to be updated",
+    "translation": "",
+    "context": "Regalia needs to be updated",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Regalia service did not respond",
+    "translation": "",
+    "context": "Regalia service did not respond",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Regalia service is not running",
+    "translation": "",
+    "context": "Regalia service is not running",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Regalia service went offline during the connection test",
+    "translation": "",
+    "context": "Regalia service went offline during the connection test",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Regalia's test channel did not become ready",
+    "translation": "",
+    "context": "Regalia's test channel did not become ready",
     "reference": "",
     "comment": ""
   },
@@ -14539,25 +14476,11 @@
     "comment": "font weight"
   },
   {
-    "term": "Reject",
-    "translation": "",
-    "context": "Reject",
-    "reference": "",
-    "comment": "KDE Connect reject pairing button"
-  },
-  {
     "term": "Reject Jobs",
     "translation": "",
     "context": "Reject Jobs",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Related: %1",
-    "translation": "",
-    "context": "Related: %1",
-    "reference": "",
-    "comment": "related plugins"
   },
   {
     "term": "Release",
@@ -14577,13 +14500,6 @@
     "term": "Reload From Disk",
     "translation": "",
     "context": "Reload From Disk",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Reload Plugin",
-    "translation": "",
-    "context": "Reload Plugin",
     "reference": "",
     "comment": ""
   },
@@ -14798,13 +14714,6 @@
     "comment": ""
   },
   {
-    "term": "Request Pairing",
-    "translation": "",
-    "context": "Request Pairing",
-    "reference": "",
-    "comment": "KDE Connect request pairing button"
-  },
-  {
     "term": "Require holding button/key to confirm power off, restart, suspend, hibernate and logout",
     "translation": "",
     "context": "Require holding button/key to confirm power off, restart, suspend, hibernate and logout",
@@ -14819,23 +14728,9 @@
     "comment": ""
   },
   {
-    "term": "Requires %1",
-    "translation": "",
-    "context": "Requires %1",
-    "reference": "",
-    "comment": "version requirement"
-  },
-  {
     "term": "Requires 'dgop' tool",
     "translation": "",
     "context": "Requires 'dgop' tool",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Requires DMS %1",
-    "translation": "",
-    "context": "Requires DMS %1",
     "reference": "",
     "comment": ""
   },
@@ -15008,6 +14903,20 @@
     "comment": ""
   },
   {
+    "term": "Reverse mouse wheel scrolling direction",
+    "translation": "",
+    "context": "Reverse mouse wheel scrolling direction",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Reverse two-finger scrolling direction",
+    "translation": "",
+    "context": "Reverse two-finger scrolling direction",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Reverse workspace switch direction when scrolling over the bar",
     "translation": "",
     "context": "Reverse workspace switch direction when scrolling over the bar",
@@ -15020,13 +14929,6 @@
     "context": "Revert",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Rewind 10s",
-    "translation": "",
-    "context": "Rewind 10s",
-    "reference": "",
-    "comment": "Media rewind tooltip"
   },
   {
     "term": "Right",
@@ -15078,20 +14980,6 @@
     "comment": ""
   },
   {
-    "term": "Ring",
-    "translation": "",
-    "context": "Ring",
-    "reference": "",
-    "comment": "KDE Connect ring tooltip"
-  },
-  {
-    "term": "Ringing %1...",
-    "translation": "",
-    "context": "Ringing %1...",
-    "reference": "",
-    "comment": "Phone Connect ring action"
-  },
-  {
     "term": "Ripple Effects",
     "translation": "",
     "context": "Ripple Effects",
@@ -15109,6 +14997,27 @@
     "term": "Rounded corners for windows",
     "translation": "",
     "context": "Rounded corners for windows",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Routing profile",
+    "translation": "",
+    "context": "Routing profile",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Routing profile name",
+    "translation": "",
+    "context": "Routing profile name",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Routing profiles",
+    "translation": "",
+    "context": "Routing profiles",
     "reference": "",
     "comment": ""
   },
@@ -15190,6 +15099,13 @@
     "comment": ""
   },
   {
+    "term": "Run an on-demand test — no background load",
+    "translation": "",
+    "context": "Run an on-demand test — no background load",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Run paru/yay with AUR enabled when 'Update All' is clicked.",
     "translation": "",
     "context": "Run paru/yay with AUR enabled when 'Update All' is clicked.",
@@ -15244,20 +15160,6 @@
     "context": "SDR Saturation",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "SMS",
-    "translation": "",
-    "context": "SMS",
-    "reference": "",
-    "comment": "KDE Connect SMS tooltip"
-  },
-  {
-    "term": "SMS sent successfully",
-    "translation": "",
-    "context": "SMS sent successfully",
-    "reference": "",
-    "comment": "Phone Connect SMS action"
   },
   {
     "term": "SSID",
@@ -15442,6 +15344,20 @@
     "comment": ""
   },
   {
+    "term": "Scan again",
+    "translation": "",
+    "context": "Scan again",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Scanning",
+    "translation": "",
+    "context": "Scanning",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Scanning...",
     "translation": "",
     "context": "Scanning...",
@@ -15470,13 +15386,6 @@
     "comment": ""
   },
   {
-    "term": "Screenshot unavailable",
-    "translation": "",
-    "context": "Screenshot unavailable",
-    "reference": "",
-    "comment": "plugin browser screenshot error"
-  },
-  {
     "term": "Scroll",
     "translation": "",
     "context": "Scroll",
@@ -15491,9 +15400,9 @@
     "comment": ""
   },
   {
-    "term": "Scroll GitHub",
+    "term": "Scroll Method",
     "translation": "",
-    "context": "Scroll GitHub",
+    "context": "Scroll Method",
     "reference": "",
     "comment": ""
   },
@@ -15533,6 +15442,13 @@
     "comment": ""
   },
   {
+    "term": "Scrolling Speed",
+    "translation": "",
+    "context": "Scrolling Speed",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Search App Actions",
     "translation": "",
     "context": "Search App Actions",
@@ -15547,16 +15463,16 @@
     "comment": ""
   },
   {
-    "term": "Search applications...",
+    "term": "Search and install wallpapers without leaving settings. Only safe content is shown.",
     "translation": "",
-    "context": "Search applications...",
+    "context": "Search and install wallpapers without leaving settings. Only safe content is shown.",
     "reference": "",
     "comment": ""
   },
   {
-    "term": "Search by key combo, description, or action name.\n\nDefault action copies the keybind to clipboard.\nRight-click or press Right Arrow to pin frequently used keybinds - they'll appear at the top when not searching.",
+    "term": "Search applications...",
     "translation": "",
-    "context": "Search by key combo, description, or action name.\n\nDefault action copies the keybind to clipboard.\nRight-click or press Right Arrow to pin frequently used keybinds - they'll appear at the top when not searching.",
+    "context": "Search applications...",
     "reference": "",
     "comment": ""
   },
@@ -15568,9 +15484,9 @@
     "comment": "Tailscale device search placeholder"
   },
   {
-    "term": "Search installed plugins...",
+    "term": "Search installed applications",
     "translation": "",
-    "context": "Search installed plugins...",
+    "context": "Search installed applications",
     "reference": "",
     "comment": ""
   },
@@ -15582,25 +15498,25 @@
     "comment": ""
   },
   {
-    "term": "Search keyboard shortcuts from your compositor and applications",
-    "translation": "",
-    "context": "Search keyboard shortcuts from your compositor and applications",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Search plugins...",
-    "translation": "",
-    "context": "Search plugins...",
-    "reference": "",
-    "comment": "plugin search placeholder"
-  },
-  {
     "term": "Search processes...",
     "translation": "",
     "context": "Search processes...",
     "reference": "",
     "comment": "process search placeholder"
+  },
+  {
+    "term": "Search running processes by name or path",
+    "translation": "",
+    "context": "Search running processes by name or path",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Search servers by name, country, protocol, address or subscription",
+    "translation": "",
+    "context": "Search servers by name, country, protocol, address or subscription",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Search sessions...",
@@ -15743,13 +15659,6 @@
     "comment": ""
   },
   {
-    "term": "Select File to Send",
-    "translation": "",
-    "context": "Select File to Send",
-    "reference": "",
-    "comment": "KDE Connect file browser title"
-  },
-  {
     "term": "Select Launcher Logo",
     "translation": "",
     "context": "Select Launcher Logo",
@@ -15799,6 +15708,13 @@
     "comment": ""
   },
   {
+    "term": "Select a server to enable VPN.",
+    "translation": "",
+    "context": "Select a server to enable VPN.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Select a widget to add to your desktop. Each widget is a separate instance with its own settings.",
     "translation": "",
     "context": "Select a widget to add to your desktop. Each widget is a separate instance with its own settings.",
@@ -15834,9 +15750,9 @@
     "comment": ""
   },
   {
-    "term": "Select at least one provider",
+    "term": "Select any layout installed by the system.",
     "translation": "",
-    "context": "Select at least one provider",
+    "context": "Select any layout installed by the system.",
     "reference": "",
     "comment": ""
   },
@@ -15904,6 +15820,13 @@
     "comment": "network status"
   },
   {
+    "term": "Select the executable path shown by the running process.",
+    "translation": "",
+    "context": "Select the executable path shown by the running process.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Select the font family for UI text",
     "translation": "",
     "context": "Select the font family for UI text",
@@ -15914,13 +15837,6 @@
     "term": "Select the palette algorithm used for wallpaper-based colors",
     "translation": "",
     "context": "Select the palette algorithm used for wallpaper-based colors",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Select which keybind providers to include",
-    "translation": "",
-    "context": "Select which keybind providers to include",
     "reference": "",
     "comment": ""
   },
@@ -15939,6 +15855,13 @@
     "comment": ""
   },
   {
+    "term": "Selected",
+    "translation": "",
+    "context": "Selected",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Selected image file not found.",
     "translation": "",
     "context": "Selected image file not found.",
@@ -15946,32 +15869,32 @@
     "comment": ""
   },
   {
-    "term": "Send",
+    "term": "Selected server",
     "translation": "",
-    "context": "Send",
+    "context": "Selected server",
     "reference": "",
-    "comment": "KDE Connect SMS send button"
+    "comment": ""
   },
   {
-    "term": "Send Clipboard",
+    "term": "Selected:",
     "translation": "",
-    "context": "Send Clipboard",
+    "context": "Selected:",
     "reference": "",
-    "comment": "KDE Connect clipboard tooltip | KDE Connect send clipboard tooltip"
+    "comment": ""
   },
   {
-    "term": "Send SMS",
+    "term": "Send selected application through VPN",
     "translation": "",
-    "context": "Send SMS",
+    "context": "Send selected application through VPN",
     "reference": "",
-    "comment": "KDE Connect SMS dialog title"
+    "comment": ""
   },
   {
-    "term": "Sending %1...",
+    "term": "Send selected application without VPN",
     "translation": "",
-    "context": "Sending %1...",
+    "context": "Send selected application without VPN",
     "reference": "",
-    "comment": "Phone Connect file send"
+    "comment": ""
   },
   {
     "term": "Separate",
@@ -16012,6 +15935,13 @@
     "term": "Server",
     "translation": "",
     "context": "Server",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Servers",
+    "translation": "",
+    "context": "Servers",
     "reference": "",
     "comment": ""
   },
@@ -16226,25 +16156,11 @@
     "comment": ""
   },
   {
-    "term": "Share",
-    "translation": "",
-    "context": "Share",
-    "reference": "",
-    "comment": "KDE Connect share dialog title | KDE Connect share tooltip"
-  },
-  {
     "term": "Share Gamma Control Settings",
     "translation": "",
     "context": "Share Gamma Control Settings",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Shared",
-    "translation": "",
-    "context": "Shared",
-    "reference": "",
-    "comment": "Phone Connect share success"
   },
   {
     "term": "Shell",
@@ -16310,9 +16226,9 @@
     "comment": ""
   },
   {
-    "term": "Show 3rd Party",
+    "term": "Show \"config reloaded\" Toast",
     "translation": "",
-    "context": "Show 3rd Party",
+    "context": "Show \"config reloaded\" Toast",
     "reference": "",
     "comment": ""
   },
@@ -16324,9 +16240,9 @@
     "comment": ""
   },
   {
-    "term": "Show All, Apps, Files, and Plugins chips beside the Spotlight Bar input.",
+    "term": "Show All, Apps, and Files chips beside the Spotlight Bar input.",
     "translation": "",
-    "context": "Show All, Apps, Files, and Plugins chips beside the Spotlight Bar input.",
+    "context": "Show All, Apps, and Files chips beside the Spotlight Bar input.",
     "reference": "",
     "comment": ""
   },
@@ -16380,13 +16296,6 @@
     "comment": ""
   },
   {
-    "term": "Show Feels Like Temperature",
-    "translation": "",
-    "context": "Show Feels Like Temperature",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Show Flatpak, Snap, AppImage, or Nix badge icons on launcher items.",
     "translation": "",
     "context": "Show Flatpak, Snap, AppImage, or Nix badge icons on launcher items.",
@@ -16399,13 +16308,6 @@
     "context": "Show Footer",
     "reference": "",
     "comment": "launcher footer visibility"
-  },
-  {
-    "term": "Show Forecast",
-    "translation": "",
-    "context": "Show Forecast",
-    "reference": "",
-    "comment": ""
   },
   {
     "term": "Show GPU Temperature",
@@ -16436,20 +16338,6 @@
     "comment": ""
   },
   {
-    "term": "Show Hourly Forecast",
-    "translation": "",
-    "context": "Show Hourly Forecast",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Show Humidity",
-    "translation": "",
-    "context": "Show Humidity",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Show Icon",
     "translation": "",
     "context": "Show Icon",
@@ -16467,13 +16355,6 @@
     "term": "Show Line Numbers",
     "translation": "",
     "context": "Show Line Numbers",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Show Location",
-    "translation": "",
-    "context": "Show Location",
     "reference": "",
     "comment": ""
   },
@@ -16597,20 +16478,6 @@
     "comment": ""
   },
   {
-    "term": "Show Precipitation Probability",
-    "translation": "",
-    "context": "Show Precipitation Probability",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Show Pressure",
-    "translation": "",
-    "context": "Show Pressure",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Show Profile Image",
     "translation": "",
     "context": "Show Profile Image",
@@ -16649,13 +16516,6 @@
     "term": "Show Seconds",
     "translation": "",
     "context": "Show Seconds",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Show Sunrise/Sunset",
-    "translation": "",
-    "context": "Show Sunrise/Sunset",
     "reference": "",
     "comment": ""
   },
@@ -16716,30 +16576,9 @@
     "comment": ""
   },
   {
-    "term": "Show Weather Condition",
-    "translation": "",
-    "context": "Show Weather Condition",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Show Week Number",
     "translation": "",
     "context": "Show Week Number",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Show Welcome",
-    "translation": "",
-    "context": "Show Welcome",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Show Wind Speed",
-    "translation": "",
-    "context": "Show Wind Speed",
     "reference": "",
     "comment": ""
   },
@@ -16765,6 +16604,13 @@
     "comment": ""
   },
   {
+    "term": "Show a toast when the compositor config is reloaded",
+    "translation": "",
+    "context": "Show a toast when the compositor config is reloaded",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Show a warning popup when battery is running low.",
     "translation": "",
     "context": "Show a warning popup when battery is running low.",
@@ -16775,6 +16621,13 @@
     "term": "Show all 9 tags instead of only occupied tags",
     "translation": "",
     "context": "Show all 9 tags instead of only occupied tags",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Show all running processes",
+    "translation": "",
+    "context": "Show all running processes",
     "reference": "",
     "comment": ""
   },
@@ -16912,9 +16765,9 @@
     "comment": ""
   },
   {
-    "term": "Show the bar only when no windows are open",
+    "term": "Show suggested processes",
     "translation": "",
-    "context": "Show the bar only when no windows are open",
+    "context": "Show suggested processes",
     "reference": "",
     "comment": ""
   },
@@ -17001,13 +16854,6 @@
     "context": "Signal",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "Signal Strength",
-    "translation": "",
-    "context": "Signal Strength",
-    "reference": "",
-    "comment": "KDE Connect signal strength label"
   },
   {
     "term": "Silence for a while",
@@ -17125,13 +16971,6 @@
     "term": "Snow",
     "translation": "",
     "context": "Snow",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Some plugins require a newer version of DMS:",
-    "translation": "",
-    "context": "Some plugins require a newer version of DMS:",
     "reference": "",
     "comment": ""
   },
@@ -17311,16 +17150,23 @@
     "comment": "hotspot start confirmation title"
   },
   {
-    "term": "Start KDE Connect or Valent to use this plugin",
+    "term": "Start service",
     "translation": "",
-    "context": "Start KDE Connect or Valent to use this plugin",
+    "context": "Start service",
     "reference": "",
-    "comment": "Phone Connect daemon hint"
+    "comment": ""
   },
   {
     "term": "Start typing your notes here...",
     "translation": "",
     "context": "Start typing your notes here...",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Starting",
+    "translation": "",
+    "context": "Starting",
     "reference": "",
     "comment": ""
   },
@@ -17428,6 +17274,27 @@
     "context": "Stripes",
     "reference": "",
     "comment": "wallpaper transition option"
+  },
+  {
+    "term": "Subscription name",
+    "translation": "",
+    "context": "Subscription name",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Subscription service is temporarily unavailable (HTTP 502). Try again later.",
+    "translation": "",
+    "context": "Subscription service is temporarily unavailable (HTTP 502). Try again later.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Subscriptions",
+    "translation": "",
+    "context": "Subscriptions",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Summary",
@@ -17591,9 +17458,9 @@
     "comment": ""
   },
   {
-    "term": "Sway Website",
+    "term": "Swap primary and secondary mouse buttons",
     "translation": "",
-    "context": "Sway Website",
+    "context": "Swap primary and secondary mouse buttons",
     "reference": "",
     "comment": ""
   },
@@ -17801,6 +17668,13 @@
     "comment": ""
   },
   {
+    "term": "System action",
+    "translation": "",
+    "context": "System action",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "System notification area icons",
     "translation": "",
     "context": "System notification area icons",
@@ -17885,6 +17759,34 @@
     "comment": "Warning when Tailscale service is not running"
   },
   {
+    "term": "Tap and Drag",
+    "translation": "",
+    "context": "Tap and Drag",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Tap and drag on the touchpad to move items",
+    "translation": "",
+    "context": "Tap and drag on the touchpad to move items",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Tap the touchpad surface to trigger left click clicks",
+    "translation": "",
+    "context": "Tap the touchpad surface to trigger left click clicks",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Tap to Click",
+    "translation": "",
+    "context": "Tap to Click",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Terminal",
     "translation": "",
     "context": "Terminal",
@@ -17948,6 +17850,13 @@
     "comment": "widget background color option | workspace color option"
   },
   {
+    "term": "Test",
+    "translation": "",
+    "context": "Test",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Test Connection",
     "translation": "",
     "context": "Test Connection",
@@ -17980,7 +17889,7 @@
     "translation": "",
     "context": "Text",
     "reference": "",
-    "comment": "KDE Connect share text button | text color"
+    "comment": "text color"
   },
   {
     "term": "Text Color",
@@ -18011,9 +17920,9 @@
     "comment": "dgop unavailable error message"
   },
   {
-    "term": "The DMS_SOCKET environment variable is not set or the socket is unavailable. Automated plugin management requires the DMS_SOCKET.",
+    "term": "The VPN component could not be reached",
     "translation": "",
-    "context": "The DMS_SOCKET environment variable is not set or the socket is unavailable. Automated plugin management requires the DMS_SOCKET.",
+    "context": "The VPN component could not be reached",
     "reference": "",
     "comment": ""
   },
@@ -18025,9 +17934,44 @@
     "comment": "hotspot adapter failure message"
   },
   {
+    "term": "The application is not running or no matching process was found. Start it and scan again, or search all running processes manually.",
+    "translation": "",
+    "context": "The application is not running or no matching process was found. Start it and scan again, or search all running processes manually.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "The below settings will modify your GTK and Qt settings. If you wish to preserve your current configurations, please back them up (qt5ct.conf|qt6ct.conf and ~/.config/gtk-3.0|gtk-4.0).",
     "translation": "",
     "context": "The below settings will modify your GTK and Qt settings. If you wish to preserve your current configurations, please back them up (qt5ct.conf|qt6ct.conf and ~/.config/gtk-3.0|gtk-4.0).",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "The component is installed, but its user service is offline. Your desktop works normally without it.",
+    "translation": "",
+    "context": "The component is installed, but its user service is offline. Your desktop works normally without it.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "The connection did not answer reliably enough to measure latency",
+    "translation": "",
+    "context": "The connection did not answer reliably enough to measure latency",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "The connection test could not be completed",
+    "translation": "",
+    "context": "The connection test could not be completed",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "The connection was too unstable and the test timed out",
+    "translation": "",
+    "context": "The connection was too unstable and the test timed out",
     "reference": "",
     "comment": ""
   },
@@ -18039,6 +17983,13 @@
     "comment": ""
   },
   {
+    "term": "The integrated VPN component is missing. Reinstall or update KaskadOS.",
+    "translation": "",
+    "context": "The integrated VPN component is missing. Reinstall or update KaskadOS.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "The job queue of this printer is empty",
     "translation": "",
     "context": "The job queue of this printer is empty",
@@ -18046,9 +17997,37 @@
     "comment": ""
   },
   {
+    "term": "The last keyboard layout cannot be removed.",
+    "translation": "",
+    "context": "The last keyboard layout cannot be removed.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "The last test failed",
+    "translation": "",
+    "context": "The last test failed",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "The numbers are shown for reference, but the connection changed too much for a fair VPN comparison: %1",
+    "translation": "",
+    "context": "The numbers are shown for reference, but the connection changed too much for a fair VPN comparison: %1",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "The rule applies to any window matching one of these.",
     "translation": "",
     "context": "The rule applies to any window matching one of these.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "The test uses about 7 MB via Cloudflare and only runs when you press the button.",
+    "translation": "",
+    "context": "The test uses about 7 MB via Cloudflare and only runs when you press the button.",
     "reference": "",
     "comment": ""
   },
@@ -18123,20 +18102,6 @@
     "comment": "font weight"
   },
   {
-    "term": "Third-Party Plugin Warning",
-    "translation": "",
-    "context": "Third-Party Plugin Warning",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Third-party plugins are created by the community and are not officially supported by DankMaterialShell.\n\nThese plugins may pose security and privacy risks - install at your own risk.",
-    "translation": "",
-    "context": "Third-party plugins are created by the community and are not officially supported by DankMaterialShell.\n\nThese plugins may pose security and privacy risks - install at your own risk.",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "This bind is overridden by config.kdl",
     "translation": "",
     "context": "This bind is overridden by config.kdl",
@@ -18172,9 +18137,9 @@
     "comment": ""
   },
   {
-    "term": "This plugin does not have 'settings_write' permission.\n\nAdd \"permissions\": [\"settings_read\", \"settings_write\"] to plugin.json",
+    "term": "This shell requires Regalia API version %1 or newer.",
     "translation": "",
-    "context": "This plugin does not have 'settings_write' permission.\n\nAdd \"permissions\": [\"settings_read\", \"settings_write\"] to plugin.json",
+    "context": "This shell requires Regalia API version %1 or newer.",
     "reference": "",
     "comment": ""
   },
@@ -18210,6 +18175,13 @@
     "term": "This will permanently remove this saved clipboard item. This action cannot be undone.",
     "translation": "",
     "context": "This will permanently remove this saved clipboard item. This action cannot be undone.",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Through VPN",
+    "translation": "",
+    "context": "Through VPN",
     "reference": "",
     "comment": ""
   },
@@ -18501,13 +18473,6 @@
     "comment": ""
   },
   {
-    "term": "Tools",
-    "translation": "",
-    "context": "Tools",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Top",
     "translation": "",
     "context": "Top",
@@ -18585,6 +18550,20 @@
     "comment": ""
   },
   {
+    "term": "Touchpad Settings",
+    "translation": "",
+    "context": "Touchpad Settings",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Touchpad Speed",
+    "translation": "",
+    "context": "Touchpad Speed",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Transform",
     "translation": "",
     "context": "Transform",
@@ -18627,37 +18606,9 @@
     "comment": ""
   },
   {
-    "term": "Trending GIFs",
-    "translation": "",
-    "context": "Trending GIFs",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Trending Stickers",
-    "translation": "",
-    "context": "Trending Stickers",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Trigger",
     "translation": "",
     "context": "Trigger",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Trigger Prefix",
-    "translation": "",
-    "context": "Trigger Prefix",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Trigger: %1",
-    "translation": "",
-    "context": "Trigger: %1",
     "reference": "",
     "comment": ""
   },
@@ -18697,6 +18648,13 @@
     "comment": ""
   },
   {
+    "term": "Turn off VPN before changing routing rules. Your connection can be enabled again immediately after saving.",
+    "translation": "",
+    "context": "Turn off VPN before changing routing rules. Your connection can be enabled again immediately after saving.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Turn off all displays immediately when the lock screen activates",
     "translation": "",
     "context": "Turn off all displays immediately when the lock screen activates",
@@ -18725,6 +18683,13 @@
     "comment": ""
   },
   {
+    "term": "Two Finger",
+    "translation": "",
+    "context": "Two Finger",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Type",
     "translation": "",
     "context": "Type",
@@ -18742,13 +18707,6 @@
     "term": "Type at least 2 characters to search files.",
     "translation": "",
     "context": "Type at least 2 characters to search files.",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Type this prefix to search keybinds",
-    "translation": "",
-    "context": "Type this prefix to search keybinds",
     "reference": "",
     "comment": ""
   },
@@ -18774,25 +18732,11 @@
     "comment": ""
   },
   {
-    "term": "URI",
-    "translation": "",
-    "context": "URI",
-    "reference": "",
-    "comment": "KDE Connect share URI button"
-  },
-  {
     "term": "Unavailable",
     "translation": "",
     "context": "Unavailable",
     "reference": "",
-    "comment": "Phone Connect unavailable status"
-  },
-  {
-    "term": "Uncategorized",
-    "translation": "",
-    "context": "Uncategorized",
-    "reference": "",
-    "comment": "plugin browser category filter"
+    "comment": ""
   },
   {
     "term": "Unfocused Color",
@@ -18823,13 +18767,6 @@
     "comment": "uninstall action button"
   },
   {
-    "term": "Uninstall Plugin",
-    "translation": "",
-    "context": "Uninstall Plugin",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Uninstall failed: %1",
     "translation": "",
     "context": "Uninstall failed: %1",
@@ -18855,7 +18792,7 @@
     "translation": "",
     "context": "Unknown",
     "reference": "",
-    "comment": "KDE Connect unknown device status | Status | battery status | power profile option | unknown author | widget status"
+    "comment": "battery status | power profile option | unknown author | widget status"
   },
   {
     "term": "Unknown App",
@@ -18956,20 +18893,6 @@
     "comment": ""
   },
   {
-    "term": "Unpair",
-    "translation": "",
-    "context": "Unpair",
-    "reference": "",
-    "comment": "KDE Connect unpair tooltip"
-  },
-  {
-    "term": "Unpair failed",
-    "translation": "",
-    "context": "Unpair failed",
-    "reference": "",
-    "comment": "Phone Connect error"
-  },
-  {
     "term": "Unpin",
     "translation": "",
     "context": "Unpin",
@@ -18996,6 +18919,20 @@
     "context": "Unset",
     "reference": "",
     "comment": "Unset"
+  },
+  {
+    "term": "Unstable connection · comparison is unreliable",
+    "translation": "",
+    "context": "Unstable connection · comparison is unreliable",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Unsupported",
+    "translation": "",
+    "context": "Unsupported",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Until %1",
@@ -19061,30 +18998,9 @@
     "comment": ""
   },
   {
-    "term": "Update Plugin",
+    "term": "Update Regalia to run a connection test",
     "translation": "",
-    "context": "Update Plugin",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Update failed: %1",
-    "translation": "",
-    "context": "Update failed: %1",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Updating %1...",
-    "translation": "",
-    "context": "Updating %1...",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "Updating plugins...",
-    "translation": "",
-    "context": "Updating plugins...",
+    "context": "Update Regalia to run a connection test",
     "reference": "",
     "comment": ""
   },
@@ -19092,6 +19008,13 @@
     "term": "Upgrading...",
     "translation": "",
     "context": "Upgrading...",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Upload measurement failed because the connection was interrupted",
+    "translation": "",
+    "context": "Upload measurement failed because the connection was interrupted",
     "reference": "",
     "comment": ""
   },
@@ -19117,9 +19040,9 @@
     "comment": ""
   },
   {
-    "term": "Usage Tips",
+    "term": "Use",
     "translation": "",
-    "context": "Usage Tips",
+    "context": "Use",
     "reference": "",
     "comment": ""
   },
@@ -19369,9 +19292,9 @@
     "comment": ""
   },
   {
-    "term": "Use trigger prefix to activate",
+    "term": "Use this path",
     "translation": "",
-    "context": "Use trigger prefix to activate",
+    "context": "Use this path",
     "reference": "",
     "comment": ""
   },
@@ -19381,13 +19304,6 @@
     "context": "Used for xdg-terminal-exec",
     "reference": "",
     "comment": "Used for xdg-terminal-exec"
-  },
-  {
-    "term": "Used when accent color is set to Custom",
-    "translation": "",
-    "context": "Used when accent color is set to Custom",
-    "reference": "",
-    "comment": ""
   },
   {
     "term": "User",
@@ -19544,6 +19460,13 @@
     "comment": ""
   },
   {
+    "term": "VPN by default",
+    "translation": "",
+    "context": "VPN by default",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "VPN configuration updated",
     "translation": "",
     "context": "VPN configuration updated",
@@ -19565,6 +19488,20 @@
     "comment": ""
   },
   {
+    "term": "VPN difference: download %1% · latency %2 ms",
+    "translation": "",
+    "context": "VPN difference: download %1% · latency %2 ms",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "VPN engine failed to start.",
+    "translation": "",
+    "context": "VPN engine failed to start.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "VPN imported: %1",
     "translation": "",
     "context": "VPN imported: %1",
@@ -19572,9 +19509,23 @@
     "comment": ""
   },
   {
+    "term": "VPN is ready to connect.",
+    "translation": "",
+    "context": "VPN is ready to connect.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "VPN not available",
     "translation": "",
     "context": "VPN not available",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "VPN operation failed",
+    "translation": "",
+    "context": "VPN operation failed",
     "reference": "",
     "comment": ""
   },
@@ -19614,20 +19565,6 @@
     "comment": ""
   },
   {
-    "term": "Verification",
-    "translation": "",
-    "context": "Verification",
-    "reference": "",
-    "comment": "Phone Connect pairing verification key label"
-  },
-  {
-    "term": "Version",
-    "translation": "",
-    "context": "Version",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "Vertical Deck",
     "translation": "",
     "context": "Vertical Deck",
@@ -19663,6 +19600,13 @@
     "comment": "quality level option"
   },
   {
+    "term": "Via VPN",
+    "translation": "",
+    "context": "Via VPN",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Vibrant",
     "translation": "",
     "context": "Vibrant",
@@ -19694,13 +19638,6 @@
     "term": "Video Screensaver",
     "translation": "",
     "context": "Video Screensaver",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "View Mode",
-    "translation": "",
-    "context": "View Mode",
     "reference": "",
     "comment": ""
   },
@@ -19768,25 +19705,11 @@
     "comment": ""
   },
   {
-    "term": "Votes",
-    "translation": "",
-    "context": "Votes",
-    "reference": "",
-    "comment": "plugin browser sort option"
-  },
-  {
     "term": "W",
     "translation": "",
     "context": "W",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "WCAG %1 body",
-    "translation": "",
-    "context": "WCAG %1 body",
-    "reference": "",
-    "comment": "contrast badge when only body text passes"
   },
   {
     "term": "WPA/WPA2",
@@ -19801,6 +19724,13 @@
     "context": "WPA2 password",
     "reference": "",
     "comment": "hotspot security summary"
+  },
+  {
+    "term": "Wallhaven returned an invalid response",
+    "translation": "",
+    "context": "Wallhaven returned an invalid response",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "Wallpaper",
@@ -19908,9 +19838,9 @@
     "comment": "greeter modal window title"
   },
   {
-    "term": "Welcome to DankMaterialShell",
+    "term": "Welcome to MolniyaMacqueenShell",
     "translation": "",
-    "context": "Welcome to DankMaterialShell",
+    "context": "Welcome to MolniyaMacqueenShell",
     "reference": "",
     "comment": "greeter welcome page title"
   },
@@ -19967,6 +19897,27 @@
     "term": "Wi-Fi not available",
     "translation": "",
     "context": "Wi-Fi not available",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Wi-Fi signal at start: %1%",
+    "translation": "",
+    "context": "Wi-Fi signal at start: %1%",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Wi-Fi signal: %1 dBm",
+    "translation": "",
+    "context": "Wi-Fi signal: %1 dBm",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Wi-Fi signal: %1 → %2 dBm",
+    "translation": "",
+    "context": "Wi-Fi signal: %1 → %2 dBm",
     "reference": "",
     "comment": ""
   },
@@ -20230,6 +20181,20 @@
     "comment": "wallpaper transition option"
   },
   {
+    "term": "Without VPN",
+    "translation": "",
+    "context": "Without VPN",
+    "reference": "",
+    "comment": ""
+  },
+  {
+    "term": "Without a routing profile, all traffic goes through VPN. Create one to prepare per-application rules.",
+    "translation": "",
+    "context": "Without a routing profile, all traffic goes through VPN. Create one to prepare per-application rules.",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "Working...",
     "translation": "",
     "context": "Working...",
@@ -20454,18 +20419,18 @@
     "comment": ""
   },
   {
+    "term": "below AA",
+    "translation": "",
+    "context": "below AA",
+    "reference": "",
+    "comment": "contrast level below the AA threshold"
+  },
+  {
     "term": "brandon",
     "translation": "",
     "context": "brandon",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "broken",
-    "translation": "",
-    "context": "broken",
-    "reference": "",
-    "comment": "plugin status"
   },
   {
     "term": "by %1",
@@ -20510,25 +20475,11 @@
     "comment": ""
   },
   {
-    "term": "deprecated",
-    "translation": "",
-    "context": "deprecated",
-    "reference": "",
-    "comment": "plugin status"
-  },
-  {
     "term": "detached",
     "translation": "",
     "context": "detached",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "device",
-    "translation": "",
-    "context": "device",
-    "reference": "",
-    "comment": "Generic device name fallback"
   },
   {
     "term": "dgop not available",
@@ -20543,20 +20494,6 @@
     "context": "direct",
     "reference": "",
     "comment": "Tailscale direct connection"
-  },
-  {
-    "term": "discuss",
-    "translation": "",
-    "context": "discuss",
-    "reference": "",
-    "comment": "plugin discussion link"
-  },
-  {
-    "term": "dms is a highly customizable, modern desktop shell with a <a href=\"https://m3.material.io/\" style=\"text-decoration:none; color:%1;\">material 3 inspired</a> design.<br /><br/>It is built with <a href=\"https://quickshell.org\" style=\"text-decoration:none; color:%1;\">Quickshell</a>, a QT6 framework for building desktop shells, and <a href=\"https://go.dev\" style=\"text-decoration:none; color:%1;\">Go</a>, a statically typed, compiled programming language.",
-    "translation": "",
-    "context": "dms is a highly customizable, modern desktop shell with a <a href=\"https://m3.material.io/\" style=\"text-decoration:none; color:%1;\">material 3 inspired</a> design.<br /><br/>It is built with <a href=\"https://quickshell.org\" style=\"text-decoration:none; color:%1;\">Quickshell</a>, a QT6 framework for building desktop shells, and <a href=\"https://go.dev\" style=\"text-decoration:none; color:%1;\">Go</a>, a statically typed, compiled programming language.",
-    "reference": "",
-    "comment": ""
   },
   {
     "term": "e.g. /usr/bin/my-script --flag",
@@ -20643,6 +20580,13 @@
     "comment": "Tailscale peer last seen time"
   },
   {
+    "term": "latency varied too much",
+    "translation": "",
+    "context": "latency varied too much",
+    "reference": "",
+    "comment": ""
+  },
+  {
     "term": "leave empty for default",
     "translation": "",
     "context": "leave empty for default",
@@ -20674,20 +20618,6 @@
     "term": "mango: failed to reload config",
     "translation": "",
     "context": "mango: failed to reload config",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "mangowc Discord Server",
-    "translation": "",
-    "context": "mangowc Discord Server",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "mangowc GitHub",
-    "translation": "",
-    "context": "mangowc GitHub",
     "reference": "",
     "comment": ""
   },
@@ -20727,32 +20657,11 @@
     "comment": ""
   },
   {
-    "term": "niri GitHub",
-    "translation": "",
-    "context": "niri GitHub",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "niri Matrix Chat",
-    "translation": "",
-    "context": "niri Matrix Chat",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "niri shortcuts config",
     "translation": "",
     "context": "niri shortcuts config",
     "reference": "",
     "comment": "greeter keybinds niri description"
-  },
-  {
-    "term": "niri/dms Discord",
-    "translation": "",
-    "context": "niri/dms Discord",
-    "reference": "",
-    "comment": ""
   },
   {
     "term": "niri: config reloaded",
@@ -20839,13 +20748,6 @@
     "comment": "short for processes"
   },
   {
-    "term": "r/niri Subreddit",
-    "translation": "",
-    "context": "r/niri Subreddit",
-    "reference": "",
-    "comment": ""
-  },
-  {
     "term": "relay: %1",
     "translation": "",
     "context": "relay: %1",
@@ -20858,13 +20760,6 @@
     "context": "remote",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "reviewed",
-    "translation": "",
-    "context": "reviewed",
-    "reference": "",
-    "comment": "plugin status"
   },
   {
     "term": "seconds",
@@ -20881,11 +20776,18 @@
     "comment": ""
   },
   {
-    "term": "source",
+    "term": "signal changed during the test",
     "translation": "",
-    "context": "source",
+    "context": "signal changed during the test",
     "reference": "",
-    "comment": "source code link"
+    "comment": ""
+  },
+  {
+    "term": "some requests were lost",
+    "translation": "",
+    "context": "some requests were lost",
+    "reference": "",
+    "comment": ""
   },
   {
     "term": "the Qt 6 Multimedia QML module",
@@ -20900,13 +20802,6 @@
     "context": "this app",
     "reference": "",
     "comment": ""
-  },
-  {
-    "term": "unmaintained",
-    "translation": "",
-    "context": "unmaintained",
-    "reference": "",
-    "comment": "plugin status"
   },
   {
     "term": "until %1",
@@ -20951,16 +20846,9 @@
     "comment": ""
   },
   {
-    "term": "v%1 by %2",
+    "term": "weak Wi-Fi signal",
     "translation": "",
-    "context": "v%1 by %2",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "• Install only from trusted sources",
-    "translation": "",
-    "context": "• Install only from trusted sources",
+    "context": "weak Wi-Fi signal",
     "reference": "",
     "comment": ""
   },
@@ -20989,20 +20877,6 @@
     "term": "• MMMM - Month (January)",
     "translation": "",
     "context": "• MMMM - Month (January)",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "• Plugins may contain bugs or security issues",
-    "translation": "",
-    "context": "• Plugins may contain bugs or security issues",
-    "reference": "",
-    "comment": ""
-  },
-  {
-    "term": "• Review code before installation when possible",
-    "translation": "",
-    "context": "• Review code before installation when possible",
     "reference": "",
     "comment": ""
   },

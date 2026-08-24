@@ -94,7 +94,7 @@ function transformBuiltInLauncherItem(item, pluginId, openLabel) {
 
     return {
         id: item.action || "",
-        type: item.type || "plugin",
+        type: item.type || "system_action",
         name: item.name || "",
         subtitle: item.comment || "",
         icon: icon,
@@ -212,77 +212,6 @@ function transformFileResult(file, openLabel, openFolderLabel, copyPathLabel, op
             name: openLabel,
             icon: "open_in_new",
             action: "open"
-        },
-        _hName: "",
-        _hSub: "",
-        _hRich: false,
-        _preScored: undefined
-    };
-}
-
-function transformPluginItem(item, pluginId, selectLabel) {
-    var rawIcon = item.icon || "extension";
-    var icon = Utils.stripIconPrefix(rawIcon);
-    var iconType = item.iconType;
-    if (!iconType) {
-        if (rawIcon.startsWith("material:"))
-            iconType = "material";
-        else if (rawIcon.startsWith("unicode:"))
-            iconType = "unicode";
-        else
-            iconType = "image";
-    }
-
-    return {
-        id: item.id || item.name || "",
-        type: "plugin",
-        name: item.name || "",
-        subtitle: item.comment || item.description || "",
-        icon: icon,
-        iconType: iconType,
-        section: "plugin_" + pluginId,
-        data: item,
-        pluginId: pluginId,
-        keywords: item.keywords || [],
-        actions: item.actions || [],
-        primaryAction: item.primaryAction || {
-            name: selectLabel,
-            icon: "check",
-            action: "execute"
-        },
-        _hName: "",
-        _hSub: "",
-        _hRich: false,
-        _preScored: item._preScored
-    };
-}
-
-function createPluginBrowseItem(pluginId, plugin, trigger, isBuiltIn, isAllowed, browseLabel, triggerLabel, noTriggerLabel) {
-    var rawIcon = isBuiltIn ? (plugin.cornerIcon || "extension") : (plugin.icon || "extension");
-    return {
-        id: "browse_" + pluginId,
-        type: "plugin_browse",
-        name: plugin.name || pluginId,
-        subtitle: trigger ? triggerLabel.replace("%1", trigger) : noTriggerLabel,
-        icon: isBuiltIn ? rawIcon : Utils.stripIconPrefix(rawIcon),
-        iconType: isBuiltIn ? "material" : Utils.detectIconType(rawIcon),
-        section: "browse_plugins",
-        data: {
-            pluginId: pluginId,
-            plugin: plugin,
-            isBuiltIn: isBuiltIn
-        },
-        actions: [
-            {
-                name: "All",
-                icon: isAllowed ? "visibility" : "visibility_off",
-                action: "toggle_all_visibility"
-            }
-        ],
-        primaryAction: {
-            name: browseLabel,
-            icon: "arrow_forward",
-            action: "browse_plugin"
         },
         _hName: "",
         _hSub: "",

@@ -74,15 +74,6 @@ Item {
             return false;
         if (spotlightItem.type === "app")
             return true;
-        if (spotlightItem.type === "plugin" && spotlightItem.pluginId) {
-            const instance = PluginService.pluginInstances[spotlightItem.pluginId];
-            if (!instance)
-                return false;
-            if (typeof instance.getContextMenuActions !== "function")
-                return false;
-            const actions = instance.getContextMenuActions(spotlightItem.data);
-            return Array.isArray(actions) && actions.length > 0;
-        }
         if (spotlightItem.actions && spotlightItem.actions.length > 0)
             return true;
         return false;
@@ -99,40 +90,6 @@ Item {
     }
     readonly property bool isPinned: appId ? SessionData.isPinnedApp(appId) : false
     readonly property bool isRegularApp: item?.type === "app" && !item.isCore && desktopEntry
-    readonly property bool isPluginItem: item?.type === "plugin"
-
-    function getPluginContextMenuActions() {
-        if (!isPluginItem || !item?.pluginId)
-            return [];
-
-        const instance = PluginService.pluginInstances[item.pluginId];
-        if (!instance)
-            return [];
-        if (typeof instance.getContextMenuActions !== "function")
-            return [];
-
-        const actions = instance.getContextMenuActions(item.data);
-        if (!Array.isArray(actions))
-            return [];
-
-        return actions;
-    }
-
-    function executePluginAction(actionOrObj) {
-        const actionFunc = typeof actionOrObj === "function" ? actionOrObj : actionOrObj?.action;
-        const closeLauncher = typeof actionOrObj === "object" && actionOrObj?.closeLauncher;
-
-        if (typeof actionFunc === "function")
-            actionFunc();
-
-        if (closeLauncher) {
-            controller?.itemExecuted();
-        } else {
-            controller?.performSearch();
-        }
-        hide();
-    }
-
     function executeLauncherAction(actionData) {
         if (!controller || !item || !actionData)
             return;
@@ -142,20 +99,6 @@ Item {
 
     readonly property var menuItems: {
         const items = [];
-
-        if (isPluginItem) {
-            const pluginActions = getPluginContextMenuActions();
-            for (let i = 0; i < pluginActions.length; i++) {
-                const act = pluginActions[i];
-                items.push({
-                    type: "item",
-                    icon: act.icon || "play_arrow",
-                    text: act.text || act.name || "",
-                    pluginAction: act
-                });
-            }
-            return items;
-        }
 
         if (item?.type !== "app" && item?.actions && item.actions.length > 0) {
             for (let i = 0; i < item.actions.length; i++) {
@@ -438,8 +381,6 @@ Item {
                 const menuItem = menuItems[i];
                 if (menuItem.action)
                     menuItem.action();
-                else if (menuItem.pluginAction)
-                    executePluginAction(menuItem.pluginAction);
                 else if (menuItem.launcherActionData)
                     executeLauncherAction(menuItem.launcherActionData);
                 else if (menuItem.actionData)
@@ -679,8 +620,6 @@ Item {
                                             const menuItem = menuItemDelegate.modelData;
                                             if (menuItem.action)
                                                 menuItem.action();
-                                            else if (menuItem.pluginAction)
-                                                root.executePluginAction(menuItem.pluginAction);
                                             else if (menuItem.launcherActionData)
                                                 root.executeLauncherAction(menuItem.launcherActionData);
                                             else if (menuItem.actionData)

@@ -19,7 +19,7 @@ Item {
     property string editingGroupId: ""
     property string newGroupName: ""
 
-    readonly property var allInstances: SettingsData.desktopWidgetInstances || []
+    readonly property var allInstances: (SettingsData.desktopWidgetInstances || []).filter(instance => DesktopWidgetRegistry.getWidget(instance.widgetType) !== null)
     readonly property var allGroups: SettingsData.desktopWidgetGroups || []
 
     property bool dragActive: false
@@ -124,12 +124,6 @@ Item {
             widgetBrowserLoader.item.show();
     }
 
-    function showDesktopPluginBrowser() {
-        desktopPluginBrowserLoader.active = true;
-        if (desktopPluginBrowserLoader.item)
-            desktopPluginBrowserLoader.item.show();
-    }
-
     LazyLoader {
         id: widgetBrowserLoader
         active: false
@@ -139,16 +133,6 @@ Item {
             onWidgetAdded: widgetType => {
                 ToastService.showInfo(I18n.tr("Widget added"));
             }
-        }
-    }
-
-    LazyLoader {
-        id: desktopPluginBrowserLoader
-        active: false
-
-        PluginBrowser {
-            parentModal: root.parentModal
-            typeFilter: "desktop-widget"
         }
     }
 
@@ -184,20 +168,10 @@ Item {
                         horizontalAlignment: Text.AlignLeft
                     }
 
-                    Row {
-                        spacing: Theme.spacingM
-
-                        DankButton {
-                            text: I18n.tr("Add Widget")
-                            iconName: "add"
-                            onClicked: root.showWidgetBrowser()
-                        }
-
-                        DankButton {
-                            text: I18n.tr("Browse Plugins")
-                            iconName: "store"
-                            onClicked: root.showDesktopPluginBrowser()
-                        }
+                    DankButton {
+                        text: I18n.tr("Add Widget")
+                        iconName: "add"
+                        onClicked: root.showWidgetBrowser()
                     }
                 }
             }

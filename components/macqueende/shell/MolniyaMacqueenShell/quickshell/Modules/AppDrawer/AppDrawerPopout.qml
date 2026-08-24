@@ -72,7 +72,6 @@ DankPopout {
         if (lc.controller) {
             lc.controller.explicitQuerySession = !!query;
             lc.controller.searchMode = mode;
-            lc.controller.pluginFilter = "";
             lc.controller.searchQuery = "";
             if (query) {
                 lc.controller.setSearchQuery(query);

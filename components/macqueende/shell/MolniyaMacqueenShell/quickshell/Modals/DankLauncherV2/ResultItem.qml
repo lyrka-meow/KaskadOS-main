@@ -50,7 +50,7 @@ Rectangle {
         id: itemArea
         z: 1
         anchors.fill: parent
-        anchors.rightMargin: root.item?.type === "plugin_browse" ? 40 : 0
+        anchors.rightMargin: 0
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -163,48 +163,9 @@ Rectangle {
             entry: root.item?.data ?? null
         }
 
-        Rectangle {
-            id: allModeToggle
-            visible: root.item?.type === "plugin_browse"
-            width: 28
-            height: 28
-            radius: 14
-            anchors.verticalCenter: parent.verticalCenter
-            color: allModeToggleArea.containsMouse ? Theme.surfaceHover : Theme.withAlpha(Theme.surfaceHover, 0)
-
-            property bool isAllowed: {
-                if (root.item?.type !== "plugin_browse")
-                    return false;
-                var pluginId = root.item?.data?.pluginId;
-                if (!pluginId)
-                    return false;
-                SettingsData.launcherPluginVisibility;
-                return SettingsData.getPluginAllowWithoutTrigger(pluginId);
-            }
-
-            DankIcon {
-                anchors.centerIn: parent
-                name: allModeToggle.isAllowed ? "visibility" : "visibility_off"
-                size: 18
-                color: allModeToggle.isAllowed ? Theme.primary : Theme.surfaceVariantText
-            }
-
-            MouseArea {
-                id: allModeToggleArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    var pluginId = root.item?.data?.pluginId;
-                    if (!pluginId)
-                        return;
-                    SettingsData.setPluginAllowWithoutTrigger(pluginId, !allModeToggle.isAllowed);
-                }
-            }
-        }
 
         Rectangle {
-            visible: !!root.item?.type && root.item.type !== "app" && root.item.type !== "plugin_browse"
+            visible: !!root.item?.type && root.item.type !== "app"
             width: typeBadge.implicitWidth + Theme.spacingS * 2
             height: 20
             radius: 10
@@ -220,8 +181,8 @@ Rectangle {
                     if ((root.item.badgeLabel ?? "").length > 0)
                         return root.item.badgeLabel;
                     switch (root.item.type) {
-                    case "plugin":
-                        return I18n.tr("Plugin");
+                    case "system_action":
+                        return I18n.tr("System action");
                     case "setting":
                         return I18n.tr("Setting");
                     case "clipboard":

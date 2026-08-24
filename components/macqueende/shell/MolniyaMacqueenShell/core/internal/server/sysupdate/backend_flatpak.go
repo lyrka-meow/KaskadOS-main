@@ -95,6 +95,12 @@ func (flatpakBackend) Upgrade(ctx context.Context, opts UpgradeOptions, onLine f
 	if !BackendHasTargets(flatpakBackend{}, opts.Targets, opts.IncludeAUR, opts.IncludeFlatpak) {
 		return nil
 	}
+	if opts.Automatic && automaticUpdateHelperAvailable() {
+		if err := Run(ctx, automaticUpdateArgv("flatpak-system"), RunOptions{OnLine: onLine}); err != nil {
+			return err
+		}
+		return Run(ctx, []string{"flatpak", "update", "--user", "-y", "--noninteractive"}, RunOptions{OnLine: onLine})
+	}
 	return Run(ctx, flatpakUpgradeArgv(opts), RunOptions{OnLine: onLine})
 }
 

@@ -1,9 +1,11 @@
+7zip
 alsa-utils
 amd-ucode
 arch-install-scripts
 archinstall
 b43-fwcutter
 base
+base-devel
 bcachefs-tools
 bind
 bolt
@@ -13,6 +15,7 @@ brightnessctl
 brltty
 broadcom-wl
 btrfs-progs
+bubblewrap
 cava
 clonezilla
 cloud-init
@@ -36,9 +39,11 @@ f2fs-tools
 fastfetch
 fatresize
 flameshot
+flatpak
 foot-terminfo
 fsarchiver
 ghostty-terminfo
+git
 gpart
 gpm
 gptfdisk
@@ -58,6 +63,7 @@ kwin
 ldns
 less
 lftp
+libarchive
 libfido2
 libpwquality
 libusb-compat
@@ -141,6 +147,8 @@ tpm2-tools
 tpm2-tss
 ttf-dejavu
 udftools
+umu-launcher
+unrar
 usb_modeswitch
 usbmuxd
 usbutils

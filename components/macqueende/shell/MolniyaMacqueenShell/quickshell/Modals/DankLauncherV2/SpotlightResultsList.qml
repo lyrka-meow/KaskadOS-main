@@ -132,8 +132,6 @@ Item {
                         const mode = root.controller?.searchMode ?? "all";
                         if (mode === "files")
                             return "folder_open";
-                        if (mode === "plugins")
-                            return "extension";
                         if (mode === "apps")
                             return "apps";
                         return "search_off";

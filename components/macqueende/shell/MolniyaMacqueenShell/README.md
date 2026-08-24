@@ -96,7 +96,7 @@ Wallpaper-based color schemes that automatically theme GTK, Qt, terminals, edito
 Real-time CPU, RAM, GPU metrics and temperatures with [dgop](https://github.com/AvengeMedia/dgop). Process list with search and management.
 
 **Powerful Launcher**
-Spotlight-style search for applications, files ([dsearch](https://github.com/AvengeMedia/danksearch)), emojis, running windows, calculator, and commands. Extensible with plugins.
+Spotlight-style search for applications, files ([dsearch](https://github.com/AvengeMedia/danksearch)), emojis, running windows, calculator, and commands.
 
 **Control Center**
 Unified interface for network, Bluetooth, audio devices, display settings, and night mode.
@@ -109,9 +109,6 @@ MPRIS player controls, calendar sync, weather widgets, and clipboard history wit
 
 **Session Management**
 Lock screen, idle detection, auto-lock/suspend with separate AC/battery settings, and a settings front-end for [dank-greeter](https://github.com/AvengeMedia/dank-greeter).
-
-**Plugin System**
-Extend functionality with the [plugin registry](https://plugins.danklinux.com).
 
 ## Supported Compositors
 
@@ -129,7 +126,6 @@ dms ipc call spotlight toggle
 dms ipc call audio setvolume 50
 dms ipc call wallpaper set /path/to/image.jpg
 dms brightness list  # List available displays
-dms plugins search   # Browse plugin registry
 ```
 
 [Full CLI and IPC documentation](https://danklinux.com/docs/dankmaterialshell/keybinds-ipc)
@@ -139,7 +135,6 @@ dms plugins search   # Browse plugin registry
 - **Website:** [danklinux.com](https://danklinux.com)
 - **Docs:** [danklinux.com/docs](https://danklinux.com/docs/)
 - **Theming:** [Application themes](https://danklinux.com/docs/dankmaterialshell/application-themes) | [Custom themes](https://danklinux.com/docs/dankmaterialshell/custom-themes)
-- **Plugins:** [Development guide](https://danklinux.com/docs/dankmaterialshell/plugins-overview)
 - **Support:** [Ko-fi](https://ko-fi.com/avengemediallc)
 
 ## Dank Projects
@@ -190,7 +185,7 @@ quickshell -p quickshell/
 
 ## Contributing
 
-Contributions welcome. Bug fixes, widgets, features, documentation, and plugins all help.
+Contributions welcome. Bug fixes, widgets, features, and documentation all help.
 
 1. Fork the repository
 2. Make your changes

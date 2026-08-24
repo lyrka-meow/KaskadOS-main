@@ -8,7 +8,6 @@ function parse(root, jsonObj) {
     if (!jsonObj) return;
 
     for (var k in SPEC) {
-        if (k === "pluginSettings") continue;
         // Runtime-only keys are never in the JSON; resetting them here
         // would wipe values set by detection processes on every reload.
         if (SPEC[k].persist === false) continue;
@@ -19,7 +18,6 @@ function parse(root, jsonObj) {
 
     for (var k in jsonObj) {
         if (!SPEC[k]) continue;
-        if (k === "pluginSettings") continue;
         var raw = jsonObj[k];
         var spec = SPEC[k];
         var coerce = spec.coerce;
@@ -32,7 +30,6 @@ function toJson(root) {
     var out = {};
     for (var k in SPEC) {
         if (SPEC[k].persist === false) continue;
-        if (k === "pluginSettings") continue;
         out[k] = root[k];
     }
     out.configVersion = root.settingsConfigVersion;
@@ -261,6 +258,40 @@ function migrateToVersion(obj, targetVersion) {
             delete settings.batteryNotificationType;
         }
         settings.configVersion = 12;
+    }
+
+    if (currentVersion < 13) {
+        console.info("Migrating settings from version", currentVersion, "to version 13");
+
+        var bars = Array.isArray(settings.barConfigs) ? settings.barConfigs : [];
+        var targetBar = null;
+        for (var barIndex = 0; barIndex < bars.length; barIndex++) {
+            if (bars[barIndex] && bars[barIndex].id === "default") {
+                targetBar = bars[barIndex];
+                break;
+            }
+        }
+        if (!targetBar && bars.length > 0)
+            targetBar = bars[0];
+
+        if (targetBar) {
+            var rightWidgets = Array.isArray(targetBar.rightWidgets)
+                ? targetBar.rightWidgets.slice()
+                : [];
+            var hasSystemUpdate = rightWidgets.some(function(widget) {
+                return (typeof widget === "string" ? widget : widget && widget.id) === "systemUpdate";
+            });
+            if (!hasSystemUpdate) {
+                var notificationIndex = rightWidgets.findIndex(function(widget) {
+                    return (typeof widget === "string" ? widget : widget && widget.id) === "notificationButton";
+                });
+                var insertIndex = notificationIndex >= 0 ? notificationIndex : rightWidgets.length;
+                rightWidgets.splice(insertIndex, 0, "systemUpdate");
+                targetBar.rightWidgets = rightWidgets;
+            }
+        }
+
+        settings.configVersion = 13;
     }
 
     return settings;

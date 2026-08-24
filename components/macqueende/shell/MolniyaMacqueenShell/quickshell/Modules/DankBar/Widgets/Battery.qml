@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Shapes
 import Quickshell.Services.UPower
 import qs.Common
-import qs.Modules.Plugins
+import qs.Modules.DankBar.Components
 import qs.Services
 import qs.Widgets
 
