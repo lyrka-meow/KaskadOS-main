@@ -13,15 +13,10 @@ StyledRect {
     required property var outputData
     property bool isConnected: outputData?.connected ?? false
     property bool isDisabled: {
-        void (DisplayConfigState.pendingHyprlandChanges);
-        void (DisplayConfigState.pendingNiriChanges);
         if (!root.isConnected)
             return false;
-        if (CompositorService.isHyprland)
-            return DisplayConfigState.getHyprlandSetting(root.outputData, root.outputName, "disabled", false);
-        if (CompositorService.isNiri)
-            return DisplayConfigState.getNiriSetting(root.outputData, root.outputName, "disabled", false);
-        return false;
+        const pendingEnabled = DisplayConfigState.getPendingValue(root.outputName, "enabled");
+        return pendingEnabled !== undefined ? !pendingEnabled : root.outputData?.enabled === false;
     }
 
     width: parent.width
@@ -131,6 +126,15 @@ StyledRect {
                     anchors.centerIn: parent
                 }
             }
+        }
+
+        DankToggle {
+            width: parent.width
+            text: I18n.tr("Enabled")
+            visible: root.isConnected
+            checked: !root.isDisabled
+            enabled: root.isDisabled || DisplayConfigState.canDisableOutput()
+            onToggled: checked => DisplayConfigState.setPendingChange(root.outputName, "enabled", checked)
         }
 
         DankDropdown {
@@ -317,7 +321,7 @@ StyledRect {
         DankToggle {
             width: parent.width
             text: I18n.tr("Variable Refresh Rate")
-            visible: root.isConnected && !root.isDisabled && !CompositorService.isMango && !CompositorService.isHyprland && !CompositorService.isNiri && (DisplayConfigState.outputs[root.outputName]?.vrr_supported ?? false)
+            visible: root.isConnected && !root.isDisabled && (DisplayConfigState.outputs[root.outputName]?.vrr_supported ?? false)
             checked: {
                 const pendingVrr = DisplayConfigState.getPendingValue(root.outputName, "vrr");
                 if (pendingVrr !== undefined)
@@ -327,80 +331,5 @@ StyledRect {
             onToggled: checked => DisplayConfigState.setPendingChange(root.outputName, "vrr", checked)
         }
 
-        DankDropdown {
-            width: parent.width
-            text: I18n.tr("Variable Refresh Rate")
-            visible: root.isConnected && !root.isDisabled && CompositorService.isHyprland && (DisplayConfigState.outputs[root.outputName]?.vrr_supported ?? false)
-            options: [I18n.tr("Off"), I18n.tr("On"), I18n.tr("Fullscreen Only")]
-            currentValue: {
-                DisplayConfigState.pendingHyprlandChanges;
-                if (DisplayConfigState.getHyprlandSetting(root.outputData, root.outputName, "vrrFullscreenOnly", false))
-                    return I18n.tr("Fullscreen Only");
-                const pendingVrr = DisplayConfigState.getPendingValue(root.outputName, "vrr");
-                const vrrEnabled = pendingVrr !== undefined ? pendingVrr : (DisplayConfigState.outputs[root.outputName]?.vrr_enabled ?? false);
-                if (vrrEnabled)
-                    return I18n.tr("On");
-                return I18n.tr("Off");
-            }
-            onValueChanged: value => {
-                const off = I18n.tr("Off");
-                const fullscreen = I18n.tr("Fullscreen Only");
-                DisplayConfigState.setPendingChange(root.outputName, "vrr", value !== off);
-                DisplayConfigState.setHyprlandSetting(root.outputData, root.outputName, "vrrFullscreenOnly", value === fullscreen || null);
-            }
-        }
-
-        DankDropdown {
-            width: parent.width
-            text: I18n.tr("Variable Refresh Rate")
-            visible: root.isConnected && !root.isDisabled && CompositorService.isNiri && (DisplayConfigState.outputs[root.outputName]?.vrr_supported ?? false)
-            options: [I18n.tr("Off"), I18n.tr("On"), I18n.tr("On-Demand")]
-            currentValue: {
-                DisplayConfigState.pendingNiriChanges;
-                if (DisplayConfigState.getNiriSetting(root.outputData, root.outputName, "vrrOnDemand", false))
-                    return I18n.tr("On-Demand");
-                const pendingVrr = DisplayConfigState.getPendingValue(root.outputName, "vrr");
-                const vrrEnabled = pendingVrr !== undefined ? pendingVrr : (DisplayConfigState.outputs[root.outputName]?.vrr_enabled ?? false);
-                if (!vrrEnabled)
-                    return I18n.tr("Off");
-                return I18n.tr("On");
-            }
-            onValueChanged: value => {
-                const off = I18n.tr("Off");
-                const onDemand = I18n.tr("On-Demand");
-                DisplayConfigState.setPendingChange(root.outputName, "vrr", value !== off);
-                DisplayConfigState.setNiriSetting(root.outputData, root.outputName, "vrrOnDemand", value === onDemand || null);
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: Theme.withAlpha(Theme.outline, 0.2)
-            visible: compositorSettingsLoader.active
-        }
-
-        Loader {
-            id: compositorSettingsLoader
-            width: parent.width
-            active: root.isConnected && compositorSettingsSource !== ""
-            source: compositorSettingsSource
-
-            property string compositorSettingsSource: {
-                switch (CompositorService.compositor) {
-                case "niri":
-                    return "NiriOutputSettings.qml";
-                case "hyprland":
-                    return "HyprlandOutputSettings.qml";
-                default:
-                    return "";
-                }
-            }
-
-            onLoaded: {
-                item.outputName = root.outputName;
-                item.outputData = root.outputData;
-            }
-        }
     }
 }

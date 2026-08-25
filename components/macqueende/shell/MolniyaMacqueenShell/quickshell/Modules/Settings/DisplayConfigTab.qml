@@ -95,10 +95,6 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: Theme.spacingXL
 
-            IncludeWarningBox {
-                width: parent.width
-            }
-
             StyledRect {
                 width: parent.width
                 height: profileSection.implicitHeight + Theme.spacingL * 2
@@ -500,12 +496,12 @@ Item {
 
                         Column {
                             id: displayFormatColumn
-                            visible: !CompositorService.isMango
+                            visible: true
                             spacing: Theme.spacingXS
                             anchors.verticalCenter: parent.verticalCenter
 
                             StyledText {
-                                text: I18n.tr("Config Format")
+                                text: I18n.tr("Display Name Format")
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.surfaceVariantText
                                 horizontalAlignment: Text.AlignHCenter
@@ -635,11 +631,7 @@ Item {
     }
 
     readonly property bool identifyConfigured: {
-        if (!DisplayConfigState.hasOutputBackend || DisplayConfigState.readOnly)
-            return false;
-        if (!["niri", "hyprland", "mango"].includes(CompositorService.compositor))
-            return true;
-        return DisplayConfigState.includeStatus.included;
+        return DisplayConfigState.hasOutputBackend;
     }
 
     Loader {

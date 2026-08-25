@@ -281,6 +281,18 @@ QString MacqueenIpcClient::outputAtCursor() const
     return call(QStringLiteral("outputAtCursor")).toString();
 }
 
+bool MacqueenIpcClient::applyOutputConfiguration(const QVariantList &outputs)
+{
+    if (!m_available || m_protocolVersion < 11 || outputs.isEmpty()) {
+        return false;
+    }
+    const bool applied = call(QStringLiteral("applyOutputConfiguration"), {outputs}).toBool();
+    if (applied) {
+        refreshOutputs();
+    }
+    return applied;
+}
+
 bool MacqueenIpcClient::setKeyboardLayouts(const QStringList &layouts)
 {
     const bool changed = call(QStringLiteral("setKeyboardLayouts"), {layouts}).toBool();

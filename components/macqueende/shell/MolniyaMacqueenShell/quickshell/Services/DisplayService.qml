@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Macqueen.Ipc 1.0
 import qs.Common
 import qs.Services
 
@@ -89,15 +90,8 @@ Singleton {
     }
 
     Connections {
-        target: NiriService
+        target: Macqueen
         function onOutputsChanged() {
-            root.requestSync("output-change");
-        }
-    }
-
-    Connections {
-        target: WlrOutputService
-        function onStateChanged() {
             root.requestSync("output-change");
         }
     }
@@ -148,6 +142,8 @@ Singleton {
 
     function outputIdentifiers(outputName, output) {
         const identifiers = [outputName];
+        if (output?.id && !identifiers.includes(output.id))
+            identifiers.push(output.id);
         const make = output?.make || "";
         const model = output?.model || "";
         if (make && model) {
@@ -207,46 +203,16 @@ Singleton {
     }
 
     function applyConfiguredTargets(context, reason) {
-        if (CompositorService.isNiri) {
-            const outputs = NiriService.outputs || {};
-            const applied = [];
-            for (const name in outputs) {
-                const currentMode = getNiriCurrentMode(outputs[name]);
-                const target = computeTargetMode(name, outputs[name], "niri");
-                if (!target || !target.value)
-                    continue;
-                if (isModeAlreadyCurrent(currentMode, target.mode)) {
-                    if (target.source === "previous")
-                        clearPreviousRefreshMode(name, outputs[name]);
-                    continue;
-                }
-                if (root._lastAppliedTargets[name] === target.value)
-                    continue;
-                root._lastAppliedTargets[name] = target.value;
-                cascadeGuard.restart();
-                NiriService.applyOutputConfig(name, {
-                    "mode": target.value
-                }, success => {
-                    if (success && target.source === "previous")
-                        clearPreviousRefreshMode(name, outputs[name]);
-                });
-                applied.push(name + " " + (getModeRefresh(target.mode) / 1000).toFixed(0) + "Hz (" + target.source + ")");
-            }
-            if (applied.length > 0)
-                log.info("Updated display refresh rate: ", applied.join(", "), " (", context, ")");
-            return;
-        }
-
-        if (!WlrOutputService.wlrOutputAvailable)
+        if (!CompositorService.isMacqueen || !Macqueen.available || Macqueen.protocolVersion < 11)
             return;
 
-        const outputs = WlrOutputService.outputs || [];
+        const outputs = Macqueen.outputs || [];
         const modeOverrides = ({});
         const restoredOutputs = [];
         const applied = [];
 
         for (const output of outputs) {
-            const target = computeTargetMode(output.name, output, "wlr");
+            const target = computeTargetMode(output.name, output);
             if (!target || !target.value)
                 continue;
             if (isModeAlreadyCurrent(output.currentMode, target.mode)) {
@@ -266,7 +232,7 @@ Singleton {
 
         if (applied.length > 0) {
             log.info("Updated display refresh rate: ", applied.join(", "), " (", context, ")");
-            applyWlrModeOverrides(modeOverrides, success => {
+            applyMacqueenModeOverrides(modeOverrides, success => {
                 if (!success)
                     return;
                 for (const output of restoredOutputs)
@@ -276,40 +242,10 @@ Singleton {
     }
 
     function applyBatteryTargets(reason) {
-        if (CompositorService.isNiri) {
-            const outputs = NiriService.outputs || {};
-            const applied = [];
-            for (const name in outputs) {
-                const output = outputs[name];
-                const currentMode = getNiriCurrentMode(output);
-                if (!currentMode)
-                    continue;
-                const currentRefresh = getModeRefresh(currentMode);
-                if (currentRefresh <= batteryRefreshRateTarget + batteryRefreshRateTolerance)
-                    continue;
-                const target = findBatteryRefreshMode(output, currentMode, "niri");
-                if (!target)
-                    continue;
-                const targetValue = formatNiriMode(target);
-                storePreviousRefreshMode(name, output, currentMode);
-                if (root._lastAppliedTargets[name] === targetValue)
-                    continue;
-                root._lastAppliedTargets[name] = targetValue;
-                cascadeGuard.restart();
-                NiriService.applyOutputConfig(name, {
-                    "mode": targetValue
-                });
-                applied.push(name + " " + (currentRefresh / 1000).toFixed(0) + "\u2192" + (getModeRefresh(target) / 1000).toFixed(0) + "Hz");
-            }
-            if (applied.length > 0)
-                log.info("Updated display refresh rate: ", applied.join(", "), " (battery)");
-            return;
-        }
-
-        if (!WlrOutputService.wlrOutputAvailable)
+        if (!CompositorService.isMacqueen || !Macqueen.available || Macqueen.protocolVersion < 11)
             return;
 
-        const outputs = WlrOutputService.outputs || [];
+        const outputs = Macqueen.outputs || [];
         const modeOverrides = ({});
         const applied = [];
 
@@ -320,7 +256,7 @@ Singleton {
             const currentRefresh = getModeRefresh(currentMode);
             if (currentRefresh <= batteryRefreshRateTarget + batteryRefreshRateTolerance)
                 continue;
-            const target = findBatteryRefreshMode(output, currentMode, "wlr");
+            const target = findBatteryRefreshMode(output, currentMode);
             if (!target)
                 continue;
             storePreviousRefreshMode(output.name, output, currentMode);
@@ -338,12 +274,12 @@ Singleton {
 
         if (applied.length > 0) {
             log.info("Updated display refresh rate: ", applied.join(", "), " (battery)");
-            applyWlrModeOverrides(modeOverrides);
+            applyMacqueenModeOverrides(modeOverrides);
         }
     }
 
-    function buildWlrHeads(modeOverrides) {
-        const outputs = WlrOutputService.outputs || [];
+    function buildMacqueenOutputs(modeOverrides) {
+        const outputs = Macqueen.outputs || [];
         const heads = [];
 
         for (const output of outputs) {
@@ -375,83 +311,14 @@ Singleton {
         return heads;
     }
 
-    function applyWlrModeOverrides(modeOverrides, callback) {
-        if (CompositorService.isHyprland) {
-            HyprlandService.generateOutputsConfig(buildWlrOutputsData(modeOverrides), SettingsData.hyprlandOutputSettings, callback);
-            return;
-        }
-
-        if (CompositorService.isMango) {
-            MangoService.generateOutputsConfig(buildWlrOutputsData(modeOverrides), callback);
-            return;
-        }
-
-        WlrOutputService.applyConfiguration(buildWlrHeads(modeOverrides), callback);
+    function applyMacqueenModeOverrides(modeOverrides, callback) {
+        const success = Macqueen.applyOutputConfiguration(buildMacqueenOutputs(modeOverrides));
+        if (callback)
+            callback(success);
     }
 
-    function buildWlrOutputsData(modeOverrides) {
-        const outputs = WlrOutputService.outputs || [];
-        const data = ({});
-
-        for (const output of outputs) {
-            const target = modeOverrides[output.name]?.mode || output.currentMode;
-            const normalizedModes = (output.modes || []).map(mode => ({
-                        "id": mode.id,
-                        "width": getModeWidth(mode),
-                        "height": getModeHeight(mode),
-                        "refresh_rate": getModeRefresh(mode),
-                        "preferred": mode.preferred === true || mode.is_preferred === true
-                    }));
-            const currentMode = target ? normalizedModes.findIndex(mode => getModeWidth(mode) === getModeWidth(target) && getModeHeight(mode) === getModeHeight(target) && Math.abs(getModeRefresh(mode) - getModeRefresh(target)) <= batteryRefreshRateTolerance) : -1;
-
-            data[output.name] = {
-                "name": output.name,
-                "enabled": output.enabled !== false,
-                "make": output.make || "",
-                "model": output.model || "",
-                "serial": output.serial || output.serialNumber || "",
-                "modes": normalizedModes,
-                "current_mode": currentMode,
-                "configured_mode": target ? formatModeString(target) : "",
-                "vrr_supported": output.adaptiveSyncSupported ?? output.vrr_supported ?? false,
-                "vrr_enabled": isOutputVrrEnabled(output),
-                "logical": {
-                    "x": output.x ?? 0,
-                    "y": output.y ?? 0,
-                    "width": getModeWidth(target || output.currentMode) || 1920,
-                    "height": getModeHeight(target || output.currentMode) || 1080,
-                    "scale": output.scale ?? 1.0,
-                    "transform": mapWlrTransform(output.transform)
-                }
-            };
-        }
-
-        return data;
-    }
-
-    function mapWlrTransform(transform) {
-        switch (transform) {
-        case 1:
-            return "90";
-        case 2:
-            return "180";
-        case 3:
-            return "270";
-        case 4:
-            return "Flipped";
-        case 5:
-            return "Flipped90";
-        case 6:
-            return "Flipped180";
-        case 7:
-            return "Flipped270";
-        default:
-            return "Normal";
-        }
-    }
-
-    function findBatteryRefreshMode(output, currentMode, backend) {
-        if (!output || !currentMode || (backend === "wlr" && !output.enabled))
+    function findBatteryRefreshMode(output, currentMode) {
+        if (!output || !currentMode || !output.enabled)
             return null;
 
         if (isOutputVrrEnabled(output))
@@ -485,13 +352,13 @@ Singleton {
         return bestMode;
     }
 
-    function computeTargetMode(outputName, output, backend) {
+    function computeTargetMode(outputName, output) {
         const profileMode = findActiveProfileMode(outputName, output);
         if (profileMode) {
             const mode = findModeByString(output?.modes || [], profileMode);
             if (mode) {
                 return {
-                    "value": formatRestoreModeValue(mode, backend),
+                    "value": mode.id ?? null,
                     "mode": mode,
                     "source": "profile"
                 };
@@ -503,7 +370,7 @@ Singleton {
             const mode = findModeByString(output?.modes || [], previousMode);
             if (mode) {
                 return {
-                    "value": formatRestoreModeValue(mode, backend),
+                    "value": mode.id ?? null,
                     "mode": mode,
                     "source": "previous"
                 };
@@ -524,6 +391,8 @@ Singleton {
             return "";
 
         const identifiers = [outputName];
+        if (output?.id && !identifiers.includes(output.id))
+            identifiers.push(output.id);
         if (output?.make && output?.model) {
             const modelId = output.make + " " + output.model;
             const serial = output.serial || output.serialNumber || "Unknown";
@@ -578,22 +447,8 @@ Singleton {
         return getModeWidth(currentMode) === getModeWidth(targetMode) && getModeHeight(currentMode) === getModeHeight(targetMode) && Math.abs(getModeRefresh(currentMode) - getModeRefresh(targetMode)) <= batteryRefreshRateTolerance;
     }
 
-    function formatRestoreModeValue(mode, backend) {
-        if (!mode)
-            return null;
-        if (backend === "wlr")
-            return mode.id ?? null;
-        return formatNiriMode(mode);
-    }
-
     function isOutputVrrEnabled(output) {
         return output.vrr_enabled === true || output.adaptiveSync === 1;
-    }
-
-    function getNiriCurrentMode(output) {
-        if (!output || !output.modes || output.current_mode === undefined)
-            return null;
-        return output.modes[output.current_mode] || null;
     }
 
     function getModeWidth(mode) {
@@ -612,10 +467,6 @@ Singleton {
         if (!mode)
             return "";
         return getModeWidth(mode) + "x" + getModeHeight(mode) + "@" + (getModeRefresh(mode) / 1000).toFixed(3);
-    }
-
-    function formatNiriMode(mode) {
-        return mode.width + "x" + mode.height + "@" + (getModeRefresh(mode) / 1000).toFixed(3);
     }
 
     function markDeviceUserControlled(deviceId) {

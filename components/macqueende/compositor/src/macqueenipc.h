@@ -35,6 +35,7 @@ public Q_SLOTS:
     QVariantMap activeWindow() const;
     QVariantList windows() const;
     QVariantList outputs() const;
+    bool applyOutputConfiguration(const QVariantList &outputs);
     QString outputAtCursor() const;
     QVariantList workspaces() const;
     QVariantList keyboardLayouts() const;

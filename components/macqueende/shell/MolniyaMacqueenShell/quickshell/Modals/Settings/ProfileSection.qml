@@ -132,7 +132,7 @@ Rectangle {
             }
 
             StyledText {
-                text: DgopService.hostname || "DMS"
+                text: "KaskadOS"
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceVariantText
                 elide: Text.ElideRight

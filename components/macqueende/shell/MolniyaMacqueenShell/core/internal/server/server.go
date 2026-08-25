@@ -34,7 +34,6 @@ import (
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wayland"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/windowsapps"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wlcontext"
-	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wlroutput"
 	"github.com/AvengeMedia/dankgo/ipc"
 	"github.com/AvengeMedia/dankgo/paths"
 	"github.com/AvengeMedia/dankgo/syncmap"
@@ -68,7 +67,6 @@ var appPickerManager *apppicker.Manager
 var cupsManager *cups.Manager
 var tailscaleManager *tailscale.Manager
 var brightnessManager *brightness.Manager
-var wlrOutputManager *wlroutput.Manager
 var evdevManager *evdev.Manager
 var clipboardManager *clipboard.Manager
 var dbusManager *serverDbus.Manager
@@ -203,30 +201,6 @@ func InitializeBrightnessManager() error {
 	brightnessManager = manager
 
 	log.Info("Brightness manager initialized")
-	return nil
-}
-
-func InitializeWlrOutputManager() error {
-	log.Info("Attempting to initialize WlrOutput management...")
-
-	if wlContext == nil {
-		ctx, err := wlcontext.New()
-		if err != nil {
-			log.Errorf("Failed to create shared Wayland context: %v", err)
-			return err
-		}
-		wlContext = ctx
-	}
-
-	manager, err := wlroutput.NewManager(wlContext.Display())
-	if err != nil {
-		log.Debug("Failed to initialize wlroutput manager: %v", err)
-		return err
-	}
-
-	wlrOutputManager = manager
-
-	log.Info("WlrOutput management initialized successfully")
 	return nil
 }
 
@@ -417,10 +391,6 @@ func getCapabilities() Capabilities {
 		caps = append(caps, "brightness")
 	}
 
-	if wlrOutputManager != nil {
-		caps = append(caps, "wlroutput")
-	}
-
 	if evdevManager != nil {
 		caps = append(caps, "evdev")
 	}
@@ -497,10 +467,6 @@ func getServerInfo() ServerInfo {
 
 	if brightnessManager != nil {
 		caps = append(caps, "brightness")
-	}
-
-	if wlrOutputManager != nil {
-		caps = append(caps, "wlroutput")
 	}
 
 	if evdevManager != nil {
@@ -1107,38 +1073,6 @@ func handleSubscribe(conn *models.Conn, req models.Request) {
 		}()
 	}
 
-	if shouldSubscribe("wlroutput") && wlrOutputManager != nil {
-		wg.Add(1)
-		wlrOutputChan := wlrOutputManager.Subscribe(clientID + "-wlroutput")
-		go func() {
-			defer wg.Done()
-			defer wlrOutputManager.Unsubscribe(clientID + "-wlroutput")
-
-			initialState := wlrOutputManager.GetState()
-			select {
-			case eventChan <- ServiceEvent{Service: "wlroutput", Data: initialState}:
-			case <-stopChan:
-				return
-			}
-
-			for {
-				select {
-				case state, ok := <-wlrOutputChan:
-					if !ok {
-						return
-					}
-					select {
-					case eventChan <- ServiceEvent{Service: "wlroutput", Data: state}:
-					case <-stopChan:
-						return
-					}
-				case <-stopChan:
-					return
-				}
-			}
-		}()
-	}
-
 	if shouldSubscribe("evdev") && evdevManager != nil {
 		wg.Add(1)
 		evdevChan := evdevManager.Subscribe(clientID + "-evdev")
@@ -1334,9 +1268,6 @@ func cleanupManagers() {
 	if brightnessManager != nil {
 		brightnessManager.Close()
 	}
-	if wlrOutputManager != nil {
-		wlrOutputManager.Close()
-	}
 	if evdevManager != nil {
 		evdevManager.Close()
 	}
@@ -1524,20 +1455,6 @@ func (s *Server) Serve(printDocs bool) error {
 		log.Info("   Subscription events:")
 		log.Info("     - brightness       : Full device list (on rescan, DDC discovery, device changes)")
 		log.Info("     - brightness.update: Single device update (on brightness change for efficiency)")
-		log.Info("WlrOutput:")
-		log.Info(" wlroutput.getState                    - Get current output configuration state")
-		log.Info(" wlroutput.applyConfiguration          - Apply output configuration (params: heads)")
-		log.Info(" wlroutput.testConfiguration           - Test output configuration without applying (params: heads)")
-		log.Info(" wlroutput.subscribe                   - Subscribe to output state changes (streaming)")
-		log.Info("   Head configuration params:")
-		log.Info("     - name         : Output name (required)")
-		log.Info("     - enabled      : Enable/disable output (required)")
-		log.Info("     - modeId       : Mode ID from available modes (optional)")
-		log.Info("     - customMode   : Custom mode {width, height, refresh} (optional)")
-		log.Info("     - position     : Position {x, y} (optional)")
-		log.Info("     - transform    : Transform value (optional)")
-		log.Info("     - scale        : Scale value (optional)")
-		log.Info("     - adaptiveSync : Adaptive sync state (optional)")
 		log.Info("Evdev:")
 		log.Info(" evdev.getState                        - Get current evdev state (caps lock)")
 		log.Info(" evdev.subscribe                       - Subscribe to evdev state changes (streaming)")
@@ -1713,17 +1630,7 @@ func (s *Server) Serve(printDocs bool) error {
 		log.Debugf("AppPicker manager unavailable: %v", err)
 	}
 
-	if err := InitializeWlrOutputManager(); err != nil {
-		log.Debugf("WlrOutput manager unavailable: %v", err)
-	}
-
 	fatalErrChan := make(chan error, 1)
-	if wlrOutputManager != nil {
-		go func() {
-			err := <-wlrOutputManager.FatalError()
-			fatalErrChan <- fmt.Errorf("WlrOutput fatal error: %w", err)
-		}()
-	}
 	if wlContext != nil {
 		go func() {
 			err := <-wlContext.FatalError()

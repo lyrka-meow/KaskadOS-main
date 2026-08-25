@@ -47,7 +47,7 @@ StyledRect {
                 }
 
                 StyledText {
-                    text: I18n.tr("Display configuration is not available. WLR output management protocol not supported.")
+                    text: I18n.tr("Display configuration is not available. The Macqueen monitor service is not connected.")
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     wrapMode: Text.WordWrap

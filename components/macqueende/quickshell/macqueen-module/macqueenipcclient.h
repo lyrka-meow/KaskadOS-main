@@ -57,6 +57,7 @@ public:
     Q_INVOKABLE bool setWindowFullscreen(const QString &id, bool fullscreen);
     Q_INVOKABLE bool moveWindowToWorkspace(const QString &windowId, const QString &workspaceId);
     Q_INVOKABLE QString outputAtCursor() const;
+    Q_INVOKABLE bool applyOutputConfiguration(const QVariantList &outputs);
     Q_INVOKABLE bool setKeyboardLayouts(const QStringList &layouts);
     Q_INVOKABLE bool setCurrentKeyboardLayout(uint index);
     Q_INVOKABLE bool setKeyboardLayoutShortcut(const QString &shortcut);

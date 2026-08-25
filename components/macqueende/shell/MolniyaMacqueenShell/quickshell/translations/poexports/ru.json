@@ -2480,6 +2480,15 @@
   "Display configuration is not available. WLR output management protocol not supported.": {
     "Display configuration is not available. WLR output management protocol not supported.": "Конфигурация дисплея недоступна. Протокол управления выводом WLR не поддерживается."
   },
+  "Display configuration is not available. The Macqueen monitor service is not connected.": {
+    "Display configuration is not available. The Macqueen monitor service is not connected.": "Настройка мониторов недоступна: служба мониторов Macqueen не подключена."
+  },
+  "Display configuration failed": {
+    "Display configuration failed": "Не удалось применить настройки мониторов"
+  },
+  "Macqueen rejected the requested monitor configuration.": {
+    "Macqueen rejected the requested monitor configuration.": "Macqueen отклонил выбранную конфигурацию мониторов."
+  },
   "Display currently focused application title": {
     "Display currently focused application title": "Отображает заголовок используемого приложения"
   },

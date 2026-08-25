@@ -6,7 +6,10 @@
 #include "macqueenipc.h"
 
 #include "config-kwin.h"
+#include "core/backendoutput.h"
 #include "core/output.h"
+#include "core/outputbackend.h"
+#include "core/outputconfiguration.h"
 #include "cursor.h"
 #include "input.h"
 #include "keyboard_input.h"
@@ -14,6 +17,7 @@
 #include "main.h"
 #include "input_event.h"
 #include "screenedge.h"
+#include "scripting/scriptingutils.h"
 #include "virtualdesktops.h"
 #include "window.h"
 #include "workspace.h"
@@ -23,11 +27,14 @@
 #include <QDBusConnection>
 #include <QFile>
 #include <QAction>
+#include <QHash>
 #include <QKeySequence>
 #include <KGlobalAccel>
 #include <KConfigGroup>
 #include <QRegularExpression>
 #include <QTextStream>
+#include <algorithm>
+#include <cmath>
 #include <linux/input-event-codes.h>
 
 namespace KWin
@@ -154,7 +161,7 @@ MacqueenIpc::~MacqueenIpc()
 
 uint MacqueenIpc::protocolVersion() const
 {
-    return 10;
+    return 11;
 }
 
 QString MacqueenIpc::compositorVersion() const
@@ -181,23 +188,147 @@ QVariantList MacqueenIpc::windows() const
 QVariantList MacqueenIpc::outputs() const
 {
     QVariantList result;
-    for (const LogicalOutput *output : m_workspace->outputs()) {
-        const Rect geometry = output->geometry();
+    for (const BackendOutput *output : kwinApp()->outputBackend()->outputs()) {
+        QVariantList modes;
+        int currentModeId = -1;
+        const auto outputModes = output->modes();
+        const auto currentMode = output->currentMode();
+        for (int index = 0; index < outputModes.size(); ++index) {
+            const auto &mode = outputModes.at(index);
+            if (mode == currentMode) {
+                currentModeId = index;
+            }
+            modes.append(QVariantMap{
+                {QStringLiteral("id"), index},
+                {QStringLiteral("width"), mode->size().width()},
+                {QStringLiteral("height"), mode->size().height()},
+                {QStringLiteral("refresh"), mode->refreshRate()},
+                {QStringLiteral("preferred"), mode->flags().testFlag(OutputModeline::Flag::Preferred)},
+            });
+        }
+
+        QVariantMap currentModeData;
+        if (currentMode) {
+            currentModeData = {
+                {QStringLiteral("id"), currentModeId},
+                {QStringLiteral("width"), currentMode->size().width()},
+                {QStringLiteral("height"), currentMode->size().height()},
+                {QStringLiteral("refresh"), currentMode->refreshRate()},
+            };
+        }
+
         result.append(QVariantMap{
             {QStringLiteral("id"), output->uuid()},
             {QStringLiteral("name"), output->name()},
+            {QStringLiteral("enabled"), output->isEnabled()},
             {QStringLiteral("manufacturer"), output->manufacturer()},
+            {QStringLiteral("make"), output->manufacturer()},
             {QStringLiteral("model"), output->model()},
             {QStringLiteral("serialNumber"), output->serialNumber()},
-            {QStringLiteral("x"), geometry.x()},
-            {QStringLiteral("y"), geometry.y()},
-            {QStringLiteral("width"), geometry.width()},
-            {QStringLiteral("height"), geometry.height()},
-            {QStringLiteral("scale"), output->scale()},
+            {QStringLiteral("x"), output->position().x()},
+            {QStringLiteral("y"), output->position().y()},
+            {QStringLiteral("width"), output->modeSize().width()},
+            {QStringLiteral("height"), output->modeSize().height()},
+            {QStringLiteral("scale"), output->scaleSetting()},
             {QStringLiteral("refreshRate"), output->refreshRate()},
+            {QStringLiteral("transform"), static_cast<int>(output->manualTransform().kind())},
+            {QStringLiteral("adaptiveSyncSupported"), output->capabilities().testFlag(BackendOutput::Capability::Vrr)},
+            {QStringLiteral("adaptiveSync"), output->vrrPolicy() == VrrPolicy::Never ? 0 : 1},
+            {QStringLiteral("modes"), modes},
+            {QStringLiteral("currentMode"), currentModeData},
         });
     }
     return result;
+}
+
+bool MacqueenIpc::applyOutputConfiguration(const QVariantList &outputs)
+{
+    const QList<BackendOutput *> availableOutputs = kwinApp()->outputBackend()->outputs();
+    if (outputs.isEmpty() || availableOutputs.isEmpty()) {
+        return false;
+    }
+
+    QHash<QString, BackendOutput *> outputsByName;
+    for (BackendOutput *output : availableOutputs) {
+        outputsByName.insert(output->name(), output);
+    }
+
+    QHash<BackendOutput *, bool> requestedEnabled;
+    OutputConfiguration configuration;
+    configuration.source = OutputConfiguration::Source::User;
+
+    for (const QVariant &value : outputs) {
+        const QVariantMap data = dbusToVariant(value).toMap();
+        const QString name = data.value(QStringLiteral("name")).toString();
+        BackendOutput *output = outputsByName.value(name, nullptr);
+        if (!output) {
+            return false;
+        }
+
+        const auto changes = configuration.changeSet(output);
+        if (data.contains(QStringLiteral("enabled"))) {
+            const bool enabled = data.value(QStringLiteral("enabled")).toBool();
+            changes->enabled = enabled;
+            requestedEnabled.insert(output, enabled);
+        }
+
+        if (data.contains(QStringLiteral("modeId"))) {
+            bool ok = false;
+            const int modeId = data.value(QStringLiteral("modeId")).toInt(&ok);
+            const auto modes = output->modes();
+            if (!ok || modeId < 0 || modeId >= modes.size()) {
+                return false;
+            }
+            changes->currentMode = modes.at(modeId)->modeline();
+            changes->desiredMode = modes.at(modeId)->modeline();
+        }
+
+        if (data.contains(QStringLiteral("position"))) {
+            const QVariantMap position = dbusToVariant(data.value(QStringLiteral("position"))).toMap();
+            const int x = position.value(QStringLiteral("x")).toInt();
+            const int y = position.value(QStringLiteral("y")).toInt();
+            if (x < 0 || y < 0 || x > 1000000 || y > 1000000) {
+                return false;
+            }
+            changes->pos = QPoint(x, y);
+        }
+
+        if (data.contains(QStringLiteral("scale"))) {
+            const double scale = data.value(QStringLiteral("scale")).toDouble();
+            if (scale < 0.25 || scale > 4.0) {
+                return false;
+            }
+            const double roundedScale = std::round(scale * 120.0) / 120.0;
+            changes->scale = roundedScale;
+            changes->scaleSetting = roundedScale;
+        }
+
+        if (data.contains(QStringLiteral("transform"))) {
+            bool ok = false;
+            const int transform = data.value(QStringLiteral("transform")).toInt(&ok);
+            if (!ok || transform < OutputTransform::Normal || transform > OutputTransform::FlipX270) {
+                return false;
+            }
+            const OutputTransform outputTransform(static_cast<OutputTransform::Kind>(transform));
+            changes->transform = outputTransform;
+            changes->manualTransform = outputTransform;
+        }
+
+        if (data.contains(QStringLiteral("adaptiveSync")) && output->capabilities().testFlag(BackendOutput::Capability::Vrr)) {
+            changes->vrrPolicy = data.value(QStringLiteral("adaptiveSync")).toInt() == 0
+                ? VrrPolicy::Never
+                : VrrPolicy::Always;
+        }
+    }
+
+    const bool anyOutputEnabled = std::any_of(availableOutputs.cbegin(), availableOutputs.cend(), [&requestedEnabled](BackendOutput *output) {
+        return requestedEnabled.value(output, output->isEnabled());
+    });
+    if (!anyOutputEnabled) {
+        return false;
+    }
+
+    return m_workspace->applyOutputConfiguration(configuration) == OutputConfigurationError::None;
 }
 
 QString MacqueenIpc::outputAtCursor() const

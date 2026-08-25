@@ -10,8 +10,7 @@ Rectangle {
     readonly property bool identifyActive: draggingOutput !== "" || identifyButton.pressed
 
     property var filteredOutputs: {
-        void (DisplayConfigState.pendingHyprlandChanges);
-        void (DisplayConfigState.pendingNiriChanges);
+        void (DisplayConfigState.pendingChanges);
         const all = DisplayConfigState.allOutputs || {};
         const keys = Object.keys(all);
         return keys.filter(k => {
@@ -19,11 +18,7 @@ Rectangle {
             const isConnected = od?.connected ?? false;
             if (!isConnected)
                 return SettingsData.displayShowDisconnected;
-            if (CompositorService.isHyprland && DisplayConfigState.getHyprlandSetting(od, k, "disabled", false))
-                return false;
-            if (CompositorService.isNiri && DisplayConfigState.getNiriSetting(od, k, "disabled", false))
-                return false;
-            return true;
+            return !DisplayConfigState.isOutputDisabled(k);
         });
     }
 

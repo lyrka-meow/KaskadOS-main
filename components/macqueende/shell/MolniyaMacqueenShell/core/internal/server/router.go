@@ -26,7 +26,6 @@ import (
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wallpaper"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wayland"
 	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/windowsapps"
-	"github.com/AvengeMedia/DankMaterialShell/core/internal/server/wlroutput"
 )
 
 func RouteRequest(conn *models.Conn, req models.Request) {
@@ -136,15 +135,6 @@ func RouteRequest(conn *models.Conn, req models.Request) {
 			return
 		}
 		brightness.HandleRequest(conn, req, brightnessManager)
-		return
-	}
-
-	if strings.HasPrefix(req.Method, "wlroutput.") {
-		if wlrOutputManager == nil {
-			models.RespondError(conn, req.ID, "wlroutput manager not initialized")
-			return
-		}
-		wlroutput.HandleRequest(conn, req, wlrOutputManager)
 		return
 	}
 
