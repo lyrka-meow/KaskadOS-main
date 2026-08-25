@@ -107,6 +107,12 @@ if grep -Fq 'Logger::setupLogfile();' "${PROJECT_DIR}/components/calamares/src/c
 fi
 
 readonly CALAMARES_SETTINGS="${PROJECT_DIR}/components/calamares/settings.conf"
+grep -Fq 'id:          pacmankeyring' "${CALAMARES_SETTINGS}" \
+  || die 'в Calamares не зарегистрирована подготовка ключей pacman'
+grep -Fq 'config:      pacmankeyring.conf' "${CALAMARES_SETTINGS}" \
+  || die 'Calamares не использует безопасную конфигурацию pacmankeyring'
+grep -Fq 'shellprocess@pacmankeyring' "${CALAMARES_SETTINGS}" \
+  || die 'в последовательности Calamares не запускается подготовка ключей pacman'
 grep -Fq 'packagechooser@grubtheme' "${CALAMARES_SETTINGS}" \
   || die 'в Calamares не подключён выбор темы GRUB'
 grep -Fq 'packagechooser@sddmtheme' "${CALAMARES_SETTINGS}" \
@@ -244,14 +250,19 @@ source "${PROFILE_DIR}/profiledef.sh"
 
 readonly SYSTEMD_BOOT_ENTRY_DIR="${PROFILE_DIR}/efiboot/loader/entries"
 readonly SYSTEMD_BOOT_ENTRY="${SYSTEMD_BOOT_ENTRY_DIR}/01-archiso-linux.conf"
-[[ -f "${PROFILE_DIR}/efiboot/loader/loader.conf" ]] \
+readonly SYSTEMD_BOOT_CONFIG="${PROFILE_DIR}/efiboot/loader/loader.conf"
+[[ -f "${SYSTEMD_BOOT_CONFIG}" ]] \
   || die 'в ISO отсутствует конфигурация systemd-boot'
 [[ -f "${SYSTEMD_BOOT_ENTRY}" ]] \
   || die 'в ISO отсутствует пункт запуска KaskadOS для systemd-boot'
 (( $(find "${SYSTEMD_BOOT_ENTRY_DIR}" -maxdepth 1 -type f -name '*.conf' | wc -l) == 1 )) \
   || die 'в меню systemd-boot должен оставаться ровно один пункт'
-grep -Eq '^title[[:space:]]+Начать установку$' "${SYSTEMD_BOOT_ENTRY}" \
-  || die 'в меню systemd-boot отсутствует запуск KaskadOS'
+grep -Eq '^title[[:space:]]+Start KaskadOS installation$' "${SYSTEMD_BOOT_ENTRY}" \
+  || die 'в меню systemd-boot отсутствует совместимый с UEFI запуск KaskadOS'
+grep -Eq '^auto-entries[[:space:]]+no$' "${SYSTEMD_BOOT_CONFIG}" \
+  || die 'systemd-boot показывает автоматически найденные пункты'
+grep -Eq '^auto-firmware[[:space:]]+no$' "${SYSTEMD_BOOT_CONFIG}" \
+  || die 'systemd-boot показывает переход в настройки UEFI'
 grep -Eq '^initrd[[:space:]]+/%INSTALL_DIR%/boot/%ARCH%/initramfs-linux\.img$' \
   "${SYSTEMD_BOOT_ENTRY}" \
   || die 'systemd-boot не загружает initramfs live-системы'
