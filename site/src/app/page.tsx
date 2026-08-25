@@ -1,4 +1,4 @@
-const releasesUrl = "https://github.com/lyrka-meow/KaskadOS-main/releases";
+const downloadUrl = "https://sourceforge.net/projects/kaskados-main/files/latest/download";
 const repositoryUrl = "https://github.com/lyrka-meow/KaskadOS-main";
 
 const features = [
@@ -43,7 +43,7 @@ export default function Home() {
           <a href="#development">Разработка</a>
         </nav>
 
-        <a className="header-action" href={releasesUrl} target="_blank" rel="noreferrer">
+        <a className="header-action" href={downloadUrl} target="_blank" rel="noreferrer">
           Скачать
           <span aria-hidden="true">↗</span>
         </a>
@@ -59,7 +59,7 @@ export default function Home() {
           </p>
 
           <div className="hero-actions">
-            <a className="button primary" href={releasesUrl} target="_blank" rel="noreferrer">
+            <a className="button primary" href={downloadUrl} target="_blank" rel="noreferrer">
               Скачать KaskadOS
               <span aria-hidden="true">↓</span>
             </a>
@@ -73,7 +73,7 @@ export default function Home() {
             <span className="pulse" />
             <div>
               <strong>Проект активно развивается</strong>
-              <small>Актуальные сборки публикуются в GitHub Releases</small>
+              <small>Актуальные сборки публикуются на SourceForge</small>
             </div>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function Home() {
           <h2>Следи за тем, как строится KaskadOS.</h2>
           <p>
             Исходный код установщика, рабочего окружения и системных компонентов
-            развивается в одном репозитории. Там же публикуются изменения и новые выпуски.
+            развивается в одном репозитории. Там можно следить за кодом и историей изменений.
           </p>
           <a className="button light" href={repositoryUrl} target="_blank" rel="noreferrer">
             Репозиторий на GitHub <span aria-hidden="true">↗</span>
@@ -169,8 +169,8 @@ export default function Home() {
           <p className="section-label">Готов попробовать?</p>
           <h2>Скачай актуальную сборку KaskadOS.</h2>
         </div>
-        <a className="button primary large" href={releasesUrl} target="_blank" rel="noreferrer">
-          Перейти к выпускам <span aria-hidden="true">↗</span>
+        <a className="button primary large" href={downloadUrl} target="_blank" rel="noreferrer">
+          Скачать ISO <span aria-hidden="true">↓</span>
         </a>
       </section>
 

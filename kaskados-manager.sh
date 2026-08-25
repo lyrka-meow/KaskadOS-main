@@ -7,12 +7,14 @@ readonly PROJECT_DIR="$(cd -- "$(dirname -- "${SCRIPT_PATH}")" && pwd)"
 readonly ISO_BUILD_SCRIPT="${PROJECT_DIR}/scripts/build-iso.sh"
 readonly DESKTOP_BUILD_SCRIPT="${PROJECT_DIR}/scripts/build-desktop-package.sh"
 readonly PUBLISH_SCRIPT="${PROJECT_DIR}/scripts/publish-repository.sh"
+readonly SOURCEFORGE_PUBLISH_SCRIPT="${PROJECT_DIR}/scripts/publish-iso-sourceforge.sh"
 readonly VERSION_FILE="${PROJECT_DIR}/components/macqueende/VERSION"
 readonly PACKAGE_DIR="${PROJECT_DIR}/out/packages/x86_64"
 readonly OUTPUT_DIR="${PROJECT_DIR}/out"
 readonly ISO_LOG="${HOME}/kaskados-build.log"
 readonly DESKTOP_LOG="${HOME}/kaskados-desktop-build.log"
 readonly PUBLISH_LOG="${HOME}/kaskados-publish.log"
+readonly SOURCEFORGE_LOG="${HOME}/kaskados-sourceforge.log"
 
 if [[ -t 1 ]]; then
   readonly RESET=$'\033[0m'
@@ -64,6 +66,29 @@ latest_desktop_package() {
 
 latest_iso() {
   newest_file "${OUTPUT_DIR}" '*.iso'
+}
+
+newer_project_file() {
+  local iso="$1"
+  local relative_path absolute_path
+
+  while IFS= read -r -d '' relative_path; do
+    absolute_path="${PROJECT_DIR}/${relative_path}"
+    if [[ -f "${absolute_path}" && "${absolute_path}" -nt "${iso}" ]]; then
+      printf '%s\n' "${absolute_path}"
+      return 0
+    fi
+  done < <(
+    git -C "${PROJECT_DIR}" ls-files -z --cached --others --exclude-standard -- \
+      components profile repository \
+      scripts/build-iso.sh \
+      scripts/check-profile.sh \
+      scripts/clean-work.sh \
+      scripts/prepare-live-profile.sh \
+      Makefile 2>/dev/null
+  )
+
+  return 1
 }
 
 human_file() {
@@ -202,6 +227,43 @@ build_and_publish_desktop() {
   publish_desktop
 }
 
+publish_iso_sourceforge() {
+  local iso newer_file result
+  iso="$(latest_iso || true)"
+
+  if [[ -z "${iso}" || ! -f "${iso}" ]]; then
+    printf '%sГотовый ISO не найден.%s\n' "${RED}" "${RESET}" >&2
+    printf 'Сначала выберите пункт «Собрать ISO».\n'
+    return 2
+  fi
+
+  newer_file="$(newer_project_file "${iso}" || true)"
+  if [[ -n "${newer_file}" ]]; then
+    printf '%sISO собран раньше, чем были изменены файлы системы.%s\n' \
+      "${RED}" "${RESET}" >&2
+    printf 'Первый более новый файл: %s\n' "${newer_file}"
+    printf 'Сначала выберите пункт «Собрать ISO».\n'
+    return 2
+  fi
+
+  printf '\nБудет опубликован ISO:\n  %s\n' "$(human_file "${iso}")"
+  printf 'Версия выпуска: %s\n' "$(current_version)"
+  printf 'Проект SourceForge:\n  https://sourceforge.net/projects/kaskados-main/files/\n\n'
+  confirm 'Создать SHA256 и загрузить файлы в SourceForge?' || {
+    printf 'Публикация отменена.\n'
+    return 130
+  }
+
+  run_logged 'Публикация ISO в SourceForge' "${SOURCEFORGE_LOG}" \
+    "${SOURCEFORGE_PUBLISH_SCRIPT}" "${iso}"
+  result=$?
+
+  print_result "${result}" \
+    'ISO и SHA256 опубликованы в SourceForge.' \
+    "Публикация остановилась. Последние строки находятся в ${SOURCEFORGE_LOG}."
+  return "${result}"
+}
+
 show_status() {
   local version package iso branch commit changes
 
@@ -220,6 +282,7 @@ show_status() {
   printf 'Пакет DE:        %s\n' "$(human_file "${package}")"
   printf 'Последний ISO:   %s\n' "$(human_file "${iso}")"
   printf 'Репозиторий:     https://repo.kaskados.xyz/x86_64/\n'
+  printf 'ISO SourceForge: https://sourceforge.net/projects/kaskados-main/files/\n'
 }
 
 draw_menu() {
@@ -238,6 +301,7 @@ draw_menu() {
   printf '  %s3%s  Опубликовать собранный пакет DE\n' "${YELLOW}" "${RESET}"
   printf '  %s4%s  Собрать и опубликовать DE\n' "${YELLOW}" "${RESET}"
   printf '  %s5%s  Показать состояние и готовые файлы\n' "${CYAN}" "${RESET}"
+  printf '  %s6%s  Опубликовать последний ISO в SourceForge\n' "${YELLOW}" "${RESET}"
   printf '  %s0%s  Выход\n\n' "${RED}" "${RESET}"
 }
 
@@ -245,6 +309,7 @@ for required_file in \
   "${ISO_BUILD_SCRIPT}" \
   "${DESKTOP_BUILD_SCRIPT}" \
   "${PUBLISH_SCRIPT}" \
+  "${SOURCEFORGE_PUBLISH_SCRIPT}" \
   "${VERSION_FILE}"; do
   [[ -f "${required_file}" ]] || die "не найден файл ${required_file}"
 done
@@ -275,6 +340,10 @@ while true; do
       ;;
     5)
       show_status
+      pause_menu
+      ;;
+    6)
+      publish_iso_sourceforge || true
       pause_menu
       ;;
     0)
