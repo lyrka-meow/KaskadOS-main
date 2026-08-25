@@ -47,7 +47,7 @@ readonly REMOTE_DIRECTORY="${SOURCEFORGE_USER}@${SOURCEFORGE_HOST}:/home/frs/pro
 
 printf 'Загружаю ISO и SHA256 в SourceForge...\n'
 printf 'Назначение: %s\n\n' "${REMOTE_DIRECTORY}"
-rsync --archive --verbose --partial --progress --mkpath \
+rsync --archive --verbose --partial --progress \
   -e ssh \
   -- "${ISO_PATH}" "${CHECKSUM_PATH}" "${REMOTE_DIRECTORY}"
 
