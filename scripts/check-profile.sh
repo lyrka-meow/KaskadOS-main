@@ -235,23 +235,26 @@ source "${PROFILE_DIR}/profiledef.sh"
 [[ -n "${iso_name:-}" ]] || die 'в profiledef.sh не задан iso_name'
 [[ -n "${iso_version:-}" ]] || die 'в profiledef.sh не задан iso_version'
 (( ${#bootmodes[@]} > 0 )) || die 'в profiledef.sh не заданы bootmodes'
-[[ " ${bootmodes[*]} " == *' uefi.grub '* ]] \
-  || die 'UEFI-загрузка ISO должна использовать GRUB'
-[[ " ${bootmodes[*]} " != *' uefi.systemd-boot '* ]] \
-  || die 'systemd-boot не должен использоваться в ISO'
+[[ " ${bootmodes[*]} " == *' bios.syslinux '* ]] \
+  || die 'Legacy BIOS-загрузка ISO должна использовать Syslinux'
+[[ " ${bootmodes[*]} " == *' uefi.systemd-boot '* ]] \
+  || die 'UEFI-загрузка ISO должна использовать systemd-boot'
+[[ " ${bootmodes[*]} " != *' uefi.grub '* ]] \
+  || die 'GRUB не должен использоваться для UEFI-загрузки live-ISO'
 
-readonly ISO_GRUB_CONFIG="${PROFILE_DIR}/grub/grub.cfg"
-[[ -f "${PROFILE_DIR}/grub/theme/theme.txt" ]] \
-  || die 'в ISO отсутствует тема GRUB'
-grep -Fq 'set theme="/boot/grub/theme/theme.txt"' "${ISO_GRUB_CONFIG}" \
-  || die 'тема GRUB не подключена в загрузочном меню ISO'
-(( $(grep -Ec '^[[:space:]]*menuentry[[:space:]]' "${ISO_GRUB_CONFIG}") == 1 )) \
-  || die 'в загрузочном меню ISO должен оставаться ровно один пункт'
-grep -Fq 'menuentry "Начать установку"' "${ISO_GRUB_CONFIG}" \
-  || die 'в загрузочном меню ISO отсутствует запуск KaskadOS'
-if grep -Eqi 'speech|memtest|efi shell|firmware|reboot|shutdown' "${ISO_GRUB_CONFIG}"; then
-  die 'в загрузочном меню ISO остались служебные пункты'
-fi
+readonly SYSTEMD_BOOT_ENTRY_DIR="${PROFILE_DIR}/efiboot/loader/entries"
+readonly SYSTEMD_BOOT_ENTRY="${SYSTEMD_BOOT_ENTRY_DIR}/01-archiso-linux.conf"
+[[ -f "${PROFILE_DIR}/efiboot/loader/loader.conf" ]] \
+  || die 'в ISO отсутствует конфигурация systemd-boot'
+[[ -f "${SYSTEMD_BOOT_ENTRY}" ]] \
+  || die 'в ISO отсутствует пункт запуска KaskadOS для systemd-boot'
+(( $(find "${SYSTEMD_BOOT_ENTRY_DIR}" -maxdepth 1 -type f -name '*.conf' | wc -l) == 1 )) \
+  || die 'в меню systemd-boot должен оставаться ровно один пункт'
+grep -Eq '^title[[:space:]]+Начать установку$' "${SYSTEMD_BOOT_ENTRY}" \
+  || die 'в меню systemd-boot отсутствует запуск KaskadOS'
+grep -Eq '^initrd[[:space:]]+/%INSTALL_DIR%/boot/%ARCH%/initramfs-linux\.img$' \
+  "${SYSTEMD_BOOT_ENTRY}" \
+  || die 'systemd-boot не загружает initramfs live-системы'
 
 required_executables=(
   '/opt/kaskados-installer/bin/kaskad-installer'
