@@ -51,13 +51,11 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.spacingS
 
-        // Whether the apps category picker should replace the plain title
-        readonly property bool hasAppCategories: root.section?.id === "apps" && (root.controller?.appCategories?.length ?? 0) > 0
+        readonly property bool hasAppFolders: root.section?.id === "apps" && (root.controller?.appFolders?.length ?? 0) > 0
 
         DankIcon {
             anchors.verticalCenter: parent.verticalCenter
-            // Hide section icon when the category chip already shows one
-            visible: !leftContent.hasAppCategories
+            visible: !leftContent.hasAppFolders
             name: root.section?.icon ?? "folder"
             size: 16
             color: Theme.surfaceVariantText
@@ -66,30 +64,62 @@ Rectangle {
         // Plain title — hidden when the category chip is shown
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
-            visible: !leftContent.hasAppCategories
+            visible: !leftContent.hasAppFolders
             text: root.section?.title ?? ""
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceVariantText
         }
 
-        // Compact inline category chip — only visible on the apps section
         Item {
             id: categoryChip
-            visible: leftContent.hasAppCategories
+            visible: leftContent.hasAppFolders
             anchors.verticalCenter: parent.verticalCenter
-            // Size to content with a fixed-min width so it doesn't jump around
             width: chipRow.implicitWidth + Theme.spacingM * 2
             height: 24
 
-            readonly property string currentCategory: root.controller?.appCategory || (root.controller?.appCategories?.length > 0 ? root.controller.appCategories[0] : "")
-            readonly property var iconMap: {
-                const cats = root.controller?.appCategories ?? [];
-                const m = {};
-                cats.forEach(c => {
-                    m[c] = AppSearchService.getCategoryIcon(c);
+            readonly property var currentFolder: root.controller?.appFolder(root.controller?.appFolderId) ?? null
+            readonly property string currentFolderName: currentFolder?.name ?? I18n.tr("All")
+            property string editingFolderId: ""
+            property bool creatingFolder: false
+            property bool folderNameInvalid: false
+
+            function beginCreateFolder() {
+                creatingFolder = true;
+                editingFolderId = "";
+                folderNameInvalid = false;
+                folderNameInput.text = "";
+                Qt.callLater(() => folderNameInput.forceActiveFocus());
+            }
+
+            function beginRenameFolder(folder) {
+                creatingFolder = false;
+                editingFolderId = folder.id;
+                folderNameInvalid = false;
+                folderNameInput.text = folder.name;
+                Qt.callLater(() => {
+                    folderNameInput.forceActiveFocus();
+                    folderNameInput.selectAll();
                 });
-                return m;
+            }
+
+            function cancelFolderEdit() {
+                creatingFolder = false;
+                editingFolderId = "";
+                folderNameInvalid = false;
+                folderNameInput.text = "";
+            }
+
+            function commitFolderEdit() {
+                let saved = false;
+                if (creatingFolder)
+                    saved = root.controller?.createAppFolder(folderNameInput.text) ?? false;
+                else if (editingFolderId)
+                    saved = root.controller?.renameAppFolder(editingFolderId, folderNameInput.text) ?? false;
+                if (saved)
+                    cancelFolderEdit();
+                else
+                    folderNameInvalid = true;
             }
 
             Rectangle {
@@ -107,14 +137,14 @@ Rectangle {
 
                 DankIcon {
                     anchors.verticalCenter: parent.verticalCenter
-                    name: categoryChip.iconMap[categoryChip.currentCategory] ?? "apps"
+                    name: categoryChip.currentFolder?.system ? "apps" : "folder"
                     size: 14
                     color: Theme.surfaceText
                 }
 
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: categoryChip.currentCategory
+                    text: categoryChip.currentFolderName
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
                 }
@@ -148,13 +178,14 @@ Rectangle {
             Popup {
                 id: categoryPopup
                 parent: categoryChip.Overlay.overlay
-                width: Math.max(categoryChip.width, 180)
+                width: Math.max(categoryChip.width, 292)
                 padding: 0
                 modal: true
                 dim: false
                 closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
                 onVisibleChanged: root.transientSurfaceTracker?.setActive(root, visible, null)
+                onClosed: categoryChip.cancelFolderEdit()
 
                 background: Rectangle {
                     color: "transparent"
@@ -178,67 +209,247 @@ Rectangle {
                         shadowEnabled: Theme.elevationEnabled && SettingsData.popoutElevationEnabled
                     }
 
-                    ListView {
-                        id: categoryList
+                    Column {
                         anchors.fill: parent
                         anchors.margins: Theme.spacingS
-                        model: root.controller?.appCategories ?? []
-                        spacing: Theme.spacingXXS
-                        clip: true
-                        interactive: contentHeight > height
-                        implicitHeight: contentHeight
+                        spacing: Theme.spacingXS
 
-                        delegate: Rectangle {
-                            id: catDelegate
-                            required property string modelData
-                            required property int index
-                            width: categoryList.width
-                            height: 32
-                            radius: Theme.cornerRadius
-                            readonly property bool isCurrent: categoryChip.currentCategory === modelData
-                            color: isCurrent ? Theme.primaryHover : catArea.containsMouse ? Theme.primaryHoverLight : Theme.withAlpha(Theme.primaryHoverLight, 0)
+                        ListView {
+                            id: categoryList
+                            width: parent.width
+                            height: Math.min(contentHeight, 8 * 36)
+                            model: root.controller?.appFolders ?? []
+                            spacing: Theme.spacingXXS
+                            clip: true
+                            interactive: contentHeight > height
 
-                            Row {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: Theme.spacingS
-                                anchors.rightMargin: Theme.spacingS
-                                spacing: Theme.spacingS
+                            delegate: Rectangle {
+                                id: catDelegate
+                                required property var modelData
+                                required property int index
+                                width: categoryList.width
+                                height: 34
+                                radius: Theme.cornerRadius
+                                readonly property bool isCurrent: root.controller?.appFolderId === modelData.id
+                                readonly property bool isSystem: modelData.system === true
+                                color: isCurrent ? Theme.primaryHover : catArea.containsMouse ? Theme.primaryHoverLight : Theme.withAlpha(Theme.primaryHoverLight, 0)
 
-                                DankIcon {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    name: categoryChip.iconMap[catDelegate.modelData] ?? "apps"
-                                    size: 16
-                                    color: catDelegate.isCurrent ? Theme.primary : Theme.surfaceText
+                                MouseArea {
+                                    id: catArea
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    anchors.bottom: parent.bottom
+                                    anchors.right: folderActions.visible ? folderActions.left : parent.right
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.controller?.setAppFolder(catDelegate.modelData.id);
+                                        categoryPopup.close();
+                                    }
                                 }
 
-                                StyledText {
+                                Row {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: Theme.spacingS
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: catDelegate.modelData
-                                    font.pixelSize: Theme.fontSizeMedium
-                                    color: catDelegate.isCurrent ? Theme.primary : Theme.surfaceText
-                                    font.weight: catDelegate.isCurrent ? Font.Medium : Font.Normal
+                                    spacing: Theme.spacingS
+
+                                    DankIcon {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        name: catDelegate.isSystem ? "apps" : "folder"
+                                        size: 16
+                                        color: catDelegate.isCurrent ? Theme.primary : Theme.surfaceText
+                                    }
+
+                                    StyledText {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: catDelegate.width - (catDelegate.isSystem ? 48 : 144)
+                                        text: catDelegate.modelData.name
+                                        font.pixelSize: Theme.fontSizeMedium
+                                        color: catDelegate.isCurrent ? Theme.primary : Theme.surfaceText
+                                        font.weight: catDelegate.isCurrent ? Font.Medium : Font.Normal
+                                        elide: Text.ElideRight
+                                    }
+                                }
+
+                                Row {
+                                    id: folderActions
+                                    visible: !catDelegate.isSystem
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: Theme.spacingXS
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: 1
+
+                                    Repeater {
+                                        model: [
+                                            {
+                                                icon: "arrow_upward",
+                                                enabled: catDelegate.index > 1,
+                                                run: () => root.controller?.moveAppFolder(catDelegate.modelData.id, -1)
+                                            },
+                                            {
+                                                icon: "arrow_downward",
+                                                enabled: catDelegate.index < (root.controller?.appFolders?.length ?? 0) - 1,
+                                                run: () => root.controller?.moveAppFolder(catDelegate.modelData.id, 1)
+                                            },
+                                            {
+                                                icon: "edit",
+                                                enabled: true,
+                                                run: () => categoryChip.beginRenameFolder(catDelegate.modelData)
+                                            },
+                                            {
+                                                icon: "delete",
+                                                enabled: true,
+                                                run: () => root.controller?.deleteAppFolder(catDelegate.modelData.id)
+                                            }
+                                        ]
+
+                                        delegate: Rectangle {
+                                            id: actionDelegate
+                                            required property var modelData
+                                            required property int index
+                                            width: 24
+                                            height: 24
+                                            radius: 6
+                                            opacity: modelData.enabled ? 1 : 0.35
+                                            color: actionArea.containsMouse && modelData.enabled ? Theme.surfaceHover : "transparent"
+
+                                            DankIcon {
+                                                anchors.centerIn: parent
+                                                name: actionDelegate.modelData.icon
+                                                size: 14
+                                                color: Theme.surfaceVariantText
+                                            }
+
+                                            MouseArea {
+                                                id: actionArea
+                                                anchors.fill: parent
+                                                enabled: actionDelegate.modelData.enabled
+                                                hoverEnabled: true
+                                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                                onClicked: actionDelegate.modelData.run()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: Theme.outlineMedium
+                        }
+
+                        Item {
+                            width: parent.width
+                            height: 38
+
+                            Rectangle {
+                                anchors.fill: parent
+                                visible: !categoryChip.creatingFolder && !categoryChip.editingFolderId
+                                radius: Theme.cornerRadius
+                                color: addFolderArea.containsMouse ? Theme.primaryHoverLight : "transparent"
+
+                                Row {
+                                    anchors.centerIn: parent
+                                    spacing: Theme.spacingS
+
+                                    DankIcon {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        name: "create_new_folder"
+                                        size: 17
+                                        color: Theme.primary
+                                    }
+
+                                    StyledText {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: I18n.tr("Create folder")
+                                        font.pixelSize: Theme.fontSizeMedium
+                                        color: Theme.primary
+                                        font.weight: Font.Medium
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: addFolderArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: categoryChip.beginCreateFolder()
                                 }
                             }
 
-                            MouseArea {
-                                id: catArea
+                            Row {
                                 anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    if (root.controller)
-                                        root.controller.setAppCategory(catDelegate.modelData);
-                                    categoryPopup.close();
+                                visible: categoryChip.creatingFolder || !!categoryChip.editingFolderId
+                                spacing: Theme.spacingXS
+
+                                DankTextField {
+                                    id: folderNameInput
+                                    width: parent.width - 62
+                                    height: parent.height
+                                    placeholderText: I18n.tr("Folder")
+                                    showClearButton: false
+                                    backgroundColor: Theme.surfaceContainerHigh
+                                    normalBorderColor: categoryChip.folderNameInvalid ? Theme.error : Theme.outlineMedium
+                                    focusedBorderColor: categoryChip.folderNameInvalid ? Theme.error : Theme.primary
+                                    textColor: Theme.surfaceText
+                                    onTextEdited: categoryChip.folderNameInvalid = false
+                                    onAccepted: categoryChip.commitFolderEdit()
+                                }
+
+                                Rectangle {
+                                    width: 28
+                                    height: 28
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    radius: Theme.cornerRadius
+                                    color: saveFolderArea.containsMouse ? Theme.primaryHover : "transparent"
+
+                                    DankIcon {
+                                        anchors.centerIn: parent
+                                        name: "check"
+                                        size: 17
+                                        color: Theme.primary
+                                    }
+
+                                    MouseArea {
+                                        id: saveFolderArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: categoryChip.commitFolderEdit()
+                                    }
+                                }
+
+                                Rectangle {
+                                    width: 28
+                                    height: 28
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    radius: Theme.cornerRadius
+                                    color: cancelFolderArea.containsMouse ? Theme.surfaceHover : "transparent"
+
+                                    DankIcon {
+                                        anchors.centerIn: parent
+                                        name: "close"
+                                        size: 17
+                                        color: Theme.surfaceVariantText
+                                    }
+
+                                    MouseArea {
+                                        id: cancelFolderArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: categoryChip.cancelFolderEdit()
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                // Size to list content, cap at 10 visible items
-                height: Math.min((root.controller?.appCategories?.length ?? 0) * 34, 10 * 34) + Theme.spacingS * 2 + 4
+                height: Math.min((root.controller?.appFolders?.length ?? 0) * 36, 8 * 36) + 48 + Theme.spacingS * 2
             }
         }
 
@@ -342,7 +553,7 @@ Rectangle {
         anchors.fill: parent
         anchors.rightMargin: rightContent.width + Theme.spacingS
         cursorShape: root.canCollapse ? Qt.PointingHandCursor : Qt.ArrowCursor
-        enabled: root.canCollapse && !leftContent.hasAppCategories
+        enabled: root.canCollapse && !leftContent.hasAppFolders
         onClicked: {
             if (root.canCollapse && root.controller && root.section) {
                 root.controller.toggleSection(root.section.id);

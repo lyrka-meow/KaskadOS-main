@@ -64,10 +64,10 @@ Item {
 
     onSearchModeChanged: {
         if (searchMode === "apps") {
-            _loadAppCategories();
+            _loadAppFolders();
         } else {
-            appCategory = "";
-            appCategories = [];
+            appFolderId = allAppsFolderId;
+            appFolders = [];
         }
     }
 
@@ -81,6 +81,12 @@ Item {
             AppSearchService.invalidateLauncherCache();
             _clearModeCache();
             if (active)
+                performSearch();
+        }
+        function onLauncherAppFoldersChanged() {
+            _loadAppFolders();
+            _clearModeCache();
+            if (active && searchMode === "apps")
                 performSearch();
         }
     }
@@ -116,7 +122,7 @@ Item {
                 return;
             _clearModeCache();
             if (searchMode === "apps") {
-                _loadAppCategories();
+                _loadAppFolders();
                 performSearch();
             } else if (!searchQuery && searchMode === "all") {
                 performSearch();
@@ -226,8 +232,9 @@ Item {
     property string fileSearchSort: "score"
 
     property string activePluginName: ""
-    property string appCategory: ""
-    property var appCategories: []
+    readonly property string allAppsFolderId: "__all__"
+    property string appFolderId: allAppsFolderId
+    property var appFolders: []
 
     function builtInSectionViewPref(sectionId) {
         switch (sectionId) {
@@ -422,24 +429,144 @@ Item {
         isSearching = false;
         activePluginId = "";
         activePluginName = "";
-        appCategory = "";
-        appCategories = [];
+        appFolderId = allAppsFolderId;
+        appFolders = [];
         collapsedSections = {};
         _clearModeCache();
         _queryDrivenSearch = false;
     }
 
-    function setAppCategory(category) {
-        if (appCategory === category)
+    function setAppFolder(folderId) {
+        if (appFolderId === folderId)
             return;
-        appCategory = category;
+        appFolderId = folderId;
         _queryDrivenSearch = true;
         _clearModeCache();
         performSearch();
     }
 
-    function _loadAppCategories() {
-        appCategories = AppSearchService.getAllCategories();
+    function _normalizedUserAppFolders() {
+        const source = SettingsData.launcherAppFolders || [];
+        const normalized = [];
+        const ids = {};
+        for (let i = 0; i < source.length; i++) {
+            const folder = source[i];
+            const id = String(folder?.id || "").trim();
+            const name = String(folder?.name || "").trim();
+            if (!id || !name || id === allAppsFolderId || ids[id])
+                continue;
+            ids[id] = true;
+            normalized.push({
+                id: id,
+                name: name,
+                appIds: Array.isArray(folder.appIds) ? Array.from(new Set(folder.appIds.map(value => String(value)).filter(Boolean))) : []
+            });
+        }
+        return normalized;
+    }
+
+    function _loadAppFolders() {
+        const userFolders = _normalizedUserAppFolders();
+        appFolders = [{
+            id: allAppsFolderId,
+            name: I18n.tr("All"),
+            appIds: [],
+            system: true
+        }].concat(userFolders);
+        if (!appFolders.some(folder => folder.id === appFolderId))
+            appFolderId = allAppsFolderId;
+    }
+
+    function appFolder(folderId) {
+        for (let i = 0; i < appFolders.length; i++) {
+            if (appFolders[i].id === folderId)
+                return appFolders[i];
+        }
+        return null;
+    }
+
+    function createAppFolder(name) {
+        const cleanName = String(name || "").trim();
+        if (!cleanName)
+            return false;
+        const folders = _normalizedUserAppFolders();
+        if (folders.some(folder => folder.name.toLocaleLowerCase() === cleanName.toLocaleLowerCase()))
+            return false;
+        const folderId = "folder-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1679616).toString(36);
+        folders.push({
+            id: folderId,
+            name: cleanName,
+            appIds: []
+        });
+        SettingsData.launcherAppFolders = folders;
+        setAppFolder(folderId);
+        return true;
+    }
+
+    function renameAppFolder(folderId, name) {
+        const cleanName = String(name || "").trim();
+        if (!cleanName || folderId === allAppsFolderId)
+            return false;
+        const folders = _normalizedUserAppFolders();
+        if (folders.some(folder => folder.id !== folderId && folder.name.toLocaleLowerCase() === cleanName.toLocaleLowerCase()))
+            return false;
+        let changed = false;
+        for (let i = 0; i < folders.length; i++) {
+            if (folders[i].id !== folderId)
+                continue;
+            folders[i] = Object.assign({}, folders[i], { name: cleanName });
+            changed = true;
+            break;
+        }
+        if (changed)
+            SettingsData.launcherAppFolders = folders;
+        return changed;
+    }
+
+    function deleteAppFolder(folderId) {
+        if (folderId === allAppsFolderId)
+            return;
+        const folders = _normalizedUserAppFolders().filter(folder => folder.id !== folderId);
+        if (appFolderId === folderId)
+            appFolderId = allAppsFolderId;
+        SettingsData.launcherAppFolders = folders;
+    }
+
+    function moveAppFolder(folderId, offset) {
+        const folders = _normalizedUserAppFolders();
+        const from = folders.findIndex(folder => folder.id === folderId);
+        const to = from + offset;
+        if (from < 0 || to < 0 || to >= folders.length)
+            return;
+        const moved = folders.splice(from, 1)[0];
+        folders.splice(to, 0, moved);
+        SettingsData.launcherAppFolders = folders;
+    }
+
+    function appIsInFolder(folderId, appId) {
+        if (!appId || folderId === allAppsFolderId)
+            return false;
+        const folder = appFolder(folderId);
+        return !!folder && folder.appIds.indexOf(String(appId)) !== -1;
+    }
+
+    function toggleAppInFolder(folderId, appId) {
+        if (!appId || folderId === allAppsFolderId)
+            return;
+        const folders = _normalizedUserAppFolders();
+        for (let i = 0; i < folders.length; i++) {
+            if (folders[i].id !== folderId)
+                continue;
+            const ids = folders[i].appIds.slice();
+            const index = ids.indexOf(String(appId));
+            if (index === -1)
+                ids.push(String(appId));
+            else
+                ids.splice(index, 1);
+            folders[i] = Object.assign({}, folders[i], { appIds: ids });
+            SettingsData.launcherAppFolders = folders;
+            return;
+        }
     }
 
     function setFileSearchType(type) {
@@ -606,9 +733,9 @@ Item {
         }
 
         if (searchMode === "apps") {
-            var isCategoryFiltered = appCategory && appCategory !== I18n.tr("All");
+            var isFolderFiltered = appFolderId !== allAppsFolderId;
             var cachedSections = AppSearchService.getCachedDefaultSections();
-            if (cachedSections && !searchQuery && !isCategoryFiltered) {
+            if (cachedSections && !searchQuery && !isFolderFiltered) {
                 var modeCache = _getCachedModeData("apps");
                 if (modeCache) {
                     _applyHighlights(modeCache.sections, "");
@@ -638,17 +765,13 @@ Item {
                 return;
             }
 
-            if (isCategoryFiltered) {
-                var rawApps = AppSearchService.getAppsInCategory(appCategory);
-                for (var i = 0; i < rawApps.length; i++) {
-                    allItems.push(getOrTransformApp(rawApps[i]));
-                }
-                // Also include core apps (DMS Settings etc.) that match this category
-                var allCoreApps = AppSearchService.getCoreApps("");
-                for (var i = 0; i < allCoreApps.length; i++) {
-                    var coreAppCats = AppSearchService.getCategoriesForApp(allCoreApps[i]);
-                    if (coreAppCats.indexOf(appCategory) !== -1)
-                        allItems.push(transformCoreApp(allCoreApps[i]));
+            if (isFolderFiltered) {
+                var selectedFolder = appFolder(appFolderId);
+                var allowedAppIds = selectedFolder?.appIds || [];
+                var folderCandidates = searchApps(searchQuery);
+                for (var i = 0; i < folderCandidates.length; i++) {
+                    if (allowedAppIds.indexOf(String(folderCandidates[i].id)) !== -1)
+                        allItems.push(folderCandidates[i]);
                 }
             } else {
                 var apps = searchApps(searchQuery);

@@ -270,6 +270,7 @@ var SPEC = {
     rememberLastMode: { def: true },
     spotlightSectionViewModes: { def: {} },
     appDrawerSectionViewModes: { def: {} },
+    launcherAppFolders: { def: [] },
     niriOverviewOverlayEnabled: { def: true },
     niriOverviewLauncherStyle: { def: "full" },
     dankLauncherV2Size: { def: "compact" },

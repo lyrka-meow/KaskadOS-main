@@ -22,6 +22,7 @@ readonly SING_BOX_SHA256="a3a3ff223b23c3f4731d0a17cb0ef94c97ce257c70721a5b07dc7c
 readonly INSTALLER_THEMES="${PROJECT_DIR}/components/installer-themes"
 readonly KEYRING_PACKAGE_SOURCE="${PROJECT_DIR}/repository/packages/kaskados-keyring"
 readonly DESKTOP_PACKAGE_SOURCE="${PROJECT_DIR}/repository/packages/kaskados-desktop"
+readonly DGOP_BUILD_SCRIPT="${SCRIPT_DIR}/build-dgop-package.sh"
 readonly BOOTSTRAP_REPOSITORY="${BUILD_ROOT}/repository-bootstrap/x86_64"
 readonly PROFILE_DIR="${PROFILE_DIR:-${BUILD_ROOT}/iso-profile}"
 readonly BUILD_JOBS="${BUILD_JOBS:-$(nproc)}"
@@ -86,6 +87,7 @@ fi
   || die 'не найден пакет kaskados-keyring'
 [[ -f "${DESKTOP_PACKAGE_SOURCE}/PKGBUILD" ]] \
   || die 'не найден пакет kaskados-desktop'
+[[ -x "${DGOP_BUILD_SCRIPT}" ]] || die 'не найден скрипт сборки dgop'
 
 "${SCRIPT_DIR}/check-profile.sh"
 
@@ -114,8 +116,19 @@ mapfile -t keyring_packages < <(
 )
 (( ${#keyring_packages[@]} == 1 )) \
   || die 'не удалось однозначно определить собранный пакет kaskados-keyring'
+
+KASKADOS_PACKAGE_DEST="${BOOTSTRAP_REPOSITORY}" \
+KASKADOS_DGOP_BUILD_ROOT="${BUILD_ROOT}/repository-bootstrap/dgop" \
+  "${DGOP_BUILD_SCRIPT}"
+mapfile -t dgop_packages < <(
+  find "${BOOTSTRAP_REPOSITORY}" -maxdepth 1 -type f \
+    -name 'dgop-[0-9]*-x86_64.pkg.tar.zst' -print
+)
+(( ${#dgop_packages[@]} == 1 )) \
+  || die 'не удалось однозначно определить собранный пакет dgop'
 repo-add "${BOOTSTRAP_REPOSITORY}/kaskados-bootstrap.db.tar.gz" \
-  "${keyring_packages[0]}"
+  "${keyring_packages[0]}" \
+  "${dgop_packages[0]}"
 
 env -u LD_LIBRARY_PATH cmake -S "${PROJECT_DIR}/components/kaskad-installer-compositor" -B "${COMPOSITOR_BUILD}" -G Ninja \
   -DBUILD_TESTING=OFF \
@@ -215,6 +228,7 @@ sed -i \
   "/^\[core\]$/i [kaskados-bootstrap]\nSigLevel = Optional TrustAll\nServer = file://${BOOTSTRAP_REPOSITORY}\n" \
   "${PROFILE_DIR}/pacman.conf"
 printf '%s\n' 'kaskados-keyring' >> "${PROFILE_DIR}/packages.x86_64"
+printf '%s\n' 'dgop' >> "${PROFILE_DIR}/packages.x86_64"
 
 install -d -m 0755 \
   "${PROFILE_DIR}/airootfs/usr/share/kaskados-installer/theme-pool" \

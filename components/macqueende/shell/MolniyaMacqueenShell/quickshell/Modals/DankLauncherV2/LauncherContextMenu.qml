@@ -139,6 +139,22 @@ Item {
             }
         }
 
+        if (item?.type === "app" && appId && (controller?.appFolders?.length ?? 0) > 1) {
+            items.push({
+                type: "separator"
+            });
+            for (let i = 1; i < controller.appFolders.length; i++) {
+                const folder = controller.appFolders[i];
+                const included = controller.appIsInFolder(folder.id, appId);
+                items.push({
+                    type: "item",
+                    icon: included ? "check_box" : "check_box_outline_blank",
+                    text: I18n.tr("Folder") + ": " + folder.name,
+                    action: () => toggleFolderMembership(folder.id)
+                });
+            }
+        }
+
         if (item?.actions && item.actions.length > 0) {
             items.push({
                 type: "separator"
@@ -248,6 +264,12 @@ Item {
             return;
         editAppRequested(desktopEntry);
         hide();
+    }
+
+    function toggleFolderMembership(folderId) {
+        if (!controller || !appId)
+            return;
+        controller.toggleAppInFolder(folderId, appId);
     }
 
     function launchApp() {

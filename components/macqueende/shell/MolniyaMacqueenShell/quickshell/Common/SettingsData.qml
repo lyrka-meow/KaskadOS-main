@@ -493,6 +493,8 @@ Singleton {
     onSpotlightSectionViewModesChanged: saveSettings()
     property var appDrawerSectionViewModes: ({})
     onAppDrawerSectionViewModesChanged: saveSettings()
+    property var launcherAppFolders: []
+    onLauncherAppFoldersChanged: saveSettings()
     property bool niriOverviewOverlayEnabled: true
     property string niriOverviewLauncherStyle: "full"
     property string dankLauncherV2Size: "compact"

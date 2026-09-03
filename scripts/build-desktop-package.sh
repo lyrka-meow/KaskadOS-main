@@ -17,6 +17,7 @@ readonly REGALIA_SOURCE="${PROJECT_DIR}/components/regalia"
 readonly REGALIA_BUILD="${BUILD_ROOT}/regalia"
 readonly REGALIA_BIN="${REGALIA_BUILD}/bin"
 readonly PACKAGE_SOURCE="${PROJECT_DIR}/repository/packages/kaskados-desktop"
+readonly DGOP_BUILD_SCRIPT="${SCRIPT_DIR}/build-dgop-package.sh"
 readonly SING_BOX_VERSION="1.13.15"
 readonly SING_BOX_ARCHIVE="sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
 readonly SING_BOX_SHA256="a3a3ff223b23c3f4731d0a17cb0ef94c97ce257c70721a5b07dc7ca079203c9f"
@@ -42,12 +43,15 @@ fi
 [[ -f "${MACQUEEN_SOURCE}/release/release.json" ]] || die 'не найден манифест выпуска MacqueenDE'
 [[ -f "${REGALIA_SOURCE}/go.mod" ]] || die 'не найден исходный код Regalia'
 [[ -f "${PACKAGE_SOURCE}/PKGBUILD" ]] || die 'не найден PKGBUILD kaskados-desktop'
+[[ -x "${DGOP_BUILD_SCRIPT}" ]] || die 'не найден скрипт сборки dgop'
 
 install -d -m 0755 \
   "${BUILD_ROOT}" \
   "${PACKAGE_ROOT}/work" \
   "${PACKAGE_ROOT}/sources" \
   "${PACKAGE_DEST}"
+
+KASKADOS_PACKAGE_DEST="${PACKAGE_DEST}" "${DGOP_BUILD_SCRIPT}"
 
 env -u LD_LIBRARY_PATH cmake \
   -S "${MACQUEEN_SOURCE}/compositor" \
