@@ -7,28 +7,29 @@ import Macqueen.Ipc
 import QtQuick
 import Quickshell
 import qs.Common
+import qs.Modals.Common
 import qs.Widgets
 
 Scope {
     id: controller
 
-    property bool chooserOpen: false
     property string requestId: ""
     property string chooserTitle: ""
     property var choices: []
     property bool allowRestore: true
     property int selectedIndex: -1
 
-    function closeChooser() {
-        chooserOpen = false;
+    function clearState() {
         requestId = "";
+        chooserTitle = "";
         choices = [];
         selectedIndex = -1;
     }
 
     function cancel() {
         const pendingRequest = requestId;
-        closeChooser();
+        clearState();
+        chooser.close();
         if (pendingRequest.length > 0)
             Macqueen.cancelScreenCastSelection(pendingRequest);
     }
@@ -38,8 +39,10 @@ Scope {
             return;
         const pendingRequest = requestId;
         const choice = choices[selectedIndex];
-        if (Macqueen.submitScreenCastSelection(pendingRequest, choice.kind, choice.id, allowRestore))
-            closeChooser();
+        if (!Macqueen.submitScreenCastSelection(pendingRequest, choice.kind, choice.id, allowRestore))
+            return;
+        clearState();
+        chooser.close();
     }
 
     Connections {
@@ -54,31 +57,45 @@ Scope {
                 Macqueen.cancelScreenCastSelection(newRequestId);
                 return;
             }
+
+            if (controller.requestId.length > 0)
+                Macqueen.cancelScreenCastSelection(controller.requestId);
+
             controller.requestId = newRequestId;
             controller.chooserTitle = newTitle;
             controller.choices = (options.outputs || []).concat(options.windows || []);
             controller.allowRestore = true;
             controller.selectedIndex = controller.choices.length === 1 ? 0 : -1;
-            controller.chooserOpen = true;
+            chooser.open();
         }
     }
 
-    FloatingWindow {
-        id: window
+    DankModal {
+        id: chooser
 
-            readonly property int chooserWidth: 760
-            readonly property int chooserHeight: screen ? Math.min(680, screen.height - 80) : 680
+        layerNamespace: "macqueen:screen-cast-chooser"
+        shouldBeVisible: false
+        closeOnEscapeKey: false
+        closeOnBackgroundClick: false
+        allowStacking: true
+        useOverlayLayer: true
+        modalWidth: Math.max(320, Math.min(760, screenWidth - Theme.spacingL * 2))
+        modalHeight: Math.max(360, Math.min(680, screenHeight - Theme.spacingL * 2))
 
-            objectName: "macqueenScreenCastChooser"
-            title: controller.chooserTitle
-            minimumSize: Qt.size(chooserWidth, Math.min(chooserHeight, 480))
-            maximumSize: Qt.size(chooserWidth, chooserHeight)
-            color: Theme.surfaceContainer
-            visible: controller.chooserOpen
+        onOpened: Qt.callLater(() => contentLoader.item?.forceActiveFocus())
 
-            onClosed: controller.cancel()
+        onDialogClosed: {
+            if (controller.requestId.length === 0)
+                return;
+            const pendingRequest = controller.requestId;
+            controller.clearState();
+            Macqueen.cancelScreenCastSelection(pendingRequest);
+        }
 
+        content: Component {
             FocusScope {
+                id: chooserContent
+
                 anchors.fill: parent
                 focus: true
 
@@ -105,69 +122,53 @@ Scope {
                     event.accepted = true;
                 }
 
-                Item {
+                Column {
                     id: header
+
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.margins: Theme.spacingL
-                    height: 66
+                    spacing: Theme.spacingXS
 
-                    MouseArea {
-                        anchors.left: parent.left
-                        anchors.right: windowButtons.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        onPressed: windowControls.tryStartMove()
+                    StyledText {
+                        width: parent.width
+                        text: controller.chooserTitle || "Демонстрация экрана"
+                        color: Theme.surfaceText
+                        font.pixelSize: Theme.fontSizeLarge
+                        font.weight: Font.DemiBold
+                        elide: Text.ElideRight
                     }
 
-                    Column {
-                        anchors.left: parent.left
-                        anchors.right: windowButtons.left
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.rightMargin: Theme.spacingM
-                        spacing: 4
-
-                        StyledText {
-                            width: parent.width
-                            text: controller.chooserTitle
-                            color: Theme.surfaceText
-                            font.pixelSize: Theme.fontSizeLarge
-                            font.weight: Font.DemiBold
-                            elide: Text.ElideRight
-                        }
-
-                        StyledText {
-                            text: "Выберите экран или окно для демонстрации"
-                            color: Theme.surfaceTextMedium
-                            font.pixelSize: Theme.fontSizeSmall
-                        }
+                    StyledText {
+                        width: parent.width
+                        text: "Выберите экран или окно для демонстрации"
+                        color: Theme.surfaceTextMedium
+                        font.pixelSize: Theme.fontSizeSmall
                     }
+                }
 
-                    Row {
-                        id: windowButtons
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: Theme.spacingXS
-
-                        DankActionButton {
-                            iconName: "close"
-                            iconSize: Theme.iconSize - 4
-                            iconColor: Theme.surfaceText
-                            onClicked: controller.cancel()
-                        }
-                    }
+                DankActionButton {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.topMargin: Theme.spacingM
+                    anchors.rightMargin: Theme.spacingM
+                    iconName: "close"
+                    iconSize: Theme.iconSize - 4
+                    iconColor: Theme.surfaceText
+                    onClicked: controller.cancel()
                 }
 
                 Rectangle {
                     id: listBackground
+
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: header.bottom
                     anchors.bottom: footer.top
                     anchors.leftMargin: Theme.spacingL
                     anchors.rightMargin: Theme.spacingL
-                    anchors.topMargin: Theme.spacingS
+                    anchors.topMargin: Theme.spacingL
                     anchors.bottomMargin: Theme.spacingM
                     radius: Theme.cornerRadius
                     color: Theme.surfaceContainerHigh
@@ -176,6 +177,7 @@ Scope {
 
                     ListView {
                         id: choicesView
+
                         anchors.fill: parent
                         anchors.margins: Theme.spacingS
                         clip: true
@@ -206,18 +208,18 @@ Scope {
                                     radius: 12
                                     color: controller.selectedIndex === choiceCard.index ? Theme.primary : Theme.surfaceContainerHighest
 
-                                    StyledText {
+                                    DankIcon {
                                         anchors.centerIn: parent
-                                        text: choiceCard.modelData.kind === "window" ? "▣" : "▰"
+                                        name: choiceCard.modelData.kind === "window" ? "select_window" : "monitor"
+                                        size: 24
                                         color: controller.selectedIndex === choiceCard.index ? Theme.primaryText : Theme.surfaceText
-                                        font.pixelSize: 22
                                     }
                                 }
 
                                 Column {
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: parent.width - 60
-                                    spacing: 4
+                                    spacing: Theme.spacingXS
 
                                     StyledText {
                                         width: parent.width
@@ -263,6 +265,7 @@ Scope {
 
                 Item {
                     id: footer
+
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
@@ -300,10 +303,6 @@ Scope {
                     }
                 }
             }
-
-        FloatingWindowControls {
-            id: windowControls
-            targetWindow: window
         }
     }
 }

@@ -432,9 +432,9 @@ Item {
     LazyLoader {
         id: polkitAuthModalLoader
         active: false
-        readonly property PolkitAuthModal loadedModal: item as PolkitAuthModal
+        readonly property PolkitAuthSurfaceModal loadedModal: item as PolkitAuthSurfaceModal
 
-        PolkitAuthModal {
+        PolkitAuthSurfaceModal {
             id: polkitAuthModal
 
             Component.onCompleted: {
@@ -452,7 +452,7 @@ Item {
                 return;
             polkitAuthModalLoader.active = true;
             if (polkitAuthModalLoader.loadedModal)
-                polkitAuthModalLoader.loadedModal.show();
+                polkitAuthModalLoader.loadedModal.open();
         }
     }
 
