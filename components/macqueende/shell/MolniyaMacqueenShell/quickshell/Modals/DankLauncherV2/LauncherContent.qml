@@ -191,12 +191,6 @@ FocusScope {
                 root.parentModal.hide();
             return;
         case Qt.Key_Backspace:
-            if (searchField.text.length === 0) {
-                if (controller.autoSwitchedToFiles) {
-                    controller.restorePreviousMode();
-                    return;
-                }
-            }
             event.accepted = false;
             return;
         case Qt.Key_Down:
@@ -316,26 +310,19 @@ FocusScope {
             return;
         case Qt.Key_3:
             if (hasCtrl || hasAlt) {
-                controller.setMode("files");
+                controller.setMode("store");
                 return;
             }
             event.accepted = false;
             return;
         case Qt.Key_4:
             if (hasCtrl || hasAlt) {
-                controller.setMode("store");
-                return;
-            }
-            event.accepted = false;
-            return;
-        case Qt.Key_5:
-            if (hasCtrl || hasAlt) {
                 controller.setMode("installed");
                 return;
             }
             event.accepted = false;
             return;
-        case Qt.Key_6:
+        case Qt.Key_5:
             if (hasCtrl || hasAlt) {
                 controller.setMode("windows");
                 return;
@@ -360,6 +347,7 @@ FocusScope {
             readonly property bool _connectedBottomEmerge: (root.parentModal?.frameOwnsConnectedChrome ?? false) && (root.parentModal?.resolvedConnectedBarSide === "bottom")
             readonly property bool _connectedArcAtFooter: _connectedBottomEmerge && !(root.parentModal?.launcherArcExtenderActive ?? false)
             readonly property bool showFooter: SettingsData.dankLauncherV2Size !== "micro" && SettingsData.dankLauncherV2ShowFooter
+            readonly property bool compactKeyboardHints: width < 720
 
             anchors.left: parent.left
             anchors.right: parent.right
@@ -398,11 +386,6 @@ FocusScope {
                             id: "apps",
                             label: I18n.tr("Apps"),
                             icon: "apps"
-                        },
-                        {
-                            id: "files",
-                            label: I18n.tr("Files"),
-                            icon: "folder"
                         },
                         {
                             id: "store",
@@ -472,21 +455,21 @@ FocusScope {
 
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "↑↓ " + I18n.tr("nav")
+                    text: footerBar.compactKeyboardHints ? "↑↓" : "↑↓ " + I18n.tr("nav")
                     font.pixelSize: Theme.fontSizeSmall - 1
                     color: Theme.surfaceVariantText
                 }
 
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "↵ " + I18n.tr("Open")
+                    text: footerBar.compactKeyboardHints ? "↵" : "↵ " + I18n.tr("Open")
                     font.pixelSize: Theme.fontSizeSmall - 1
                     color: Theme.surfaceVariantText
                 }
 
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Tab " + I18n.tr("Actions")
+                    text: footerBar.compactKeyboardHints ? "Tab" : "Tab " + I18n.tr("Actions")
                     font.pixelSize: Theme.fontSizeSmall - 1
                     color: Theme.surfaceVariantText
                     visible: actionPanel.hasActions
@@ -602,155 +585,9 @@ FocusScope {
             clip: false
 
             Item {
-                id: fileFilterRow
-                width: parent.width
-                height: showFileFilters ? fileFilterContent.height : 0
-                visible: showFileFilters
-                anchors.top: parent.top
-                anchors.topMargin: 0
-
-                readonly property bool showFileFilters: controller.searchMode === "files"
-
-                Behavior on height {
-                    NumberAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-                }
-
-                Row {
-                    id: fileFilterContent
-                    width: parent.width
-                    spacing: Theme.spacingS
-
-                    Row {
-                        id: typeChips
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: Theme.spacingXXS
-                        visible: DSearchService.supportsTypeFilter
-
-                        Repeater {
-                            model: [
-                                {
-                                    id: "all",
-                                    label: I18n.tr("All"),
-                                    icon: "search"
-                                },
-                                {
-                                    id: "file",
-                                    label: I18n.tr("Files"),
-                                    icon: "insert_drive_file"
-                                },
-                                {
-                                    id: "dir",
-                                    label: I18n.tr("Folders"),
-                                    icon: "folder"
-                                }
-                            ]
-
-                            Rectangle {
-                                required property var modelData
-                                required property int index
-
-                                width: chipContent.width + Theme.spacingM * 2
-                                height: sortDropdown.height
-                                radius: Theme.cornerRadius
-                                color: controller.fileSearchType === modelData.id ? Theme.buttonBg : chipArea.containsMouse ? Theme.surfaceContainerHighest : Theme.withAlpha(Theme.surfaceContainerHighest, 0)
-
-                                Row {
-                                    id: chipContent
-                                    anchors.centerIn: parent
-                                    spacing: Theme.spacingXS
-
-                                    DankIcon {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        name: modelData.icon
-                                        size: 14
-                                        color: controller.fileSearchType === modelData.id ? Theme.buttonText : Theme.surfaceVariantText
-                                    }
-
-                                    StyledText {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: modelData.label
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        color: controller.fileSearchType === modelData.id ? Theme.buttonText : Theme.surfaceVariantText
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: chipArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: controller.setFileSearchType(modelData.id)
-                                }
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        width: 1
-                        height: 20
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: Theme.outlineMedium
-                        visible: typeChips.visible
-                    }
-
-                    DankDropdown {
-                        id: sortDropdown
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: Math.min(130, parent.width / 3)
-                        compactMode: true
-                        dropdownWidth: 130
-                        popupWidth: 150
-                        maxPopupHeight: 200
-                        currentValue: {
-                            switch (controller.fileSearchSort) {
-                            case "score":
-                                return I18n.tr("Score");
-                            case "name":
-                                return I18n.tr("Name");
-                            case "modified":
-                                return I18n.tr("Modified");
-                            case "size":
-                                return I18n.tr("Size");
-                            default:
-                                return I18n.tr("Score");
-                            }
-                        }
-                        options: [I18n.tr("Score"), I18n.tr("Name"), I18n.tr("Modified"), I18n.tr("Size")]
-
-                        onValueChanged: value => {
-                            var sortMap = {};
-                            sortMap[I18n.tr("Score")] = "score";
-                            sortMap[I18n.tr("Name")] = "name";
-                            sortMap[I18n.tr("Modified")] = "modified";
-                            sortMap[I18n.tr("Size")] = "size";
-                            controller.setFileSearchSort(sortMap[value] || "score");
-                        }
-                    }
-
-                    DankTextField {
-                        id: extFilterField
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: Math.min(100, parent.width / 4)
-                        height: sortDropdown.height
-                        placeholderText: I18n.tr("ext")
-                        font.pixelSize: Theme.fontSizeSmall
-                        showClearButton: text.length > 0
-
-                        onTextChanged: {
-                            controller.setFileSearchExt(text.trim());
-                        }
-                    }
-                }
-            }
-
-            Item {
                 id: resultsSlot
                 width: parent.width
-                anchors.top: fileFilterRow.visible ? fileFilterRow.bottom : parent.top
-                anchors.topMargin: fileFilterRow.visible ? contentStack.gap : 0
+                anchors.top: parent.top
                 anchors.bottom: actionPanel.top
                 anchors.bottomMargin: actionPanel.height > 0 || !contentHolder.inverted ? contentStack.gap : 0
                 opacity: {

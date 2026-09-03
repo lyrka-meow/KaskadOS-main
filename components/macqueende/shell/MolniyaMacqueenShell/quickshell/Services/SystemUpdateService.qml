@@ -39,6 +39,7 @@ Singleton {
     property string previousDesktopVersion: ""
     property bool desktopUpdated: false
     property bool restartSessionRequired: false
+    property string journalPath: ""
     property bool _stateInitialized: false
     property bool _automaticCheckPending: false
     property bool _automaticUpgradeRunning: false
@@ -222,6 +223,7 @@ Singleton {
         previousDesktopVersion = data.previousDesktopVersion || "";
         desktopUpdated = data.desktopUpdated === true;
         restartSessionRequired = data.restartSessionRequired === true;
+        journalPath = data.journalPath || "";
 
         const phase = data.phase || "idle";
         switch (phase) {

@@ -370,14 +370,12 @@ Item {
         }
         if (spotlightContent.controller) {
             var targetMode = mode || SessionData.getLauncherRestoreMode();
+            if (targetMode === "files")
+                targetMode = "all";
             spotlightContent.controller.explicitQuerySession = !!query;
             spotlightContent.controller.searchMode = targetMode;
             spotlightContent.controller.activePluginId = "";
             spotlightContent.controller.activePluginName = "";
-            spotlightContent.controller.fileSearchType = SessionData.launcherLastFileSearchType || "all";
-            spotlightContent.controller.fileSearchExt = "";
-            spotlightContent.controller.fileSearchFolder = "";
-            spotlightContent.controller.fileSearchSort = "score";
             spotlightContent.controller.collapsedSections = {};
             spotlightContent.controller.selectedFlatIndex = 0;
             spotlightContent.controller.selectedItem = null;

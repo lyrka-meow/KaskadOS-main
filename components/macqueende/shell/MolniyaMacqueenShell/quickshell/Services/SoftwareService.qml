@@ -12,6 +12,7 @@ Singleton {
     property bool available: false
     property bool searching: false
     property string query: ""
+    property string sourceFilter: "all"
     property var searchResults: []
     property var installedItems: []
     property var sources: []
@@ -51,12 +52,36 @@ Singleton {
 
     function sourceLabel(source) {
         switch (source) {
-        case "pacman": return "Репозиторий";
+        case "pacman": return "Pacman";
         case "aur": return "AUR";
         case "flatpak": return "Flatpak";
         case "local": return "Локальный пакет";
         case "foreign": return "AUR / локальный";
         default: return source || "Неизвестно";
+        }
+    }
+
+    function sourceFilterLabel(source) {
+        switch (source) {
+        case "pacman": return "Pacman";
+        case "aur": return "AUR";
+        case "flatpak": return "Flatpak";
+        default: return "Все источники";
+        }
+    }
+
+    function sourceAvailable(source) {
+        return source === "all" || (sources || []).includes(source);
+    }
+
+    function setSourceFilter(value) {
+        const next = ["all", "pacman", "aur", "flatpak"].includes(value) ? value : "all";
+        if (sourceFilter === next)
+            return;
+        sourceFilter = next;
+        if (query.length >= 2) {
+            searching = true;
+            searchDebounce.restart();
         }
     }
 
@@ -78,8 +103,9 @@ Singleton {
             return;
         }
         const expected = query;
-        DMSService.softwareSearch(expected, response => {
-            if (expected !== query)
+        const expectedSource = sourceFilter;
+        DMSService.softwareSearch(expected, expectedSource, response => {
+            if (expected !== query || expectedSource !== sourceFilter)
                 return;
             searching = false;
             if (response?.result) {

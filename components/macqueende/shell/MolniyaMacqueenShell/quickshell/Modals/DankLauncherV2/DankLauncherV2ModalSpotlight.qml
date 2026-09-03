@@ -142,7 +142,8 @@ Item {
         spotlightContent.closeTransientUi?.();
 
         const targetQuery = query || (SettingsData.rememberLastQuery ? (SessionData.launcherLastQuery || "") : "");
-        const targetMode = mode || SessionData.getLauncherRestoreMode();
+        const requestedMode = mode || SessionData.getLauncherRestoreMode();
+        const targetMode = requestedMode === "files" ? "all" : requestedMode;
 
         if (spotlightContent.searchField) {
             spotlightContent.searchField.text = targetQuery;

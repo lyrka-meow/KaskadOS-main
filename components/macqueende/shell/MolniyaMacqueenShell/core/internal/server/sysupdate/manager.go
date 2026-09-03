@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -25,6 +26,7 @@ const (
 	upgradeTimeout           = 2 * time.Hour
 	postUpgradeCompleteDelay = 3 * time.Second
 	maxUpgradeAttempts       = 4
+	maxJournalSize           = 4 * 1024 * 1024
 )
 
 var upgradeRetryDelays = [...]time.Duration{0, 5 * time.Second, 20 * time.Second, 60 * time.Second}
@@ -45,6 +47,9 @@ type Manager struct {
 	wakeSched    chan struct{}
 
 	refreshSerial sync.Mutex
+	journalMu     sync.Mutex
+	journalReady  bool
+	journalPath   string
 
 	opMu     sync.Mutex
 	opCtx    context.Context
@@ -370,6 +375,10 @@ func (m *Manager) runUpgrade(ctx context.Context, opts UpgradeOptions) {
 	}
 
 	opID := fmt.Sprintf("op-%d", time.Now().UnixNano())
+	journalPath, journalErr := m.beginJournal(opts.Automatic)
+	if journalErr != nil {
+		log.Warnf("[sysupdate] create update journal: %v", journalErr)
+	}
 	m.mu.Lock()
 	m.state.Phase = PhaseUpgrading
 	m.state.OperationID = opID
@@ -381,6 +390,7 @@ func (m *Manager) runUpgrade(ctx context.Context, opts UpgradeOptions) {
 	m.state.Error = nil
 	m.state.DesktopUpdated = false
 	m.state.PreviousDesktop = ""
+	m.state.JournalPath = journalPath
 	m.mu.Unlock()
 	m.markDirty()
 
@@ -453,30 +463,24 @@ func (m *Manager) runCustomUpgrade(ctx context.Context, opts UpgradeOptions) {
 	}
 
 	opID := fmt.Sprintf("op-%d", time.Now().UnixNano())
+	journalPath, journalErr := m.beginJournal(opts.Automatic)
+	if journalErr != nil {
+		log.Warnf("[sysupdate] create update journal: %v", journalErr)
+	}
 	m.mu.Lock()
 	m.state.Phase = PhaseUpgrading
 	m.state.OperationID = opID
 	m.state.OperationStarted = time.Now().Unix()
 	m.state.RecentLog = m.state.RecentLog[:0]
 	m.state.Error = nil
+	m.state.JournalPath = journalPath
 	m.mu.Unlock()
 	m.markDirty()
 
 	onLine := func(line string) { m.appendLog(line) }
 	argv := wrapInTerminal(term, "DMS — System Update (custom)", opts.CustomCommand, opts.TerminalArgs)
 	if err := Run(ctx, argv, RunOptions{OnLine: onLine}); err != nil {
-		code := ErrCodeBackendFailed
-		switch {
-		case errors.Is(ctx.Err(), context.DeadlineExceeded):
-			code = ErrCodeTimeout
-		case errors.Is(ctx.Err(), context.Canceled):
-			code = ErrCodeCancelled
-		}
-		m.mu.Lock()
-		m.state.Phase = PhaseError
-		m.state.Error = &ErrorInfo{Code: code, Message: err.Error()}
-		m.mu.Unlock()
-		m.markDirty()
+		m.finishUpgradeError(ctx, "не удалось завершить обновление", err)
 		return
 	}
 
@@ -486,6 +490,7 @@ func (m *Manager) runCustomUpgrade(ctx context.Context, opts UpgradeOptions) {
 
 func (m *Manager) finishSuccessfulUpgrade(previous desktopRelease) {
 	m.appendLog("Upgrade complete.")
+	m.endJournal("Обновление завершено успешно.")
 
 	timer := time.NewTimer(postUpgradeCompleteDelay)
 	defer timer.Stop()
@@ -553,6 +558,12 @@ func (m *Manager) finishUpgradeError(ctx context.Context, message string, techni
 	if technical != nil {
 		m.appendLog("ERROR: " + technical.Error())
 	}
+	m.endJournal("Обновление не завершено.")
+	journalPath := m.currentJournalPath()
+	hint := "Повторите обновление."
+	if journalPath != "" {
+		hint = fmt.Sprintf("Журнал сохранён: %s\nПовторите обновление или приложите этот файл при обращении к разработчику.", journalPath)
+	}
 	m.mu.Lock()
 	m.state.Phase = PhaseError
 	m.state.OperationID = ""
@@ -561,7 +572,7 @@ func (m *Manager) finishUpgradeError(ctx context.Context, message string, techni
 	m.state.Error = &ErrorInfo{
 		Code:    code,
 		Message: message,
-		Hint:    "Технический журнал сохранён. Повторите обновление или приложите отчёт при обращении к разработчику.",
+		Hint:    hint,
 	}
 	m.mu.Unlock()
 	m.markDirty()
@@ -720,7 +731,108 @@ func (m *Manager) appendLog(line string) {
 	}
 	m.state.RecentLog = append(m.state.RecentLog, line)
 	m.mu.Unlock()
+	if err := m.writeJournalLine(line); err != nil {
+		log.Warnf("[sysupdate] write update journal: %v", err)
+	}
 	m.markDirty()
+}
+
+func (m *Manager) beginJournal(automatic bool) (string, error) {
+	m.journalMu.Lock()
+	defer m.journalMu.Unlock()
+	m.journalReady = false
+	m.journalPath = ""
+
+	path, err := updateJournalPath()
+	if err != nil {
+		return "", err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return "", err
+	}
+
+	if info, statErr := os.Stat(path); statErr == nil && info.Size() >= maxJournalSize {
+		if renameErr := os.Rename(path, path+".1"); renameErr != nil {
+			return "", renameErr
+		}
+	} else if statErr != nil && !errors.Is(statErr, os.ErrNotExist) {
+		return "", statErr
+	}
+
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
+	if err != nil {
+		return "", err
+	}
+	mode := "ручное"
+	if automatic {
+		mode = "автоматическое"
+	}
+	_, writeErr := fmt.Fprintf(file, "\n=== %s · %s обновление ===\n", time.Now().Format(time.RFC3339), mode)
+	closeErr := file.Close()
+	if writeErr != nil {
+		return "", writeErr
+	}
+	if closeErr != nil {
+		return "", closeErr
+	}
+	if err := os.Chmod(path, 0o600); err != nil {
+		return "", err
+	}
+
+	m.journalPath = path
+	m.journalReady = true
+	return path, nil
+}
+
+func (m *Manager) writeJournalLine(line string) error {
+	m.journalMu.Lock()
+	defer m.journalMu.Unlock()
+	if !m.journalReady || m.journalPath == "" {
+		return nil
+	}
+	file, err := os.OpenFile(m.journalPath, os.O_WRONLY|os.O_APPEND, 0o600)
+	if err != nil {
+		m.journalReady = false
+		return err
+	}
+	_, writeErr := fmt.Fprintf(file, "%s %s\n", time.Now().Format("15:04:05"), line)
+	closeErr := file.Close()
+	if writeErr != nil {
+		m.journalReady = false
+		return writeErr
+	}
+	if closeErr != nil {
+		m.journalReady = false
+		return closeErr
+	}
+	return nil
+}
+
+func (m *Manager) endJournal(message string) {
+	if err := m.writeJournalLine(message); err != nil {
+		log.Warnf("[sysupdate] finish update journal: %v", err)
+	}
+	m.journalMu.Lock()
+	m.journalReady = false
+	m.journalMu.Unlock()
+}
+
+func (m *Manager) currentJournalPath() string {
+	m.journalMu.Lock()
+	defer m.journalMu.Unlock()
+	return m.journalPath
+}
+
+func updateJournalPath() (string, error) {
+	stateHome := strings.TrimSpace(os.Getenv("XDG_STATE_HOME"))
+	if stateHome == "" || !filepath.IsAbs(stateHome) {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		stateHome = filepath.Join(home, ".local", "state")
+	}
+	return filepath.Join(stateHome, "kaskados", "system-update.log"), nil
 }
 
 func (m *Manager) setError(code ErrorCode, msg string) {

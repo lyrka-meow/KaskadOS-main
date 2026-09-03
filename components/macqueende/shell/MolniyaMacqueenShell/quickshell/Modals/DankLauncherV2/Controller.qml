@@ -185,13 +185,6 @@ Item {
             defaultViewMode: "list"
         },
         {
-            id: "files",
-            title: I18n.tr("Files"),
-            icon: "folder",
-            priority: 4,
-            defaultViewMode: "list"
-        },
-        {
             id: "fallback",
             title: I18n.tr("Commands"),
             icon: "terminal",
@@ -301,7 +294,7 @@ Item {
     }
 
     function canCollapseSection(sectionId) {
-        return searchMode === "all";
+        return searchMode === "all" && sectionId !== "apps";
     }
 
     function setPluginViewPreference(pluginId, mode, enforced) {
@@ -371,12 +364,6 @@ Item {
         }
     }
 
-    Timer {
-        id: fileSearchDebounce
-        interval: 200
-        onTriggered: root.performFileSearch()
-    }
-
     function getOrTransformApp(app) {
         return AppSearchService.getOrTransformApp(app, transformApp);
     }
@@ -386,56 +373,17 @@ Item {
         _queryDrivenSearch = true;
         searchQuery = query;
         requestSearch();
-
-        if (autoSwitchedToFiles && !query.startsWith("/")) {
-            restorePreviousMode();
-            return;
-        }
-
-        if (query.startsWith("/")) {
-            var prefix = Utils.parseFileSearchPrefix(query);
-            var explicitType = prefix && prefix.type !== null ? prefix.type : null;
-            var targetType = explicitType !== null ? explicitType : (SessionData.launcherLastFileSearchType || "all");
-            if (searchMode !== "files") {
-                setMode("files", true, targetType);
-            } else if (fileSearchType !== targetType) {
-                fileSearchType = targetType;
-            }
-            if (explicitType !== null && SessionData.launcherLastFileSearchType !== explicitType) {
-                SessionData.setLauncherLastFileSearchType(explicitType);
-            }
-        }
-
-        var filesInAll = searchMode === "all" && (SettingsData.dankLauncherV2IncludeFilesInAll || SettingsData.dankLauncherV2IncludeFoldersInAll);
-        if ((searchMode === "files" || query.startsWith("/") || filesInAll) && query.length > 0) {
-            fileSearchDebounce.restart();
-        }
     }
 
     function setMode(mode, isAutoSwitch, fileTypeOverride, notPersist) {
-        if (searchMode === mode) {
-            if (mode === "files" && fileTypeOverride !== undefined && fileSearchType !== fileTypeOverride) {
-                fileSearchType = fileTypeOverride;
-                performFileSearch();
-            }
+        if (mode === "files")
+            mode = "all";
+        if (searchMode === mode)
             return;
-        }
-        if (isAutoSwitch) {
-            previousSearchMode = searchMode;
-            autoSwitchedToFiles = true;
-        } else {
-            autoSwitchedToFiles = false;
-        }
+        autoSwitchedToFiles = false;
         searchMode = mode;
-        if (mode === "files") {
-            fileSearchType = fileTypeOverride !== undefined ? fileTypeOverride : (SessionData.launcherLastFileSearchType || "all");
-        }
         modeChanged(mode, !isAutoSwitch && notPersist !== true);
         performSearch();
-        var filesInAll = mode === "all" && (SettingsData.dankLauncherV2IncludeFilesInAll || SettingsData.dankLauncherV2IncludeFoldersInAll) && searchQuery.length > 0;
-        if (mode === "files" || filesInAll) {
-            fileSearchDebounce.restart();
-        }
     }
 
     function restorePreviousMode() {
@@ -448,7 +396,7 @@ Item {
     }
 
     function cycleMode(reverse = false) {
-        var modes = ["all", "apps", "files", "store", "installed", "windows"];
+        var modes = ["all", "apps", "store", "installed", "windows"];
         var currentIndex = modes.indexOf(searchMode);
         if (!reverse)
             var nextIndex = (currentIndex + 1) % modes.length;
@@ -1427,6 +1375,8 @@ Item {
     }
 
     function toggleSection(sectionId) {
+        if (!canCollapseSection(sectionId))
+            return;
         _clearModeCache();
         var newCollapsed = Object.assign({}, collapsedSections);
         var currentState = newCollapsed[sectionId];

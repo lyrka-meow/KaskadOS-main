@@ -10,7 +10,7 @@ Rectangle {
 
     property var item: null
     property bool isSelected: false
-    property bool isHovered: itemArea.containsMouse || allModeToggleArea.containsMouse
+    property bool isHovered: itemArea.containsMouse
     property var controller: null
     property int flatIndex: -1
 

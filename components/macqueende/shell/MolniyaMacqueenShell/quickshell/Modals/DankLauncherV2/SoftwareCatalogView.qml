@@ -12,6 +12,12 @@ FocusScope {
     property string mode: "store"
     property string query: ""
     property int selectedIndex: 0
+    readonly property var sourceFilters: [
+        {"label": "Все", "value": "all"},
+        {"label": "Pacman", "value": "pacman"},
+        {"label": "AUR", "value": "aur"},
+        {"label": "Flatpak", "value": "flatpak"}
+    ]
     signal localPackageRequested
 
     ConfirmModal {
@@ -47,13 +53,20 @@ FocusScope {
     }
 
     readonly property var visibleItems: {
-        const source = mode === "installed" ? (SoftwareService.installedItems || []) : (SoftwareService.searchResults || []);
+        let source = mode === "installed" ? (SoftwareService.installedItems || []) : (SoftwareService.searchResults || []);
+        if (SoftwareService.sourceFilter !== "all")
+            source = source.filter(item => item.source === SoftwareService.sourceFilter);
         if (mode !== "installed" || query.trim().length === 0)
             return source;
         const needle = query.trim().toLowerCase();
         return source.filter(item => (item.name || "").toLowerCase().includes(needle)
                                   || (item.packageName || "").toLowerCase().includes(needle)
                                   || (item.description || "").toLowerCase().includes(needle));
+    }
+
+    function sourceFilterIndex() {
+        const index = sourceFilters.findIndex(item => item.value === SoftwareService.sourceFilter);
+        return index >= 0 ? index : 0;
     }
 
     onModeChanged: {
@@ -143,10 +156,14 @@ FocusScope {
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width - localPackageButton.width - Theme.spacingS
                 text: root.mode === "installed"
-                    ? "Все установленные пакеты, включая терминальные"
+                    ? (SoftwareService.sourceFilter === "all"
+                       ? "Все установленные пакеты, включая терминальные"
+                       : "Установленные пакеты · " + SoftwareService.sourceFilterLabel(SoftwareService.sourceFilter))
                     : (root.query.trim().length < 2
                        ? "Введите минимум два символа для поиска"
-                       : (SoftwareService.searching ? "Поиск в репозиториях, AUR и Flatpak…" : "Найдено: " + root.visibleItems.length))
+                       : (SoftwareService.searching
+                          ? "Поиск · " + SoftwareService.sourceFilterLabel(SoftwareService.sourceFilter) + "…"
+                          : "Найдено: " + root.visibleItems.length))
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
                 elide: Text.ElideRight
@@ -160,6 +177,21 @@ FocusScope {
                 backgroundColor: Theme.surfaceContainerHighest
                 textColor: Theme.surfaceText
                 onClicked: root.localPackageRequested()
+            }
+        }
+
+        DankFilterChips {
+            id: sourceFilterChips
+            width: parent.width
+            model: root.sourceFilters
+            currentIndex: root.sourceFilterIndex()
+            showCheck: false
+            showCounts: false
+            onSelectionChanged: index => {
+                if (index < 0 || index >= root.sourceFilters.length)
+                    return;
+                root.selectedIndex = 0;
+                SoftwareService.setSourceFilter(root.sourceFilters[index].value);
             }
         }
 
@@ -286,7 +318,11 @@ FocusScope {
                 visible: !SoftwareService.searching && root.visibleItems.length === 0
                 text: root.mode === "installed"
                     ? "Установленные пакеты не найдены"
-                    : (root.query.trim().length >= 2 ? "Ничего не найдено" : "Начните поиск приложения")
+                    : (root.query.trim().length < 2
+                       ? "Начните поиск приложения"
+                       : (!SoftwareService.sourceAvailable(SoftwareService.sourceFilter)
+                          ? SoftwareService.sourceFilterLabel(SoftwareService.sourceFilter) + " недоступен"
+                          : "Нет результатов · " + SoftwareService.sourceFilterLabel(SoftwareService.sourceFilter)))
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceVariantText
             }

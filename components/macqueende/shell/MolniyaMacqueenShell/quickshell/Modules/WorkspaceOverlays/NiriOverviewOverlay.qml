@@ -174,7 +174,8 @@ Scope {
                 onShouldShowSpotlightChanged: {
                     if (shouldShowSpotlight) {
                         if (launcherContent?.controller) {
-                            launcherContent.controller.searchMode = SessionData.niriOverviewLastMode || "apps";
+                            const requestedMode = SessionData.niriOverviewLastMode || "apps";
+                            launcherContent.controller.searchMode = requestedMode === "files" ? "apps" : requestedMode;
                             launcherContent.controller.performSearch();
                         }
                         return;
@@ -403,8 +404,6 @@ Scope {
                                 niriOverviewScope.releaseKeyboard = true;
                             }
                             function onModeChanged(mode) {
-                                if (overlayWindow.launcherContent.controller.autoSwitchedToFiles)
-                                    return;
                                 SessionData.setNiriOverviewLastMode(mode);
                             }
                         }

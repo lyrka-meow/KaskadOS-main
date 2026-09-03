@@ -61,7 +61,8 @@ DankPopout {
             return;
 
         const query = _pendingQuery;
-        const mode = _pendingMode || SessionData.appDrawerLastMode || "apps";
+        const requestedMode = _pendingMode || SessionData.appDrawerLastMode || "apps";
+        const mode = requestedMode === "files" ? "apps" : requestedMode;
         _pendingMode = "";
         _pendingQuery = "";
 
@@ -86,8 +87,6 @@ DankPopout {
     Connections {
         target: contentLoader.item?.launcherContent?.controller ?? null
         function onModeChanged(mode) {
-            if (contentLoader.item.launcherContent.controller.autoSwitchedToFiles)
-                return;
             SessionData.setAppDrawerLastMode(mode);
         }
     }

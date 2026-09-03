@@ -266,7 +266,7 @@ Item {
                     settingKey: "spotlightBarShowModeChips"
                     tags: ["launcher", "spotlight", "bar", "chips", "tabs", "modes"]
                     text: I18n.tr("Show Mode Chips")
-                    description: I18n.tr("Show All, Apps, and Files chips beside the Spotlight Bar input.")
+                    description: "Показывать переключатели режимов рядом со строкой поиска."
                     checked: SettingsData.spotlightBarShowModeChips
                     onToggled: checked => SettingsData.set("spotlightBarShowModeChips", checked)
                 }
@@ -927,23 +927,6 @@ Item {
                     onToggled: checked => SettingsData.set("rememberLastQuery", checked)
                 }
 
-                SettingsToggleRow {
-                    settingKey: "dankLauncherV2IncludeFilesInAll"
-                    tags: ["launcher", "files", "dsearch", "all", "results", "indexed"]
-                    text: I18n.tr("Include Files in All Tab")
-                    description: I18n.tr("Merge indexed file results into the All tab (requires dsearch).")
-                    checked: SettingsData.dankLauncherV2IncludeFilesInAll
-                    onToggled: checked => SettingsData.set("dankLauncherV2IncludeFilesInAll", checked)
-                }
-
-                SettingsToggleRow {
-                    settingKey: "dankLauncherV2IncludeFoldersInAll"
-                    tags: ["launcher", "folders", "dirs", "dsearch", "all", "results", "indexed"]
-                    text: I18n.tr("Include Folders in All Tab")
-                    description: I18n.tr("Merge indexed folder results into the All tab (requires dsearch).")
-                    checked: SettingsData.dankLauncherV2IncludeFoldersInAll
-                    onToggled: checked => SettingsData.set("dankLauncherV2IncludeFoldersInAll", checked)
-                }
             }
 
             SettingsCard {

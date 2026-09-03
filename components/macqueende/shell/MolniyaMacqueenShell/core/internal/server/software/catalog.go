@@ -23,7 +23,7 @@ func NewCatalog() *Catalog {
 	return &Catalog{httpClient: &http.Client{Timeout: 12 * time.Second}}
 }
 
-func (c *Catalog) Search(ctx context.Context, query string) SearchResult {
+func (c *Catalog) Search(ctx context.Context, query string, source Source) SearchResult {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return SearchResult{Items: []Item{}, Sources: availableSources()}
@@ -33,13 +33,22 @@ func (c *Catalog) Search(ctx context.Context, query string) SearchResult {
 	}
 
 	installed := installedNames(ctx)
-	results := make(chan []Item, 3)
+	type searchFunc func(context.Context, string, map[string]bool) []Item
+	searches := make([]searchFunc, 0, 3)
+	switch source {
+	case SourcePacman:
+		searches = append(searches, c.searchPacman)
+	case SourceFlatpak:
+		searches = append(searches, c.searchFlatpak)
+	case SourceAUR:
+		searches = append(searches, c.searchAUR)
+	default:
+		searches = append(searches, c.searchPacman, c.searchFlatpak, c.searchAUR)
+	}
+
+	results := make(chan []Item, len(searches))
 	var wg sync.WaitGroup
-	for _, search := range []func(context.Context, string, map[string]bool) []Item{
-		c.searchPacman,
-		c.searchFlatpak,
-		c.searchAUR,
-	} {
+	for _, search := range searches {
 		wg.Add(1)
 		go func(fn func(context.Context, string, map[string]bool) []Item) {
 			defer wg.Done()
@@ -63,16 +72,62 @@ func (c *Catalog) Search(ctx context.Context, query string) SearchResult {
 			items = append(items, item)
 		}
 	}
+	sortSearchResults(items, query)
+	if len(items) > 100 {
+		items = items[:100]
+	}
+	return SearchResult{Items: items, Sources: availableSources()}
+}
+
+func sortSearchResults(items []Item, query string) {
+	normalizedQuery := strings.ToLower(query)
 	sort.SliceStable(items, func(i, j int) bool {
+		leftRank := searchRank(items[i], normalizedQuery)
+		rightRank := searchRank(items[j], normalizedQuery)
+		if leftRank != rightRank {
+			return leftRank < rightRank
+		}
+		leftSource := sourceRank(items[i].Source)
+		rightSource := sourceRank(items[j].Source)
+		if leftSource != rightSource {
+			return leftSource < rightSource
+		}
 		if items[i].Installed != items[j].Installed {
 			return items[i].Installed
 		}
 		return strings.ToLower(items[i].Name) < strings.ToLower(items[j].Name)
 	})
-	if len(items) > 100 {
-		items = items[:100]
+}
+
+func searchRank(item Item, query string) int {
+	name := strings.ToLower(item.Name)
+	packageName := strings.ToLower(item.PackageName)
+	description := strings.ToLower(item.Description)
+	switch {
+	case name == query || packageName == query:
+		return 0
+	case strings.HasPrefix(name, query) || strings.HasPrefix(packageName, query):
+		return 1
+	case strings.Contains(name, query) || strings.Contains(packageName, query):
+		return 2
+	case strings.Contains(description, query):
+		return 3
+	default:
+		return 4
 	}
-	return SearchResult{Items: items, Sources: availableSources()}
+}
+
+func sourceRank(source Source) int {
+	switch source {
+	case SourcePacman:
+		return 0
+	case SourceFlatpak:
+		return 1
+	case SourceAUR:
+		return 2
+	default:
+		return 3
+	}
 }
 
 func (c *Catalog) Installed(ctx context.Context, provenance map[string]Source) SearchResult {
@@ -178,6 +233,9 @@ type aurRPCResponse struct {
 }
 
 func (c *Catalog) searchAUR(ctx context.Context, query string, installed map[string]bool) []Item {
+	if !commandExists("git") || !commandExists("makepkg") {
+		return nil
+	}
 	endpoint := "https://aur.archlinux.org/rpc/v5/search/" + url.PathEscape(query) + "?by=name-desc"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {

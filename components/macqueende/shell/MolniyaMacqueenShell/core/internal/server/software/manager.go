@@ -40,10 +40,10 @@ func NewManager() *Manager {
 	return m
 }
 
-func (m *Manager) Search(query string) SearchResult {
+func (m *Manager) Search(query string, source Source) SearchResult {
 	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Second)
 	defer cancel()
-	return m.catalog.Search(ctx, query)
+	return m.catalog.Search(ctx, query, source)
 }
 
 func (m *Manager) Installed() SearchResult {

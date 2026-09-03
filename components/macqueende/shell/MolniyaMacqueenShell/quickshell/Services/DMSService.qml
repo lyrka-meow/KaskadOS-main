@@ -675,8 +675,11 @@ Singleton {
         sendRequest("sysupdate.getState", null, callback);
     }
 
-    function softwareSearch(query, callback) {
-        sendRequest("software.search", {"query": query || ""}, callback);
+    function softwareSearch(query, source, callback) {
+        sendRequest("software.search", {
+            "query": query || "",
+            "source": source === "all" ? "" : (source || "")
+        }, callback);
     }
 
     function softwareInstalled(callback) {

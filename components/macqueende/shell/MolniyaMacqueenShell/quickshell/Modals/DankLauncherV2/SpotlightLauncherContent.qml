@@ -117,13 +117,6 @@ FocusScope {
             event.accepted = true;
             return;
         case Qt.Key_Backspace:
-            if (searchInput.text.length === 0) {
-                if (searchController.autoSwitchedToFiles) {
-                    searchController.restorePreviousMode();
-                    event.accepted = true;
-                    return;
-                }
-            }
             event.accepted = false;
             return;
         case Qt.Key_Down:
@@ -212,26 +205,19 @@ FocusScope {
             break;
         case Qt.Key_3:
             if (hasCtrl || hasAlt) {
-                searchController.setMode("files");
+                searchController.setMode("store");
                 event.accepted = true;
                 return;
             }
             break;
         case Qt.Key_4:
             if (hasCtrl || hasAlt) {
-                searchController.setMode("store");
-                event.accepted = true;
-                return;
-            }
-            break;
-        case Qt.Key_5:
-            if (hasCtrl || hasAlt) {
                 searchController.setMode("installed");
                 event.accepted = true;
                 return;
             }
             break;
-        case Qt.Key_6:
+        case Qt.Key_5:
             if (hasCtrl || hasAlt) {
                 searchController.setMode("windows");
                 event.accepted = true;
@@ -333,8 +319,7 @@ FocusScope {
                     name: searchController.searchMode === "store" ? "storefront"
                         : searchController.searchMode === "installed" ? "inventory_2"
                         : searchController.searchMode === "windows" ? "window"
-                        : searchController.activePluginId ? "extension"
-                        : searchController.searchMode === "files" ? "folder" : "search"
+                        : searchController.activePluginId ? "extension" : "search"
                     size: 20
                     color: searchInput.activeFocus ? Theme.primary : Theme.surfaceVariantText
                 }
@@ -521,10 +506,6 @@ FocusScope {
         {
             "label": I18n.tr("Apps"),
             "mode": "apps"
-        },
-        {
-            "label": I18n.tr("Files"),
-            "mode": "files"
         },
         {
             "label": "Каталог",

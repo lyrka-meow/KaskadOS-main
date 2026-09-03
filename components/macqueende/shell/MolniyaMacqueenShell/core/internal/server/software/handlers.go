@@ -8,7 +8,12 @@ func HandleRequest(conn *models.Conn, req models.Request, manager *Manager) {
 	switch req.Method {
 	case "software.search":
 		query := models.GetOr(req, "query", "")
-		models.Respond(conn, req.ID, manager.Search(query))
+		source := Source(models.GetOr(req, "source", ""))
+		if source != "" && source != SourcePacman && source != SourceAUR && source != SourceFlatpak {
+			models.RespondError(conn, req.ID, "неизвестный источник приложений")
+			return
+		}
+		models.Respond(conn, req.ID, manager.Search(query, source))
 	case "software.installed":
 		models.Respond(conn, req.ID, manager.Installed())
 	case "software.state":

@@ -78,6 +78,7 @@ type State struct {
 	PreviousDesktop  string        `json:"previousDesktopVersion,omitempty"`
 	DesktopUpdated   bool          `json:"desktopUpdated,omitempty"`
 	RestartSession   bool          `json:"restartSessionRequired,omitempty"`
+	JournalPath      string        `json:"journalPath,omitempty"`
 	RecentLog        []string      `json:"recentLog,omitempty"`
 	Error            *ErrorInfo    `json:"error,omitempty"`
 }
