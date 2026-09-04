@@ -10,6 +10,9 @@ readonly DGOP_BUILD_SCRIPT="${PROJECT_DIR}/scripts/build-dgop-package.sh"
 readonly PUBLISH_SCRIPT="${PROJECT_DIR}/scripts/publish-repository.sh"
 readonly SOURCEFORGE_PUBLISH_SCRIPT="${PROJECT_DIR}/scripts/publish-iso-sourceforge.sh"
 readonly VERSION_FILE="${PROJECT_DIR}/components/macqueende/VERSION"
+readonly ISO_PROFILE_FILE="${PROJECT_DIR}/profile/profiledef.sh"
+readonly RELEASE_MANIFEST="${PROJECT_DIR}/components/macqueende/release/release.json"
+readonly RELEASES_DIR="${PROJECT_DIR}/components/macqueende/release/releases"
 readonly PACKAGE_DIR="${PROJECT_DIR}/out/packages/x86_64"
 readonly OUTPUT_DIR="${PROJECT_DIR}/out"
 readonly ISO_LOG="${HOME}/kaskados-build.log"
@@ -41,6 +44,11 @@ die() {
 current_version() {
   [[ -f "${VERSION_FILE}" ]] || return 1
   tr -d '\n' < "${VERSION_FILE}"
+}
+
+current_iso_version() {
+  [[ -f "${ISO_PROFILE_FILE}" ]] || return 1
+  sed -n 's/^iso_version="\([^"]*\)"$/\1/p' "${ISO_PROFILE_FILE}"
 }
 
 package_version() {
@@ -281,10 +289,160 @@ publish_iso_sourceforge() {
   return "${result}"
 }
 
+bump_version() {
+  local version iso_version prefix sequence next_version release_date temp_dir
+
+  version="$(current_version || true)"
+  iso_version="$(current_iso_version || true)"
+  if [[ ! "${version}" =~ ^(.+-alpha\.)([0-9]+)$ ]]; then
+    printf '%sНе удалось определить номер alpha-версии: %s%s\n' \
+      "${RED}" "${version:-не задана}" "${RESET}" >&2
+    return 2
+  fi
+  if [[ "${iso_version}" != "${version}" ]]; then
+    printf '%sВерсии DE и ISO уже расходятся: DE %s, ISO %s.%s\n' \
+      "${RED}" "${version}" "${iso_version:-не задана}" "${RESET}" >&2
+    return 2
+  fi
+  if ! grep -Fq '"version": "'"${version}"'"' "${RELEASE_MANIFEST}" \
+      || ! grep -Fq '"releaseNotes": "releases/'"${version}"'.json"' "${RELEASE_MANIFEST}"; then
+    printf '%sМанифест выпуска не соответствует текущей версии %s.%s\n' \
+      "${RED}" "${version}" "${RESET}" >&2
+    return 2
+  fi
+
+  prefix="${BASH_REMATCH[1]}"
+  sequence="${BASH_REMATCH[2]}"
+  next_version="${prefix}$((10#${sequence} + 1))"
+  release_date="$(date +%F)"
+
+  if [[ -e "${RELEASES_DIR}/${next_version}.json" ]]; then
+    printf '%sФайл выпуска %s уже существует.%s\n' \
+      "${RED}" "${RELEASES_DIR}/${next_version}.json" "${RESET}" >&2
+    return 2
+  fi
+
+  temp_dir="$(mktemp -d)" || return 1
+  cp -a -- "${VERSION_FILE}" "${temp_dir}/VERSION.old" \
+    && cp -a -- "${ISO_PROFILE_FILE}" "${temp_dir}/profiledef.sh.old" \
+    && cp -a -- "${RELEASE_MANIFEST}" "${temp_dir}/release.json.old" || {
+      rm -rf -- "${temp_dir}"
+      return 1
+    }
+  sed "s/^iso_version=\"${version}\"$/iso_version=\"${next_version}\"/" \
+    "${ISO_PROFILE_FILE}" > "${temp_dir}/profiledef.sh" || {
+      rm -rf -- "${temp_dir}"
+      return 1
+    }
+  sed \
+    -e 's|"version": "'"${version}"'"|"version": "'"${next_version}"'"|' \
+    -e 's|"releaseDate": "[^"]*"|"releaseDate": "'"${release_date}"'"|' \
+    -e 's|"releaseNotes": "releases/'"${version}"'\.json"|"releaseNotes": "releases/'"${next_version}"'.json"|' \
+    "${RELEASE_MANIFEST}" > "${temp_dir}/release.json" || {
+      rm -rf -- "${temp_dir}"
+      return 1
+    }
+  printf '%s\n' "${next_version}" > "${temp_dir}/VERSION"
+  printf '%s\n' \
+    '{' \
+    '  "schemaVersion": 1,' \
+    '  "version": "'"${next_version}"'",' \
+    '  "title": "Обновление KaskadOS",' \
+    '  "summary": "Обновление рабочей среды и системных компонентов KaskadOS.",' \
+    '  "features": [],' \
+    '  "notes": [' \
+    '    "Подробности изменений доступны в истории проекта.",' \
+    '    "Для применения обновления требуется выйти из сеанса и войти снова."' \
+    '  ]' \
+    '}' > "${temp_dir}/release-notes.json"
+
+  if [[ "$(sed -n 's/^iso_version="\([^"]*\)"$/\1/p' "${temp_dir}/profiledef.sh")" != "${next_version}" ]] \
+      || ! grep -Fq '"version": "'"${next_version}"'"' "${temp_dir}/release.json" \
+      || ! grep -Fq '"releaseNotes": "releases/'"${next_version}"'.json"' "${temp_dir}/release.json"; then
+    rm -rf -- "${temp_dir}"
+    printf '%sНе удалось подготовить согласованные файлы версии.%s\n' \
+      "${RED}" "${RESET}" >&2
+    return 1
+  fi
+
+  install -m 0644 "${temp_dir}/VERSION" "${VERSION_FILE}" \
+    && install -m 0644 "${temp_dir}/profiledef.sh" "${ISO_PROFILE_FILE}" \
+    && install -m 0644 "${temp_dir}/release.json" "${RELEASE_MANIFEST}" \
+    && install -m 0644 "${temp_dir}/release-notes.json" "${RELEASES_DIR}/${next_version}.json"
+  local result=$?
+  if (( result != 0 )); then
+    install -m 0644 "${temp_dir}/VERSION.old" "${VERSION_FILE}"
+    install -m 0644 "${temp_dir}/profiledef.sh.old" "${ISO_PROFILE_FILE}"
+    install -m 0644 "${temp_dir}/release.json.old" "${RELEASE_MANIFEST}"
+    rm -f -- "${RELEASES_DIR}/${next_version}.json"
+    rm -rf -- "${temp_dir}"
+    printf '%sНе удалось записать новую версию полностью.%s\n' "${RED}" "${RESET}" >&2
+    return "${result}"
+  fi
+  rm -rf -- "${temp_dir}"
+
+  printf '\n%sВерсия DE и ISO повышена: %s → %s%s\n' \
+    "${GREEN}" "${version}" "${next_version}" "${RESET}"
+}
+
+commit_and_push_all() {
+  local branch remote_url commit_message
+
+  command -v git >/dev/null 2>&1 || {
+    printf '%sНе найдена команда git.%s\n' "${RED}" "${RESET}" >&2
+    return 2
+  }
+  git -C "${PROJECT_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    printf '%sКаталог проекта не является Git-репозиторием.%s\n' "${RED}" "${RESET}" >&2
+    return 2
+  }
+  branch="$(git -C "${PROJECT_DIR}" branch --show-current)"
+  if [[ -z "${branch}" ]]; then
+    printf '%sНельзя отправить изменения из detached HEAD.%s\n' "${RED}" "${RESET}" >&2
+    return 2
+  fi
+  remote_url="$(git -C "${PROJECT_DIR}" remote get-url origin 2>/dev/null || true)"
+  if [[ -z "${remote_url}" ]]; then
+    printf '%sНе найден Git-remote origin.%s\n' "${RED}" "${RESET}" >&2
+    return 2
+  fi
+  case "${remote_url}" in
+    https://github.com/*|git@github.com:*|ssh://git@github.com/*)
+      ;;
+    *)
+      printf '%sRemote origin не ведёт на GitHub: %s%s\n' \
+        "${RED}" "${remote_url}" "${RESET}" >&2
+      return 2
+      ;;
+  esac
+  if [[ -z "$(git -C "${PROJECT_DIR}" status --porcelain=v1)" ]]; then
+    printf '\n%sНет изменений для коммита.%s\n' "${YELLOW}" "${RESET}"
+    return 0
+  fi
+
+  printf '\nБудут добавлены все изменения проекта:\n\n'
+  git -C "${PROJECT_DIR}" status --short
+  printf '\nВетка:  %s\n' "${branch}"
+  printf 'Remote: %s\n\n' "${remote_url}"
+  read -r -p 'Введите название коммита: ' commit_message || return 130
+  if [[ -z "${commit_message//[[:space:]]/}" ]]; then
+    printf 'Коммит отменён: название не может быть пустым.\n'
+    return 130
+  fi
+
+  git -C "${PROJECT_DIR}" add --all -- . || return $?
+  git -C "${PROJECT_DIR}" commit -m "${commit_message}" || return $?
+  git -C "${PROJECT_DIR}" push origin "${branch}" || return $?
+
+  printf '\n%sВсе изменения закоммичены и отправлены в origin/%s.%s\n' \
+    "${GREEN}" "${branch}" "${RESET}"
+}
+
 show_status() {
-  local version package dgop_package iso branch commit changes
+  local version iso_version package dgop_package iso branch commit changes
 
   version="$(current_version || printf 'неизвестна')"
+  iso_version="$(current_iso_version || printf 'неизвестна')"
   package="$(latest_desktop_package || true)"
   dgop_package="$(latest_dgop_package || true)"
   iso="$(latest_iso || true)"
@@ -294,6 +452,7 @@ show_status() {
 
   printf '\n%sСостояние KaskadOS%s\n\n' "${BOLD}" "${RESET}"
   printf 'Версия DE:       %s\n' "${version}"
+  printf 'Версия ISO:      %s\n' "${iso_version}"
   printf 'Ветка Git:       %s\n' "${branch:-неизвестна}"
   printf 'Последний коммит: %s\n' "${commit:-неизвестен}"
   printf 'Локальных правок: %s\n' "${changes}"
@@ -321,6 +480,8 @@ draw_menu() {
   printf '  %s4%s  Собрать и опубликовать DE\n' "${YELLOW}" "${RESET}"
   printf '  %s5%s  Показать состояние и готовые файлы\n' "${CYAN}" "${RESET}"
   printf '  %s6%s  Опубликовать последний ISO в SourceForge\n' "${YELLOW}" "${RESET}"
+  printf '  %s7%s  Повысить версию DE и ISO\n' "${CYAN}" "${RESET}"
+  printf '  %s8%s  Закоммитить всё и отправить в GitHub\n' "${YELLOW}" "${RESET}"
   printf '  %s0%s  Выход\n\n' "${RED}" "${RESET}"
 }
 
@@ -330,9 +491,13 @@ for required_file in \
   "${DGOP_BUILD_SCRIPT}" \
   "${PUBLISH_SCRIPT}" \
   "${SOURCEFORGE_PUBLISH_SCRIPT}" \
-  "${VERSION_FILE}"; do
+  "${VERSION_FILE}" \
+  "${ISO_PROFILE_FILE}" \
+  "${RELEASE_MANIFEST}"; do
   [[ -f "${required_file}" ]] || die "не найден файл ${required_file}"
 done
+
+[[ -d "${RELEASES_DIR}" ]] || die "не найден каталог ${RELEASES_DIR}"
 
 while true; do
   draw_menu
@@ -364,6 +529,14 @@ while true; do
       ;;
     6)
       publish_iso_sourceforge || true
+      pause_menu
+      ;;
+    7)
+      bump_version || true
+      pause_menu
+      ;;
+    8)
+      commit_and_push_all || true
       pause_menu
       ;;
     0)

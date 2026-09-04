@@ -8,6 +8,7 @@ license=('GPL-3.0-or-later')
 provides=('macqueende')
 depends=(
   '7zip'
+  'alsa-utils'
   'base-devel'
   'bash'
   'brightnessctl'
@@ -25,7 +26,11 @@ depends=(
   'libarchive'
   'mesa'
   'pacman-contrib'
+  'pavucontrol'
   'pciutils'
+  'pipewire'
+  'pipewire-audio'
+  'pipewire-pulse'
   'polkit'
   'qt6-5compat'
   'qt6-connectivity'
@@ -40,6 +45,7 @@ depends=(
   'ttf-dejavu'
   'umu-launcher'
   'unrar'
+  'wireplumber'
   'xdg-desktop-portal-gtk'
   'xdg-desktop-portal-kde'
   'xkeyboard-config'

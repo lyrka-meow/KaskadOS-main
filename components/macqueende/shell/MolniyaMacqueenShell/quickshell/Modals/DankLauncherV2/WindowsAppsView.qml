@@ -27,6 +27,10 @@ FocusScope {
         id: removeConfirm
     }
 
+    ConfirmModal {
+        id: removeRuntimeConfirm
+    }
+
     function confirmRemove(app) {
         removeConfirm.showWithOptions({
             "title": "Удалить " + app.name + "?",
@@ -38,8 +42,19 @@ FocusScope {
         });
     }
 
+    function confirmRemoveRuntime(runtime) {
+        removeRuntimeConfirm.showWithOptions({
+            "title": "Удалить " + runtime.tag + "?",
+            "message": "Версия Proton будет удалена. Это возможно только если она не выбрана ни для одного приложения.",
+            "confirmText": "Удалить",
+            "cancelText": "Отмена",
+            "confirmColor": Theme.error,
+            "onConfirm": () => WindowsAppsService.removeRuntime(runtime)
+        });
+    }
+
     function selectNext() {
-        const count = showRuntimes ? WindowsAppsService.releases.length : filteredApps.length;
+        const count = showRuntimes ? WindowsAppsService.runtimeCatalog.length : filteredApps.length;
         if (count > 0)
             selectedIndex = Math.min(count - 1, selectedIndex + 1);
         contentList.positionViewAtIndex(selectedIndex, ListView.Contain);
@@ -53,7 +68,7 @@ FocusScope {
 
     function activateSelected() {
         if (showRuntimes) {
-            const release = WindowsAppsService.releases[selectedIndex];
+            const release = WindowsAppsService.runtimeCatalog[selectedIndex];
             if (release && !release.installed)
                 WindowsAppsService.installRuntime(release);
             return;
@@ -146,8 +161,24 @@ FocusScope {
                 iconName: "folder_open"
                 backgroundColor: Theme.primary
                 textColor: Theme.primaryText
-                enabled: !WindowsAppsService.busy
-                onClicked: root.executableRequested()
+                enabled: !WindowsAppsService.busy && WindowsAppsService.runtimes.length > 0
+                onClicked: {
+                    WindowsAppsService.preferredRuntimeTag = runtimeSelector.currentValue;
+                    root.executableRequested();
+                }
+            }
+
+            DankDropdown {
+                id: runtimeSelector
+                visible: !root.showRuntimes
+                width: visible ? Math.max(120, parent.width - openExecutableButton.width - runtimeModeButton.width - Theme.spacingS * 2) : 0
+                compactMode: true
+                options: WindowsAppsService.runtimeTags
+                currentValue: WindowsAppsService.preferredRuntimeTag
+                onValueChanged: value => {
+                    if (value)
+                        WindowsAppsService.preferredRuntimeTag = value;
+                }
             }
 
             DankButton {
@@ -164,16 +195,6 @@ FocusScope {
                 }
             }
 
-            StyledText {
-                anchors.verticalCenter: parent.verticalCenter
-                width: Math.max(0, parent.width - openExecutableButton.width - runtimeModeButton.width - Theme.spacingS * 2)
-                text: root.showRuntimes
-                    ? "Установлено версий: " + WindowsAppsService.runtimes.length
-                    : "Приложений: " + root.filteredApps.length
-                font.pixelSize: Theme.fontSizeSmall
-                color: Theme.surfaceVariantText
-                horizontalAlignment: Text.AlignRight
-            }
         }
 
         ListView {
@@ -182,7 +203,7 @@ FocusScope {
             height: parent.height - y
             clip: true
             spacing: Theme.spacingXXS
-            model: root.showRuntimes ? WindowsAppsService.releases : root.filteredApps
+            model: root.showRuntimes ? WindowsAppsService.runtimeCatalog : root.filteredApps
 
             delegate: Rectangle {
                 id: row
@@ -242,7 +263,9 @@ FocusScope {
                     StyledText {
                         width: parent.width
                         text: root.showRuntimes
-                            ? (row.modelData.installed ? "Установлен" : "Доступен для загрузки")
+                            ? (row.modelData.installed
+                                ? (row.modelData.managed ? "Установлен KaskadOS" : "Установлен из внешнего источника")
+                                : "Доступен для загрузки")
                             : ("GE-Proton " + row.modelData.runtimeTag)
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
@@ -257,6 +280,18 @@ FocusScope {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Theme.spacingXS
 
+                    DankDropdown {
+                        visible: !root.showRuntimes
+                        width: visible ? 132 : 0
+                        compactMode: true
+                        options: WindowsAppsService.runtimeTags
+                        currentValue: root.showRuntimes ? "" : row.modelData.runtimeTag
+                        onValueChanged: value => {
+                            if (!root.showRuntimes && value && value !== row.modelData.runtimeTag)
+                                WindowsAppsService.setRuntime(row.modelData, value);
+                        }
+                    }
+
                     DankActionButton {
                         visible: !root.showRuntimes
                         buttonSize: 36
@@ -268,6 +303,17 @@ FocusScope {
                     }
 
                     DankActionButton {
+                        visible: root.showRuntimes && row.modelData.installed && row.modelData.managed
+                        buttonSize: 36
+                        iconName: "delete"
+                        iconColor: Theme.error
+                        backgroundColor: Theme.withAlpha(Theme.error, 0.1)
+                        enabled: !WindowsAppsService.busy
+                        tooltipText: "Удалить версию Proton"
+                        onClicked: root.confirmRemoveRuntime(row.modelData)
+                    }
+
+                    DankActionButton {
                         buttonSize: 36
                         iconName: root.showRuntimes
                             ? (row.modelData.installed ? "check" : "download")
@@ -276,7 +322,9 @@ FocusScope {
                         backgroundColor: row.modelData.installed && root.showRuntimes
                             ? Theme.surfaceContainerHighest : Theme.primary
                         enabled: !(row.modelData.installed && root.showRuntimes) && !WindowsAppsService.busy
-                        tooltipText: root.showRuntimes ? "Установить версию" : "Запустить"
+                        tooltipText: root.showRuntimes
+                            ? (row.modelData.installed ? "Версия установлена" : "Установить версию")
+                            : "Запустить"
                         onClicked: {
                             root.selectedIndex = row.index;
                             root.activateSelected();
@@ -289,7 +337,7 @@ FocusScope {
                 anchors.centerIn: parent
                 visible: contentList.count === 0
                 text: root.showRuntimes
-                    ? "Загружаю список актуальных версий…"
+                    ? (WindowsAppsService.loading ? "Загружаю список версий…" : "Версии Proton не найдены")
                     : "Windows-приложений пока нет"
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceVariantText

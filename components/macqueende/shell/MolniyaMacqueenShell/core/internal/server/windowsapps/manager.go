@@ -83,8 +83,9 @@ func (m *Manager) Apps() []App {
 }
 
 func (m *Manager) Runtimes() []Runtime {
+	managedRoot := filepath.Join(m.dataDir, "runtimes")
 	roots := []string{
-		filepath.Join(m.dataDir, "runtimes"),
+		managedRoot,
 		filepath.Join(filepath.Dir(filepath.Dir(m.dataDir)), "proton-ge-manager", "runtimes"),
 	}
 	if home, err := os.UserHomeDir(); err == nil {
@@ -102,11 +103,16 @@ func (m *Manager) Runtimes() []Runtime {
 				continue
 			}
 			path := filepath.Dir(proton)
-			if seen[path] {
+			tag := filepath.Base(path)
+			if seen[tag] {
 				continue
 			}
-			seen[path] = true
-			runtimes = append(runtimes, Runtime{Tag: filepath.Base(path), Path: path})
+			seen[tag] = true
+			runtimes = append(runtimes, Runtime{
+				Tag:     tag,
+				Path:    path,
+				Managed: withinChildRoot(managedRoot, path),
+			})
 		}
 	}
 	sort.SliceStable(runtimes, func(i, j int) bool { return newerVersionTag(runtimes[i].Tag, runtimes[j].Tag) })
@@ -210,6 +216,7 @@ func (m *Manager) InstallRuntime(release Release) error {
 	}
 	return m.startOperation("Загрузка "+release.Tag, nil, func(ctx context.Context) error {
 		archive := filepath.Join(m.cacheDir, release.ArchiveName)
+		defer os.Remove(archive)
 		if err := m.download(ctx, release.ArchiveURL, archive); err != nil {
 			return err
 		}
@@ -226,19 +233,19 @@ func (m *Manager) InstallRuntime(release Release) error {
 	})
 }
 
-func (m *Manager) OpenExecutable(path string) error {
+func (m *Manager) OpenExecutable(path, runtimeTag string) error {
 	exe, err := validateExecutable(path)
 	if err != nil {
 		return err
 	}
-	runtimes := m.Runtimes()
-	if len(runtimes) == 0 {
-		return errors.New("сначала установите хотя бы одну версию GE-Proton")
+	runtime, err := m.runtime(runtimeTag)
+	if err != nil {
+		return err
 	}
 	prefix := m.prefixFor(exe)
 	app := App{
 		ID: appID(exe), Name: strings.TrimSuffix(filepath.Base(exe), filepath.Ext(exe)),
-		Executable: exe, Prefix: prefix, RuntimePath: runtimes[0].Path, RuntimeTag: runtimes[0].Tag,
+		Executable: exe, Prefix: prefix, RuntimePath: runtime.Path, RuntimeTag: runtime.Tag,
 		Kind: "windows", InstalledAt: time.Now().Unix(),
 	}
 	if installerPattern.MatchString(strings.TrimSuffix(strings.ToLower(filepath.Base(exe)), filepath.Ext(exe))) {
@@ -248,6 +255,104 @@ func (m *Manager) OpenExecutable(path string) error {
 		return err
 	}
 	return m.Launch(app.ID)
+}
+
+func (m *Manager) SetRuntime(id, runtimeTag string) error {
+	runtime, err := m.runtime(runtimeTag)
+	if err != nil {
+		return err
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	selectedIndex := -1
+	for i := range m.apps {
+		if m.apps[i].ID == id {
+			selectedIndex = i
+			break
+		}
+	}
+	_, running := m.processes[id]
+	if selectedIndex < 0 {
+		return errors.New("Windows-приложение не найдено")
+	}
+	if running {
+		return errors.New("сначала закройте запущенное Windows-приложение")
+	}
+	if info, statErr := os.Stat(filepath.Join(runtime.Path, "proton")); statErr != nil || !info.Mode().IsRegular() {
+		return errors.New("выбранная версия Proton недоступна")
+	}
+	original := m.apps[selectedIndex]
+	m.apps[selectedIndex].RuntimePath = runtime.Path
+	m.apps[selectedIndex].RuntimeTag = runtime.Tag
+	if err := m.saveAppsLocked(); err != nil {
+		m.apps[selectedIndex] = original
+		return err
+	}
+	if err := m.writeDesktop(m.apps[selectedIndex]); err != nil {
+		m.apps[selectedIndex] = original
+		_ = m.saveAppsLocked()
+		return err
+	}
+	return nil
+}
+
+func (m *Manager) RemoveRuntime(runtimeTag string) error {
+	if !safeTag(runtimeTag) {
+		return errors.New("некорректная версия Proton")
+	}
+	managedRoot := filepath.Join(m.dataDir, "runtimes")
+	target := filepath.Join(managedRoot, runtimeTag)
+	if !withinChildRoot(managedRoot, target) || filepath.Base(target) != runtimeTag {
+		return errors.New("эту версию Proton нельзя удалить здесь")
+	}
+	info, err := os.Stat(filepath.Join(target, "proton"))
+	if err != nil || !info.Mode().IsRegular() {
+		return errors.New("установленная версия Proton не найдена")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.state.Phase == "preparing" || m.state.Phase == "downloading" {
+		return errors.New("дождитесь завершения установки Proton")
+	}
+	if m.state.App != nil && (m.state.Phase == "starting" || m.state.Phase == "running") && filepath.Clean(m.state.App.RuntimePath) == filepath.Clean(target) {
+		return errors.New("сначала закройте приложение, использующее эту версию Proton")
+	}
+	for _, app := range m.apps {
+		if filepath.Clean(app.RuntimePath) == filepath.Clean(target) {
+			return fmt.Errorf("сначала выберите другую версию Proton для %s", app.Name)
+		}
+	}
+	if err := os.RemoveAll(target); err != nil {
+		return err
+	}
+	for _, pattern := range []string{runtimeTag + ".tar.gz", runtimeTag + "*.tar.gz"} {
+		matches, _ := filepath.Glob(filepath.Join(m.cacheDir, pattern))
+		for _, cached := range matches {
+			if withinChildRoot(m.cacheDir, cached) {
+				_ = os.Remove(cached)
+			}
+		}
+	}
+	return nil
+}
+
+func (m *Manager) runtime(runtimeTag string) (Runtime, error) {
+	runtimes := m.Runtimes()
+	if len(runtimes) == 0 {
+		return Runtime{}, errors.New("сначала установите хотя бы одну версию GE-Proton")
+	}
+	if runtimeTag == "" {
+		return runtimes[0], nil
+	}
+	if !safeTag(runtimeTag) {
+		return Runtime{}, errors.New("некорректная версия Proton")
+	}
+	for _, runtime := range runtimes {
+		if runtime.Tag == runtimeTag {
+			return runtime, nil
+		}
+	}
+	return Runtime{}, errors.New("выбранная версия Proton не установлена")
 }
 
 func (m *Manager) Launch(id string) error {

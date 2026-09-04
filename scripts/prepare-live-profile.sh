@@ -24,6 +24,7 @@ readonly KEYRING_PACKAGE_SOURCE="${PROJECT_DIR}/repository/packages/kaskados-key
 readonly DESKTOP_PACKAGE_SOURCE="${PROJECT_DIR}/repository/packages/kaskados-desktop"
 readonly DGOP_BUILD_SCRIPT="${SCRIPT_DIR}/build-dgop-package.sh"
 readonly BOOTSTRAP_REPOSITORY="${BUILD_ROOT}/repository-bootstrap/x86_64"
+readonly BOOTSTRAP_PACKAGE_CACHE="${BUILD_ROOT}/repository-bootstrap/cache"
 readonly PROFILE_DIR="${PROFILE_DIR:-${BUILD_ROOT}/iso-profile}"
 readonly BUILD_JOBS="${BUILD_JOBS:-$(nproc)}"
 readonly MACQUEEN_BUILD_JOBS="${MACQUEEN_BUILD_JOBS:-8}"
@@ -100,6 +101,7 @@ if [[ -e "${BUILD_ROOT}/repository-bootstrap" ]]; then
 fi
 install -d -m 0755 \
   "${BOOTSTRAP_REPOSITORY}" \
+  "${BOOTSTRAP_PACKAGE_CACHE}" \
   "${BUILD_ROOT}/repository-bootstrap/work" \
   "${BUILD_ROOT}/repository-bootstrap/sources"
 (
@@ -218,6 +220,14 @@ if [[ -e "${PROFILE_DIR}" ]]; then
 fi
 mkdir -p -- "${PROFILE_DIR}"
 cp -a -- "${SOURCE_PROFILE}/." "${PROFILE_DIR}/"
+
+# Временные пакеты bootstrap-репозитория пересобираются под теми же версиями.
+# Отдельный свежий кэш не позволяет pacman взять одноимённый пакет от прошлой сборки.
+sed -i \
+  "s|^#CacheDir.*|CacheDir = ${BOOTSTRAP_PACKAGE_CACHE}/|" \
+  "${PROFILE_DIR}/pacman.conf"
+grep -Fqx "CacheDir = ${BOOTSTRAP_PACKAGE_CACHE}/" "${PROFILE_DIR}/pacman.conf" \
+  || die 'не удалось настроить отдельный кэш пакетов для сборки ISO'
 
 install -Dm0644 "${SOURCE_PROFILE}/pacman.conf" \
   "${PROFILE_DIR}/airootfs/etc/pacman.conf"

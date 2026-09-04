@@ -726,8 +726,8 @@ Singleton {
         sendRequest("windows.installRuntime", release, callback);
     }
 
-    function windowsOpen(path, callback) {
-        sendRequest("windows.open", {"path": path}, callback);
+    function windowsOpen(path, runtimeTag, callback) {
+        sendRequest("windows.open", {"path": path, "runtimeTag": runtimeTag || ""}, callback);
     }
 
     function windowsLaunch(id, callback) {
@@ -736,6 +736,14 @@ Singleton {
 
     function windowsRemove(id, removePrefix, callback) {
         sendRequest("windows.remove", {"id": id, "removePrefix": removePrefix === true}, callback);
+    }
+
+    function windowsSetRuntime(id, runtimeTag, callback) {
+        sendRequest("windows.setRuntime", {"id": id, "runtimeTag": runtimeTag}, callback);
+    }
+
+    function windowsRemoveRuntime(runtimeTag, callback) {
+        sendRequest("windows.removeRuntime", {"runtimeTag": runtimeTag}, callback);
     }
 
     function windowsCancel(callback) {

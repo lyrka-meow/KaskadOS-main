@@ -1,8 +1,9 @@
 package windowsapps
 
 type Runtime struct {
-	Tag  string `json:"tag"`
-	Path string `json:"path"`
+	Tag     string `json:"tag"`
+	Path    string `json:"path"`
+	Managed bool   `json:"managed"`
 }
 
 type Release struct {

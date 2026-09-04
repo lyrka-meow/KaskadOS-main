@@ -198,7 +198,7 @@ func (c *Catalog) searchFlatpak(ctx context.Context, query string, installed map
 	if err := ensureUserFlathub(ctx); err != nil {
 		return nil
 	}
-	out, err := exec.CommandContext(ctx, "flatpak", "search", "--columns=application,name,description,version", query).Output()
+	out, err := exec.CommandContext(ctx, "flatpak", "search", "--user", "--columns=application,name,description,version", query).Output()
 	if err != nil {
 		return nil
 	}

@@ -14,10 +14,31 @@ Singleton {
     property var runtimes: []
     property var releases: []
     property var state: ({"phase": "idle"})
+    property string preferredRuntimeTag: ""
     property bool _terminalHandled: false
 
     readonly property bool busy: ["preparing", "downloading", "starting"].includes(state?.phase || "")
     readonly property bool appRunning: state?.phase === "running"
+    readonly property var runtimeTags: (runtimes || []).map(runtime => runtime.tag)
+    readonly property var runtimeCatalog: {
+        const items = (releases || []).map(release => {
+            const runtime = root.runtimeByTag(release.tag);
+            return Object.assign({}, release, {
+                "installed": runtime !== null,
+                "managed": runtime?.managed === true
+            });
+        });
+        for (const runtime of (runtimes || [])) {
+            if (!items.some(item => item.tag === runtime.tag)) {
+                items.push({
+                    "tag": runtime.tag,
+                    "installed": true,
+                    "managed": runtime.managed === true
+                });
+            }
+        }
+        return items;
+    }
 
     Connections {
         target: DMSService
@@ -50,8 +71,12 @@ Singleton {
             if (response?.result)
                 apps = response.result;
             DMSService.windowsRuntimes(runtimeResponse => {
-                if (runtimeResponse?.result)
+                if (runtimeResponse?.result) {
                     runtimes = runtimeResponse.result;
+                    const tags = runtimes.map(runtime => runtime.tag);
+                    if (!tags.includes(preferredRuntimeTag))
+                        preferredRuntimeTag = tags.length > 0 ? tags[0] : "";
+                }
                 const installedTags = (runtimes || []).map(runtime => runtime.tag);
                 releases = (releases || []).map(release => Object.assign({}, release, {
                     "installed": installedTags.includes(release.tag)
@@ -84,11 +109,12 @@ Singleton {
         });
     }
 
-    function openExecutable(path) {
+    function openExecutable(path, runtimeTag) {
         if (!path || busy)
             return;
+        const selectedRuntime = runtimeTag || preferredRuntimeTag;
         _terminalHandled = false;
-        DMSService.windowsOpen(path, response => {
+        DMSService.windowsOpen(path, selectedRuntime, response => {
             if (response?.result) {
                 state = response.result;
                 ToastService.showInfo("Windows-приложение запускается…", "Первый запуск может занять около минуты.", "", "windows-launch");
@@ -123,6 +149,40 @@ Singleton {
                 ToastService.showError(response.error, "", "", "windows-app");
             }
         });
+    }
+
+    function setRuntime(app, runtimeTag) {
+        if (!app || !runtimeTag || busy || app.runtimeTag === runtimeTag)
+            return;
+        DMSService.windowsSetRuntime(app.id, runtimeTag, response => {
+            if (!response?.error) {
+                ToastService.showInfo("Версия Proton изменена", app.name + " теперь использует " + runtimeTag + ".", "", "windows-runtime");
+                refresh();
+            } else {
+                ToastService.showError(response.error, "", "", "windows-runtime");
+            }
+        });
+    }
+
+    function removeRuntime(runtime) {
+        if (!runtime || runtime.managed !== true || busy || appRunning)
+            return;
+        DMSService.windowsRemoveRuntime(runtime.tag, response => {
+            if (!response?.error) {
+                ToastService.showInfo("Версия Proton удалена", runtime.tag, "", "windows-runtime");
+                refresh();
+            } else {
+                ToastService.showError(response.error, "", "", "windows-runtime");
+            }
+        });
+    }
+
+    function runtimeByTag(tag) {
+        for (const runtime of (runtimes || [])) {
+            if (runtime.tag === tag)
+                return runtime;
+        }
+        return null;
     }
 
     function cancel() {
