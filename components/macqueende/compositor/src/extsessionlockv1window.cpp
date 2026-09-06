@@ -6,6 +6,7 @@
 
 #include "extsessionlockv1window.h"
 
+#include "core/backendoutput.h"
 #include "core/output.h"
 #include "wayland/extsessionlock_v1.h"
 #include "wayland/surface.h"
@@ -85,7 +86,7 @@ bool ExtSessionLockV1Window::isLockScreen() const
 
 Layer ExtSessionLockV1Window::belongsToLayer() const
 {
-    return LockScreenLayer;
+    return OverlayLayer;
 }
 
 bool ExtSessionLockV1Window::acceptsFocus() const
