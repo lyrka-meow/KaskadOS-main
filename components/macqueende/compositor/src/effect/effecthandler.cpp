@@ -53,10 +53,6 @@
 #if KWIN_BUILD_TABBOX
 #include "tabbox/tabbox.h"
 #endif
-#if KWIN_BUILD_SCREENLOCKER
-#include <KScreenLocker/KsldApp>
-#endif
-
 #include <KDecoration3/Decoration>
 #include <KDecoration3/DecorationSettings>
 
@@ -195,14 +191,10 @@ EffectsHandler::EffectsHandler(Compositor *compositor, WorkspaceScene *scene)
     connect(tabBox, &TabBox::TabBox::tabBoxKeyEvent, this, &EffectsHandler::tabBoxKeyEvent);
 #endif
     connect(workspace()->screenEdges(), &ScreenEdges::approaching, this, &EffectsHandler::screenEdgeApproaching);
-#if KWIN_BUILD_SCREENLOCKER
-    connect(ScreenLocker::KSldApp::self(), &ScreenLocker::KSldApp::lockStateChanged, this, [this] {
-        const bool locked = ScreenLocker::KSldApp::self()->lockState() == ScreenLocker::KSldApp::Locked;
-        Q_EMIT screenLockingChanged(locked);
+    connect(waylandServer(), &WaylandServer::lockStateChanged, this, [this] {
+        Q_EMIT screenLockingChanged(waylandServer()->isScreenLocked());
     });
-
-    connect(ScreenLocker::KSldApp::self(), &ScreenLocker::KSldApp::aboutToLock, this, &EffectsHandler::screenAboutToLock);
-#endif
+    connect(waylandServer(), &WaylandServer::aboutToLock, this, &EffectsHandler::screenAboutToLock);
 
     m_cursor.position = input()->globalPointer();
     m_cursor.buttons = input()->qtButtonStates();
@@ -1379,11 +1371,7 @@ QString EffectsHandler::supportInformation(const QString &name) const
 
 bool EffectsHandler::isScreenLocked() const
 {
-#if KWIN_BUILD_SCREENLOCKER
-    return ScreenLocker::KSldApp::self()->lockState() == ScreenLocker::KSldApp::Locked;
-#else
-    return false;
-#endif
+    return waylandServer()->isScreenLocked();
 }
 
 QString EffectsHandler::debug(const QString &name, const QString &parameter) const

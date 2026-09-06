@@ -173,6 +173,7 @@ public:
     GraphicsBufferRef bufferRef;
     Region bufferDamage;
     bool mapped = false;
+    bool committedOnce = false;
     qreal serverScale = 1.0;
     qreal clientToCompositorScale = 1.0;
     qreal compositorToClientScale = 1.0;

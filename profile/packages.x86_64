@@ -8,6 +8,8 @@ base
 base-devel
 bcachefs-tools
 bind
+bluez
+bluez-utils
 bolt
 breeze-cursors
 breeze-icons

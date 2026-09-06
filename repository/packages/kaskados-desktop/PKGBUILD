@@ -6,11 +6,14 @@ arch=('x86_64')
 url='https://github.com/lyrka-meow/KaskadOS-main'
 license=('GPL-3.0-or-later')
 provides=('macqueende')
+install=kaskados-desktop.install
 depends=(
   '7zip'
   'alsa-utils'
   'base-devel'
   'bash'
+  'bluez'
+  'bluez-utils'
   'brightnessctl'
   'bubblewrap'
   'cava'

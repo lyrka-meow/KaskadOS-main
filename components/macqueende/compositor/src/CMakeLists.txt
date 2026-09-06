@@ -99,6 +99,8 @@ target_sources(kwin PRIVATE
     effect/offscreenquickview.cpp
     effect/quickeffect.cpp
     effect/timeline.cpp
+    extsessionlockv1integration.cpp
+    extsessionlockv1window.cpp
     focuschain.cpp
     ftrace.cpp
     gestures.cpp
@@ -488,6 +490,8 @@ install(FILES
     cursorsource.h
     dbusinterface.h
     debug_console.h
+    extsessionlockv1integration.h
+    extsessionlockv1window.h
     focuschain.h
     ftrace.h
     gestures.h

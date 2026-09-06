@@ -289,7 +289,6 @@ public:
     }
 };
 
-#if KWIN_BUILD_SCREENLOCKER
 class LockScreenFilter : public InputEventFilter
 {
 public:
@@ -303,7 +302,11 @@ public:
             return false;
         }
 
-        ScreenLocker::KSldApp::self()->userActivity();
+#if KWIN_BUILD_SCREENLOCKER
+        if (waylandServer()->isNativeScreenLocked()) {
+            ScreenLocker::KSldApp::self()->userActivity();
+        }
+#endif
 
         auto window = input()->findToplevel(event->position);
         if (window && window->isClient() && window->isLockScreen()) {
@@ -324,7 +327,11 @@ public:
             return false;
         }
 
-        ScreenLocker::KSldApp::self()->userActivity();
+#if KWIN_BUILD_SCREENLOCKER
+        if (waylandServer()->isNativeScreenLocked()) {
+            ScreenLocker::KSldApp::self()->userActivity();
+        }
+#endif
 
         auto window = input()->findToplevel(event->position);
         if (window && window->isClient() && window->isLockScreen()) {
@@ -357,7 +364,11 @@ public:
             return false;
         }
 
-        ScreenLocker::KSldApp::self()->userActivity();
+#if KWIN_BUILD_SCREENLOCKER
+        if (waylandServer()->isNativeScreenLocked()) {
+            ScreenLocker::KSldApp::self()->userActivity();
+        }
+#endif
 
         auto seat = waylandServer()->seat();
         if (pointerSurfaceAllowed()) {
@@ -378,24 +389,27 @@ public:
             return false;
         }
 
-        ScreenLocker::KSldApp::self()->userActivity();
+#if KWIN_BUILD_SCREENLOCKER
+        if (waylandServer()->isNativeScreenLocked()) {
+            ScreenLocker::KSldApp::self()->userActivity();
 
-        // send event to KSldApp for global accel
-        // if event is set to accepted it means a whitelisted shortcut was triggered
-        // in that case we filter it out and don't process it further
-        QKeyEvent keyEvent(event->state == KeyboardKeyState::Released ? QEvent::KeyRelease : QEvent::KeyPress,
-                           event->key,
-                           event->modifiers,
-                           event->nativeScanCode,
-                           event->nativeVirtualKey,
-                           0,
-                           event->text,
-                           event->state == KeyboardKeyState::Repeated);
-        keyEvent.setAccepted(false);
-        QCoreApplication::sendEvent(ScreenLocker::KSldApp::self(), &keyEvent);
-        if (keyEvent.isAccepted()) {
-            return true;
+            // Send native lock-screen shortcuts only to KScreenLocker. External
+            // session-lock surfaces receive the key through the Wayland seat.
+            QKeyEvent keyEvent(event->state == KeyboardKeyState::Released ? QEvent::KeyRelease : QEvent::KeyPress,
+                               event->key,
+                               event->modifiers,
+                               event->nativeScanCode,
+                               event->nativeVirtualKey,
+                               0,
+                               event->text,
+                               event->state == KeyboardKeyState::Repeated);
+            keyEvent.setAccepted(false);
+            QCoreApplication::sendEvent(ScreenLocker::KSldApp::self(), &keyEvent);
+            if (keyEvent.isAccepted()) {
+                return true;
+            }
         }
+#endif
 
         // continue normal processing
         input()->keyboard()->update();
@@ -414,7 +428,11 @@ public:
             return false;
         }
 
-        ScreenLocker::KSldApp::self()->userActivity();
+#if KWIN_BUILD_SCREENLOCKER
+        if (waylandServer()->isNativeScreenLocked()) {
+            ScreenLocker::KSldApp::self()->userActivity();
+        }
+#endif
 
         Window *window = input()->findToplevel(event->pos);
         if (window && surfaceAllowed(window->surface())) {
@@ -430,7 +448,11 @@ public:
             return false;
         }
 
-        ScreenLocker::KSldApp::self()->userActivity();
+#if KWIN_BUILD_SCREENLOCKER
+        if (waylandServer()->isNativeScreenLocked()) {
+            ScreenLocker::KSldApp::self()->userActivity();
+        }
+#endif
 
         auto seat = waylandServer()->seat();
         seat->setTimestamp(event->time);
@@ -443,11 +465,31 @@ public:
             return false;
         }
 
-        ScreenLocker::KSldApp::self()->userActivity();
+#if KWIN_BUILD_SCREENLOCKER
+        if (waylandServer()->isNativeScreenLocked()) {
+            ScreenLocker::KSldApp::self()->userActivity();
+        }
+#endif
 
         auto seat = waylandServer()->seat();
         seat->setTimestamp(event->time);
         seat->notifyTouchUp(event->id);
+        return true;
+    }
+    bool touchCancel() override
+    {
+        if (!waylandServer()->isScreenLocked()) {
+            return false;
+        }
+        waylandServer()->seat()->notifyTouchCancel();
+        return true;
+    }
+    bool touchFrame() override
+    {
+        if (!waylandServer()->isScreenLocked()) {
+            return false;
+        }
+        waylandServer()->seat()->notifyTouchFrame();
         return true;
     }
     bool pinchGestureBegin(PointerPinchGestureBeginEvent *event) override
@@ -507,6 +549,39 @@ public:
         return waylandServer()->isScreenLocked();
     }
 
+    bool tabletToolProximityEvent(TabletToolProximityEvent *event) override
+    {
+        return waylandServer()->isScreenLocked();
+    }
+    bool tabletToolAxisEvent(TabletToolAxisEvent *event) override
+    {
+        return waylandServer()->isScreenLocked();
+    }
+    bool tabletToolTipEvent(TabletToolTipEvent *event) override
+    {
+        return waylandServer()->isScreenLocked();
+    }
+    bool tabletToolButtonEvent(TabletToolButtonEvent *event) override
+    {
+        return waylandServer()->isScreenLocked();
+    }
+    bool tabletPadButtonEvent(TabletPadButtonEvent *event) override
+    {
+        return waylandServer()->isScreenLocked();
+    }
+    bool tabletPadStripEvent(TabletPadStripEvent *event) override
+    {
+        return waylandServer()->isScreenLocked();
+    }
+    bool tabletPadRingEvent(TabletPadRingEvent *event) override
+    {
+        return waylandServer()->isScreenLocked();
+    }
+    bool tabletPadDialEvent(TabletPadDialEvent *event) override
+    {
+        return waylandServer()->isScreenLocked();
+    }
+
 private:
     bool surfaceAllowed(SurfaceInterface *s) const
     {
@@ -527,7 +602,6 @@ private:
         return surfaceAllowed(waylandServer()->seat()->focusedKeyboardSurface());
     }
 };
-#endif
 
 class EffectsFilter : public InputEventFilter
 {
@@ -3155,10 +3229,8 @@ void InputRedirection::setupInputFilters()
     m_userActivitySpy = std::make_unique<UserActivitySpy>();
     installInputEventSpy(m_userActivitySpy.get());
 
-#if KWIN_BUILD_SCREENLOCKER
     m_lockscreenFilter = std::make_unique<LockScreenFilter>();
     installInputEventFilter(m_lockscreenFilter.get());
-#endif
 
     if (kwinApp()->supportsGlobalShortcuts()) {
         m_screenEdgeFilter = std::make_unique<ScreenEdgeInputFilter>();

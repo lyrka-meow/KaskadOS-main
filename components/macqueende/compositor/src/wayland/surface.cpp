@@ -668,6 +668,7 @@ void SurfaceState::mergeInto(SurfaceState *target)
 
 void SurfaceInterfacePrivate::applyState(SurfaceState *next)
 {
+    committedOnce = true;
     const bool bufferChanged = (next->committed & SurfaceState::Field::Buffer) && (current->buffer != next->buffer);
     const bool opaqueRegionChanged = (next->committed & SurfaceState::Field::Opaque);
     const bool transformChanged = (next->committed & SurfaceState::Field::BufferTransform) && (current->bufferTransform != next->bufferTransform);

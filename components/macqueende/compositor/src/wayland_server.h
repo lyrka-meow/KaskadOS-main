@@ -60,6 +60,7 @@ class LogicalOutput;
 class XdgActivationV1Integration;
 class XdgPopupWindow;
 class XdgSurfaceWindow;
+class ExtSessionLockV1Integration;
 class XdgToplevelWindow;
 class PresentationTime;
 class ColorManagerV1;
@@ -183,6 +184,7 @@ public:
      * @returns true if screen is locked.
      */
     bool isScreenLocked() const;
+    bool isNativeScreenLocked() const;
 
     void initWorkspace();
 
@@ -234,6 +236,7 @@ Q_SIGNALS:
     void windowRemoved(KWin::Window *);
     void initialized();
     void foreignTransientChanged(KWin::SurfaceInterface *child);
+    void aboutToLock();
     void lockStateChanged();
 
 private:
@@ -304,6 +307,7 @@ private:
     ColorRepresentationManagerV1 *m_colorRepresentation = nullptr;
     PointerWarpV1 *m_pointerWarp = nullptr;
     ExtBackgroundEffectManagerV1 *m_backgroundEffect = nullptr;
+    ExtSessionLockV1Integration *m_extSessionLockIntegration = nullptr;
 
     std::shared_ptr<FileDescriptor> m_sleepInhibitor;
     KWIN_SINGLETON(WaylandServer)

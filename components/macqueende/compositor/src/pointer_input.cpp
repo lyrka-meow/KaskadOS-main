@@ -34,11 +34,6 @@
 #include "workspace.h"
 // KDecoration
 #include <KDecoration3/Decoration>
-// screenlocker
-#if KWIN_BUILD_SCREENLOCKER
-#include <KScreenLocker/KsldApp>
-#endif
-
 #include <KLocalizedString>
 
 #include <QHoverEvent>
@@ -112,17 +107,13 @@ void PointerInputRedirection::init()
     Q_EMIT m_cursor->changed();
 
     connect(workspace(), &Workspace::outputsChanged, this, &PointerInputRedirection::updateAfterScreenChange);
-#if KWIN_BUILD_SCREENLOCKER
-    if (kwinApp()->supportsLockScreen()) {
-        connect(ScreenLocker::KSldApp::self(), &ScreenLocker::KSldApp::lockStateChanged, this, [this]() {
-            if (waylandServer()->seat()->hasPointer()) {
-                waylandServer()->seat()->cancelPointerPinchGesture();
-                waylandServer()->seat()->cancelPointerSwipeGesture();
-            }
-            update();
-        });
-    }
-#endif
+    connect(waylandServer(), &WaylandServer::lockStateChanged, this, [this]() {
+        if (waylandServer()->seat()->hasPointer()) {
+            waylandServer()->seat()->cancelPointerPinchGesture();
+            waylandServer()->seat()->cancelPointerSwipeGesture();
+        }
+        update();
+    });
     connect(workspace(), &QObject::destroyed, this, [this] {
         setInited(false);
     });
@@ -1065,11 +1056,7 @@ CursorImage::CursorImage(PointerInputRedirection *parent)
     m_serverCursor.shape = std::make_unique<ShapeCursorSource>();
     m_dragCursor = std::make_unique<ShapeCursorSource>();
 
-#if KWIN_BUILD_SCREENLOCKER
-    if (kwinApp()->supportsLockScreen()) {
-        connect(ScreenLocker::KSldApp::self(), &ScreenLocker::KSldApp::lockStateChanged, this, &CursorImage::reevaluteSource);
-    }
-#endif
+    connect(waylandServer(), &WaylandServer::lockStateChanged, this, &CursorImage::reevaluteSource);
     connect(m_pointer, &PointerInputRedirection::decorationChanged, this, &CursorImage::updateDecoration);
     // connect the move resize of all window
     auto setupMoveResizeConnection = [this](Window *window) {

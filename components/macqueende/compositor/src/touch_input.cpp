@@ -22,10 +22,6 @@
 #include "workspace.h"
 // KDecoration
 #include <KDecoration3/Decoration>
-// screenlocker
-#if KWIN_BUILD_SCREENLOCKER
-#include <KScreenLocker/KsldApp>
-#endif
 // Qt
 #include <QHoverEvent>
 #include <QWindow>
@@ -50,15 +46,11 @@ void TouchInputRedirection::init()
     setInited(true);
     InputDeviceHandler::init();
 
-#if KWIN_BUILD_SCREENLOCKER
-    if (kwinApp()->supportsLockScreen()) {
-        connect(ScreenLocker::KSldApp::self(), &ScreenLocker::KSldApp::lockStateChanged, this, [this]() {
-            cancel();
-            // position doesn't matter
-            update();
-        });
-    }
-#endif
+    connect(waylandServer(), &WaylandServer::lockStateChanged, this, [this]() {
+        cancel();
+        // position doesn't matter
+        update();
+    });
     connect(workspace(), &QObject::destroyed, this, [this] {
         setInited(false);
     });

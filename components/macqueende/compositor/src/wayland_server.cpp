@@ -15,6 +15,7 @@
 #include "core/drmdevice.h"
 #include "core/outputbackend.h"
 #include "core/session.h"
+#include "extsessionlockv1integration.h"
 #include "idle_inhibition.h"
 #include "inputpanelv1integration.h"
 #include "layershellv1integration.h"
@@ -576,6 +577,14 @@ void WaylandServer::initWorkspace()
     connect(layerShellV1Integration, &LayerShellV1Integration::windowCreated,
             this, &WaylandServer::registerWindow);
 
+    m_extSessionLockIntegration = new ExtSessionLockV1Integration(this);
+    connect(m_extSessionLockIntegration, &ExtSessionLockV1Integration::windowCreated,
+            this, &WaylandServer::registerWindow);
+    connect(m_extSessionLockIntegration, &ExtSessionLockV1Integration::aboutToLock,
+            this, &WaylandServer::aboutToLock);
+    connect(m_extSessionLockIntegration, &ExtSessionLockV1Integration::lockStateChanged,
+            this, &WaylandServer::lockStateChanged);
+
     if (qEnvironmentVariableIntValue("KWIN_WAYLAND_SUPPORT_XX_PIP_V1") == 1) {
         auto pipV1Integration = new XXPipV1Integration(this);
         connect(pipV1Integration, &XXPipV1Integration::windowCreated,
@@ -648,6 +657,7 @@ void WaylandServer::initScreenLocker()
     ScreenLocker::KSldApp::self()->setGreeterEnvironment(kwinApp()->processStartupEnvironment());
 
     connect(ScreenLocker::KSldApp::self(), &ScreenLocker::KSldApp::aboutToLock, this, [this]() {
+        Q_EMIT aboutToLock();
         new LockScreenPresentationWatcher(this);
     });
 
@@ -804,6 +814,14 @@ XdgSurfaceWindow *WaylandServer::findXdgSurfaceWindow(SurfaceInterface *surface)
 }
 
 bool WaylandServer::isScreenLocked() const
+{
+    if (m_extSessionLockIntegration && m_extSessionLockIntegration->isLocked()) {
+        return true;
+    }
+    return isNativeScreenLocked();
+}
+
+bool WaylandServer::isNativeScreenLocked() const
 {
 #if KWIN_BUILD_SCREENLOCKER
     if (!kwinApp()->supportsLockScreen()) {

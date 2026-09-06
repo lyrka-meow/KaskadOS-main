@@ -40,6 +40,8 @@ grep -Fxq 'breeze-cursors' "${PROFILE_DIR}/packages.x86_64" \
   || die 'в packages.x86_64 отсутствует тема курсора breeze-cursors'
 
 required_installed_packages=(
+  bluez
+  bluez-utils
   brightnessctl
   cava
   fastfetch
@@ -61,6 +63,17 @@ for package_name in "${required_installed_packages[@]}"; do
   grep -Fxq "${package_name}" "${PROFILE_DIR}/packages.x86_64" \
     || die "в packages.x86_64 отсутствует обязательный пакет ${package_name}"
 done
+
+readonly DESKTOP_PKGBUILD="${PROJECT_DIR}/repository/packages/kaskados-desktop/PKGBUILD"
+readonly DESKTOP_INSTALL="${PROJECT_DIR}/repository/packages/kaskados-desktop/kaskados-desktop.install"
+for package_name in bluez bluez-utils; do
+  grep -Fxq "  '${package_name}'" "${DESKTOP_PKGBUILD}" \
+    || die "пакет kaskados-desktop не зависит от ${package_name}"
+done
+grep -Fq 'install=kaskados-desktop.install' "${DESKTOP_PKGBUILD}" \
+  || die 'пакет kaskados-desktop не подключает настройку Bluetooth'
+grep -Fq 'systemctl enable bluetooth.service' "${DESKTOP_INSTALL}" \
+  || die 'обновление kaskados-desktop не включает службу Bluetooth'
 
 readonly SESSION_SCRIPT="${PROFILE_DIR}/airootfs/usr/local/bin/kaskados-installer-session"
 grep -Fxq "export XCURSOR_THEME='breeze_cursors'" "${SESSION_SCRIPT}" \
@@ -162,7 +175,6 @@ grep -Fxq 'Exec=/usr/bin/start-macqueende' "${MACQUEEN_SESSION}" \
   || die 'сеанс SDDM не запускает MacqueenDE'
 grep -Fxq 'TryExec=/usr/bin/start-macqueende' "${MACQUEEN_SESSION}" \
   || die 'в сеансе SDDM не задана проверка запуска MacqueenDE'
-
 readonly DISPLAYMANAGER_CONFIG="${PROJECT_DIR}/components/calamares/src/modules/displaymanager/displaymanager.conf"
 grep -Fq 'executable: "/usr/bin/start-macqueende"' "${DISPLAYMANAGER_CONFIG}" \
   || die 'Calamares не выбирает запуск MacqueenDE по умолчанию'
@@ -226,6 +238,8 @@ grep -Eq '^efiBootLoader:[[:space:]]+"grub"$' "${BOOTLOADER_CONFIG}" \
   || die 'GRUB не выбран обязательным загрузчиком'
 
 readonly SERVICES_CONFIG="${PROJECT_DIR}/components/calamares/src/modules/services-systemd/services-systemd.conf"
+grep -Fq 'name: "bluetooth.service"' "${SERVICES_CONFIG}" \
+  || die 'Calamares не включает системную службу Bluetooth'
 grep -Fq 'name: "sddm.service"' "${SERVICES_CONFIG}" \
   || die 'SDDM не включается в установленной системе'
 grep -Fq 'action: "set-default"' "${SERVICES_CONFIG}" \

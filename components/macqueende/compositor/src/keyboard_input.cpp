@@ -23,10 +23,6 @@
 #include "window.h"
 #include "workspace.h"
 #include "xkb.h"
-// screenlocker
-#if KWIN_BUILD_SCREENLOCKER
-#include <KScreenLocker/KsldApp>
-#endif
 #if KWIN_BUILD_TABBOX
 #include "tabbox/tabbox.h"
 #endif
@@ -182,11 +178,7 @@ void KeyboardInputRedirection::init()
         }
         update();
     });
-#if KWIN_BUILD_SCREENLOCKER
-    if (kwinApp()->supportsLockScreen()) {
-        connect(ScreenLocker::KSldApp::self(), &ScreenLocker::KSldApp::lockStateChanged, this, &KeyboardInputRedirection::update);
-    }
-#endif
+    connect(waylandServer(), &WaylandServer::lockStateChanged, this, &KeyboardInputRedirection::update);
 
     reconfigure();
 }
