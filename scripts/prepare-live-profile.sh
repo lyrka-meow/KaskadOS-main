@@ -275,6 +275,22 @@ fi
 mkdir -p -- "${PROFILE_DIR}"
 cp -a -- "${SOURCE_PROFILE}/." "${PROFILE_DIR}/"
 
+# Для сборки ISO не используем случайный порядок зеркал хост-системы: одно
+# зависшее зеркало иначе останавливает всю установку пакетов в airootfs.
+# Эти серверы относятся только к временному профилю сборки. В установленную
+# систему по-прежнему попадает исходный pacman.conf с обычным mirrorlist.
+sed -i \
+  '/^Include = \/etc\/pacman.d\/mirrorlist$/c\Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch\
+Server = https://nl.mirror.cx/archlinux/$repo/os/$arch\
+Server = https://de.mirrors.mk/archlinux/$repo/os/$arch' \
+  "${PROFILE_DIR}/pacman.conf"
+grep -Fqx 'Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch' \
+  "${PROFILE_DIR}/pacman.conf" \
+  || die 'не удалось настроить основное зеркало Arch для сборки ISO'
+if grep -Fqx 'Include = /etc/pacman.d/mirrorlist' "${PROFILE_DIR}/pacman.conf"; then
+  die 'в профиле сборки осталась зависимость от списка зеркал хост-системы'
+fi
+
 # Временные пакеты bootstrap-репозитория пересобираются под теми же версиями.
 # Отдельный свежий кэш не позволяет pacman взять одноимённый пакет от прошлой сборки.
 sed -i \
@@ -460,7 +476,7 @@ if (( ${#system_libraries[@]} > 0 )); then
   done <<< "${package_owner_output}"
 fi
 
-pacman --config "${SOURCE_PROFILE}/pacman.conf" -Si "${!runtime_packages[@]}" >/dev/null \
+pacman --config "${PROFILE_DIR}/pacman.conf" -Si "${!runtime_packages[@]}" >/dev/null \
   || die 'один или несколько пакетов времени выполнения отсутствуют в репозиториях ISO'
 
 for package_name in "${!runtime_packages[@]}"; do
