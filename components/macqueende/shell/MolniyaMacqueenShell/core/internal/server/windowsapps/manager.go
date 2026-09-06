@@ -242,7 +242,7 @@ func (m *Manager) OpenExecutable(path, runtimeTag string) error {
 	if err != nil {
 		return err
 	}
-	prefix := m.prefixFor(exe)
+	prefix := m.prefixFor(exe, runtime.Tag)
 	app := App{
 		ID: appID(exe), Name: strings.TrimSuffix(filepath.Base(exe), filepath.Ext(exe)),
 		Executable: exe, Prefix: prefix, RuntimePath: runtime.Path, RuntimeTag: runtime.Tag,
@@ -284,6 +284,9 @@ func (m *Manager) SetRuntime(id, runtimeTag string) error {
 	original := m.apps[selectedIndex]
 	m.apps[selectedIndex].RuntimePath = runtime.Path
 	m.apps[selectedIndex].RuntimeTag = runtime.Tag
+	if !withinChildRoot(m.apps[selectedIndex].Prefix, m.apps[selectedIndex].Executable) {
+		m.apps[selectedIndex].Prefix = m.prefixFor(m.apps[selectedIndex].Executable, runtime.Tag)
+	}
 	if err := m.saveAppsLocked(); err != nil {
 		m.apps[selectedIndex] = original
 		return err
@@ -371,6 +374,26 @@ func (m *Manager) Launch(id string) error {
 	}
 	if _, err := validateExecutable(selected.Executable); err != nil {
 		return err
+	}
+	if !withinChildRoot(selected.Prefix, selected.Executable) {
+		expectedPrefix := m.prefixFor(selected.Executable, selected.RuntimeTag)
+		if filepath.Clean(selected.Prefix) != filepath.Clean(expectedPrefix) {
+			m.mu.Lock()
+			for i := range m.apps {
+				if m.apps[i].ID == selected.ID {
+					originalPrefix := m.apps[i].Prefix
+					m.apps[i].Prefix = expectedPrefix
+					if err := m.saveAppsLocked(); err != nil {
+						m.apps[i].Prefix = originalPrefix
+						m.mu.Unlock()
+						return err
+					}
+					selected.Prefix = expectedPrefix
+					break
+				}
+			}
+			m.mu.Unlock()
+		}
 	}
 	return m.launchApp(*selected, false, nil)
 }
@@ -650,14 +673,28 @@ func (m *Manager) fetchChecksum(ctx context.Context, source, archiveName string)
 	return "", errors.New("SHA-512 для архива не найден")
 }
 
-func (m *Manager) prefixFor(exe string) string {
+func (m *Manager) prefixFor(exe, runtimeTag string) string {
 	hash := sha256.Sum256([]byte(exe))
 	base := strings.TrimSuffix(filepath.Base(exe), filepath.Ext(exe))
 	base = safeNamePattern.ReplaceAllString(base, "-")
 	if base == "" {
 		base = "windows-app"
 	}
-	return filepath.Join(m.dataDir, "prefixes", base+"-"+hex.EncodeToString(hash[:5]))
+	return filepath.Join(m.dataDir, "prefixes", base+"-"+hex.EncodeToString(hash[:5])+"-"+runtimeFamily(runtimeTag))
+}
+
+func runtimeFamily(runtimeTag string) string {
+	normalized := strings.ToLower(runtimeTag)
+	if strings.Contains(normalized, "proton") {
+		if major := tagNumberPattern.FindString(normalized); major != "" {
+			return "proton-" + major
+		}
+	}
+	normalized = strings.Trim(safeNamePattern.ReplaceAllString(normalized, "-"), "-.")
+	if normalized == "" {
+		return "runtime"
+	}
+	return normalized
 }
 
 func (m *Manager) registryPath() string { return filepath.Join(m.dataDir, "apps.json") }

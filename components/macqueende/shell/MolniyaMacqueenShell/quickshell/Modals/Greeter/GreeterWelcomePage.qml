@@ -27,7 +27,7 @@ Item {
                 smooth: true
                 mipmap: true
                 asynchronous: true
-                source: "file://" + Theme.shellDir + "/assets/danklogonormal.svg"
+                source: "file://" + Theme.shellDir + "/assets/kaskados-logo.png"
                 layer.enabled: true
                 layer.smooth: true
                 layer.mipmap: true

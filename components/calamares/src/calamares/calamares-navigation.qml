@@ -1,83 +1,72 @@
-/* Sample of QML navigation.
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
-   SPDX-FileCopyrightText: 2020 Adriaan de Groot <groot@kde.org>
-   SPDX-License-Identifier: GPL-3.0-or-later
-
-
-   The navigation panel is generally "horizontal" in layout, with
-   buttons for next and previous; this particular one copies
-   the layout and size of the widgets panel.
-*/
 import io.calamares.ui 1.0
 import io.calamares.core 1.0
-
-import QtQuick 2.3
-import QtQuick.Controls 2.10
-import QtQuick.Layouts 1.3
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 Rectangle {
-    id: navigationBar;
-    color: Branding.styleString( Branding.SidebarBackground );
-    height: 48;
+    id: navigationBar
+    color: "#111512"
+    height: 72
+
+    component ActionButton: Button {
+        id: control
+        implicitHeight: 44
+        implicitWidth: Math.max(120, contentItem.implicitWidth + 40)
+
+        contentItem: Text {
+            text: control.text
+            color: control.enabled
+                ? (control.highlighted ? "#102117" : "#E2E8E4")
+                : "#68716B"
+            font.pixelSize: 15
+            font.weight: Font.DemiBold
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        background: Rectangle {
+            radius: 15
+            color: !control.enabled
+                ? "#202522"
+                : (control.highlighted
+                    ? (control.down ? "#8BC9A0" : "#9FE0B4")
+                    : (control.down ? "#303833" : "#272D29"))
+            border.width: control.highlighted ? 0 : 1
+            border.color: "#414943"
+        }
+    }
 
     RowLayout {
-        id: buttonBar
-        anchors.fill: parent;
+        anchors.fill: parent
+        anchors.leftMargin: 22
+        anchors.rightMargin: 22
+        spacing: 12
 
-        Item
-        {
-            Layout.fillWidth: true;
+        ActionButton {
+            text: ViewManager.quitLabel
+            enabled: ViewManager.quitEnabled
+            visible: ViewManager.quitVisible
+            onClicked: ViewManager.quit()
         }
 
-        Button
-        {
-            text: ViewManager.backLabel;
-            icon.name: ViewManager.backIcon;
+        Item { Layout.fillWidth: true }
 
-            enabled: ViewManager.backEnabled;
-            visible: ViewManager.backAndNextVisible;
-            onClicked: { ViewManager.back(); }
+        ActionButton {
+            text: ViewManager.backLabel
+            enabled: ViewManager.backEnabled
+            visible: ViewManager.backAndNextVisible
+            onClicked: ViewManager.back()
         }
-        Button
-        {
-            text: ViewManager.nextLabel;
-            icon.name: ViewManager.nextIcon;
 
-            enabled: ViewManager.nextEnabled;
-            visible: ViewManager.backAndNextVisible;
-            onClicked: { ViewManager.next(); }
-            // This margin goes in the "next" button, because the "quit"
-            // button can vanish and we want to keep the margin to
-            // the next-thing-in-the-navigation-panel around.
-            Layout.rightMargin: 3 * buttonBar.spacing;
-        }
-        Button
-        {
-            Layout.rightMargin: 2 * buttonBar.spacing
-            text: ViewManager.quitLabel;
-            icon.name: ViewManager.quitIcon;
-
-            ToolTip.visible: hovered
-            ToolTip.timeout: 5000
-            ToolTip.delay: 1000
-            ToolTip.text: ViewManager.quitTooltip;
-
-            /*
-             * The ViewManager has settings -- user-controlled via the
-             * branding component, and party based on program state --
-             * whether the quit button should be enabled and visible.
-             *
-             * QML navigation *should* follow this pattern, but can also
-             * add other qualifications. For instance, you may have a
-             * "finished" module that handles quit in its own way, and
-             * want to hide the quit button then. The ViewManager has a
-             * current step and a total count, so compare them:
-             *
-             * visible: ViewManager.quitVisible && ( ViewManager.currentStepIndex < ViewManager.rowCount()-1);
-             */
-            enabled: ViewManager.quitEnabled;
-            visible: ViewManager.quitVisible;
-            onClicked: { ViewManager.quit(); }
+        ActionButton {
+            text: ViewManager.nextLabel
+            highlighted: true
+            enabled: ViewManager.nextEnabled
+            visible: ViewManager.backAndNextVisible
+            onClicked: ViewManager.next()
         }
     }
 }

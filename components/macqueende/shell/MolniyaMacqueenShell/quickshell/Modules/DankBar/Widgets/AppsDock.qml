@@ -92,6 +92,41 @@ BasePill {
         SessionData.setBarPinnedApps(currentPinned);
     }
 
+    function showAppMenu(delegateItem, data, pickerOnly) {
+        if (!delegateItem || !data)
+            return;
+
+        contextMenuLoader.active = true;
+        if (!contextMenuLoader.item)
+            return;
+
+        const localPos = delegateItem.mapToItem(null, delegateItem.width / 2, delegateItem.height / 2);
+        const isBarVertical = root.axis?.isVertical ?? false;
+        const barEdge = root.axis?.edge ?? "top";
+        let x = localPos.x;
+        let y = localPos.y;
+
+        switch (barEdge) {
+        case "bottom":
+            y = (root.parentScreen ? root.parentScreen.height : Screen.height) - root.barThickness - root.barSpacing;
+            break;
+        case "top":
+            y = root.barThickness + root.barSpacing;
+            break;
+        case "left":
+            x = root.barThickness + root.barSpacing;
+            break;
+        case "right":
+            x = (root.parentScreen ? root.parentScreen.width : Screen.width) - root.barThickness - root.barSpacing;
+            break;
+        }
+
+        const shouldHidePin = data.appId === "org.quickshell" || data.appId === "org.macqueende.molniya";
+        const moddedId = Paths.moddedAppId(data.appId);
+        const desktopEntry = moddedId ? DesktopEntries.heuristicLookup(moddedId) : null;
+        contextMenuLoader.item.showAt(x, y, isBarVertical, barEdge, data, shouldHidePin, desktopEntry, root.parentScreen, pickerOnly === true);
+    }
+
     property int _desktopEntriesUpdateTrigger: 0
     property int _toplevelsUpdateTrigger: 0
     property int _appIdSubstitutionsTrigger: 0
@@ -892,19 +927,10 @@ BasePill {
                                         CompositorService.activateToplevel(onlyToplevel);
                                 }
                             } else {
-                                let currentIndex = -1;
-                                for (var i = 0; i < modelData.allWindows.length; i++) {
-                                    if (modelData.allWindows[i].toplevel.activated) {
-                                        currentIndex = i;
-                                        break;
-                                    }
-                                }
-                                if (currentIndex >= 0) {
-                                    CompositorService.setToplevelMinimized(modelData.allWindows[currentIndex].toplevel, true);
-                                } else {
-                                    const nextIndex = (currentIndex + 1) % modelData.allWindows.length;
-                                    CompositorService.activateToplevel(modelData.allWindows[nextIndex].toplevel);
-                                }
+                                if (tooltipLoader.item)
+                                    tooltipLoader.item.hide();
+                                tooltipLoader.active = false;
+                                root.showAppMenu(delegateItem, modelData, true);
                             }
                         }
                     }
@@ -971,37 +997,7 @@ BasePill {
                                 tooltipLoader.item.hide();
                             }
                             tooltipLoader.active = false;
-                            contextMenuLoader.active = true;
-
-                            if (contextMenuLoader.item) {
-                                const localPos = delegateItem.mapToItem(null, delegateItem.width / 2, delegateItem.height / 2);
-                                const isBarVertical = root.axis?.isVertical ?? false;
-                                const barEdge = root.axis?.edge ?? "top";
-
-                                let x = localPos.x;
-                                let y = localPos.y;
-
-                                switch (barEdge) {
-                                case "bottom":
-                                    y = (root.parentScreen ? root.parentScreen.height : Screen.height) - root.barThickness - root.barSpacing;
-                                    break;
-                                case "top":
-                                    y = root.barThickness + root.barSpacing;
-                                    break;
-                                case "left":
-                                    x = root.barThickness + root.barSpacing;
-                                    break;
-                                case "right":
-                                    x = (root.parentScreen ? root.parentScreen.width : Screen.width) - root.barThickness - root.barSpacing;
-                                    break;
-                                }
-
-                                const shouldHidePin = modelData.appId === "org.quickshell" || modelData.appId === "org.macqueende.molniya";
-                                const moddedId = Paths.moddedAppId(modelData.appId);
-                                const desktopEntry = moddedId ? DesktopEntries.heuristicLookup(moddedId) : null;
-
-                                contextMenuLoader.item.showAt(x, y, isBarVertical, barEdge, modelData, shouldHidePin, desktopEntry, root.parentScreen);
-                            }
+                            root.showAppMenu(delegateItem, modelData, false);
                         }
                     }
                 }

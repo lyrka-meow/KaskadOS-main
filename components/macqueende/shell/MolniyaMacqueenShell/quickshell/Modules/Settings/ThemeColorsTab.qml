@@ -448,7 +448,7 @@ Item {
 
                         Grid {
                             id: genericColorGrid
-                            property var colorList: ["blue", "purple", "green", "orange", "red", "cyan", "pink", "amber", "coral", "monochrome"]
+                            property var colorList: ["kaskados", "blue", "purple", "green", "orange", "red", "cyan", "pink", "amber", "coral", "monochrome"]
                             property int dotSize: parent.width < 300 ? 28 : 32
                             columns: Math.ceil(colorList.length / 2)
                             rowSpacing: Theme.spacingS
@@ -1631,7 +1631,7 @@ Item {
                     dropdownWidth: 220
                     options: themeColorsTab.widgetBackgroundOptions
                     currentMode: SettingsData.widgetBackgroundColor
-                    customColor: SettingsData.widgetBackgroundCustomColor || "#6750A4"
+                    customColor: SettingsData.widgetBackgroundCustomColor || "#9FE0B4"
                     pickerTitle: I18n.tr("Widget Background Color")
                     onModeSelected: mode => SettingsData.set("widgetBackgroundColor", mode)
                     onCustomColorSelected: selectedColor => SettingsData.set("widgetBackgroundCustomColor", selectedColor.toString())

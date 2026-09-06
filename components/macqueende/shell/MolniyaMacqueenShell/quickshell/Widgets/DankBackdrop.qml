@@ -44,12 +44,12 @@ Item {
         anchors.leftMargin: Theme.spacingXL * 2
         anchors.bottomMargin: Theme.spacingXL * 2
         width: 200
-        height: width * (569.94629 / 506.50931)
+        height: width
         fillMode: Image.PreserveAspectFit
         smooth: true
         mipmap: true
         asynchronous: true
-        source: "file://" + Theme.shellDir + "/assets/danklogonormal.svg"
+        source: "file://" + Theme.shellDir + "/assets/kaskados-logo.png"
         opacity: 0.25
         visible: !isColorWallpaper
         layer.enabled: true

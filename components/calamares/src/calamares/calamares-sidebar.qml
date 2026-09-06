@@ -1,125 +1,112 @@
-/* Sample of QML progress tree.
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
-   SPDX-FileCopyrightText: 2020 Adriaan de Groot <groot@kde.org>
-   SPDX-FileCopyrightText: 2021 Anke Boersma <demm@kaosx.us>
-   SPDX-License-Identifier: GPL-3.0-or-later
-
-
-   The progress tree (actually a list) is generally "vertical" in layout,
-   with the steps going "down", but it could also be a more compact
-   horizontal layout with suitable branding settings.
-
-   This example emulates the layout and size of the widgets progress tree.
-*/
 import io.calamares.ui 1.0
 import io.calamares.core 1.0
-
-import QtQuick 2.3
-import QtQuick.Layouts 1.3
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
 
 Rectangle {
-    id: sideBar;
-    color: Branding.styleString( Branding.SidebarBackground );
-    anchors.fill: parent;
+    id: sideBar
+    color: "#161B18"
 
     ColumnLayout {
-        anchors.fill: parent;
-        spacing: 0;
+        anchors.fill: parent
+        anchors.margins: 16
+        spacing: 8
 
-        Image {
-            Layout.topMargin: 12;
-            Layout.bottomMargin: 12;
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            id: logo;
-            width: 80;
-            height: width;  // square
-            source: "file:/" + Branding.imagePath(Branding.ProductLogo);
-            sourceSize.width: width;
-            sourceSize.height: height;
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.bottomMargin: 20
+            spacing: 12
+
+            Rectangle {
+                width: 52
+                height: 52
+                radius: 18
+                color: "#23352A"
+
+                Image {
+                    anchors.centerIn: parent
+                    width: 34
+                    height: 34
+                    source: "file:/" + Branding.imagePath(Branding.ProductLogo)
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                }
+            }
+
+            ColumnLayout {
+                spacing: 1
+
+                Text {
+                    text: "KaskadOS"
+                    color: "#F1F5F2"
+                    font.pixelSize: 20
+                    font.weight: Font.DemiBold
+                }
+
+                Text {
+                    text: "Установка системы"
+                    color: "#9EAAA2"
+                    font.pixelSize: 12
+                }
+            }
         }
 
         Repeater {
             model: ViewManager
-            Rectangle {
-                Layout.leftMargin: 6;
-                Layout.rightMargin: 6;
-                Layout.fillWidth: true;
-                height: 35;
-                radius: 6;
-                color: Branding.styleString( index == ViewManager.currentStepIndex ? Branding.SidebarBackgroundCurrent : Branding.SidebarBackground );
 
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter;
-                    anchors.horizontalCenter: parent.horizontalCenter;
-                    color: Branding.styleString( index == ViewManager.currentStepIndex ? Branding.SidebarTextCurrent : Branding.SidebarText );
-                    text: display;
+            Rectangle {
+                required property int index
+                required property string display
+
+                Layout.fillWidth: true
+                height: 44
+                radius: 14
+                color: index === ViewManager.currentStepIndex ? "#31483A" : "transparent"
+
+                Row {
+                    anchors.fill: parent
+                    anchors.leftMargin: 14
+                    anchors.rightMargin: 12
+                    spacing: 12
+
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 8
+                        height: 8
+                        radius: 4
+                        color: index <= ViewManager.currentStepIndex ? "#9FE0B4" : "#566159"
+                    }
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 34
+                        text: display
+                        color: index === ViewManager.currentStepIndex ? "#D8F8E2" : "#C4CCC7"
+                        font.pixelSize: 15
+                        font.weight: index === ViewManager.currentStepIndex ? Font.DemiBold : Font.Normal
+                        elide: Text.ElideRight
+                    }
                 }
             }
         }
 
-        Item {
-            Layout.fillHeight: true;
-        }
+        Item { Layout.fillHeight: true }
 
         Rectangle {
-            id: metaArea
-            Layout.fillWidth: true;
-            height: 35
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-            color: Branding.styleString( Branding.SidebarBackground );
-            visible: true;
+            Layout.fillWidth: true
+            height: 1
+            color: "#343C37"
+        }
 
-            Rectangle {
-                id: aboutArea
-                height: 35
-                width: parent.width / 2;
-                anchors.left: parent.left
-                color: Branding.styleString( Branding.SidebarBackgroundCurrent );
-                visible: true;
-
-                MouseArea {
-                    id: mouseAreaAbout
-                    anchors.fill: parent;
-                    cursorShape: Qt.PointingHandCursor
-                    hoverEnabled: true
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter;
-                        anchors.horizontalCenter: parent.horizontalCenter;
-                        x: parent.x + 4;
-                        text: qsTr("About")
-                        color: Branding.styleString( Branding.SidebarTextCurrent );
-                        font.pointSize : 9
-                    }
-
-                    onClicked: debug.about()
-                }
-            }
-
-            Rectangle {
-                id: debugArea
-                height: 35
-                width: parent.width / 2;
-                anchors.right: parent.right
-                color: Branding.styleString( Branding.SidebarBackgroundCurrent );
-                visible: debug.enabled
-
-                MouseArea {
-                    id: mouseAreaDebug
-                    anchors.fill: parent;
-                    cursorShape: Qt.PointingHandCursor
-                    hoverEnabled: true
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter;
-                        anchors.horizontalCenter: parent.horizontalCenter;
-                        x: parent.x + 4;
-                        text: qsTr("Debug")
-                        color: Branding.styleString( Branding.SidebarTextCurrent );
-                        font.pointSize : 9
-                    }
-
-                    onClicked: debug.toggle()
-                }
-            }
+        Text {
+            Layout.topMargin: 6
+            Layout.fillWidth: true
+            text: "KaskadOS Rolling"
+            color: "#77817B"
+            font.pixelSize: 11
+            horizontalAlignment: Text.AlignHCenter
         }
     }
 }

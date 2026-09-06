@@ -63,6 +63,8 @@ kwin
 ldns
 less
 lftp
+lib32-vulkan-intel
+lib32-vulkan-radeon
 libarchive
 libfido2
 libpwquality
@@ -156,6 +158,8 @@ usbutils
 vim
 virtualbox-guest-utils-nox
 vpnc
+vulkan-intel
+vulkan-radeon
 wireless-regdb
 wireless_tools
 wpa_supplicant

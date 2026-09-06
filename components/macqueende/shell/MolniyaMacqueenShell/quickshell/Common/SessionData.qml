@@ -506,7 +506,7 @@ Singleton {
             if (typeof SettingsData !== "undefined" && SettingsData.theme) {
                 Theme.switchTheme(SettingsData.theme);
             } else {
-                Theme.switchTheme("purple");
+                Theme.switchTheme("kaskados");
             }
         }
     }

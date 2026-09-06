@@ -25,6 +25,10 @@ readonly DESKTOP_PACKAGE_SOURCE="${PROJECT_DIR}/repository/packages/kaskados-des
 readonly DGOP_BUILD_SCRIPT="${SCRIPT_DIR}/build-dgop-package.sh"
 readonly BOOTSTRAP_REPOSITORY="${BUILD_ROOT}/repository-bootstrap/x86_64"
 readonly BOOTSTRAP_PACKAGE_CACHE="${BUILD_ROOT}/repository-bootstrap/cache"
+readonly NVIDIA_580XX_SOURCE="${BUILD_ROOT}/repository-bootstrap/nvidia-580xx-utils"
+readonly NVIDIA_580XX_32_SOURCE="${BUILD_ROOT}/repository-bootstrap/lib32-nvidia-580xx-utils"
+readonly NVIDIA_580XX_COMMIT="85c38619ce2267787d0515baa443739cb9d2883c"
+readonly NVIDIA_580XX_32_COMMIT="bbe7b771c897f78e518ab4453b0bc9210ef2f201"
 readonly PROFILE_DIR="${PROFILE_DIR:-${BUILD_ROOT}/iso-profile}"
 readonly BUILD_JOBS="${BUILD_JOBS:-$(nproc)}"
 readonly MACQUEEN_BUILD_JOBS="${MACQUEEN_BUILD_JOBS:-8}"
@@ -131,6 +135,54 @@ mapfile -t dgop_packages < <(
 repo-add "${BOOTSTRAP_REPOSITORY}/kaskados-bootstrap.db.tar.gz" \
   "${keyring_packages[0]}" \
   "${dgop_packages[0]}"
+
+fetch_aur_snapshot() {
+  local repository_url=$1
+  local commit=$2
+  local destination=$3
+
+  git init -q "${destination}"
+  git -C "${destination}" remote add origin "${repository_url}"
+  git -C "${destination}" fetch -q --depth 1 origin "${commit}"
+  git -C "${destination}" checkout -q --detach FETCH_HEAD
+  [[ "$(git -C "${destination}" rev-parse HEAD)" == "${commit}" ]] \
+    || die "не удалось зафиксировать AUR-снимок ${repository_url}"
+}
+
+fetch_aur_snapshot \
+  'https://aur.archlinux.org/nvidia-580xx-utils.git' \
+  "${NVIDIA_580XX_COMMIT}" \
+  "${NVIDIA_580XX_SOURCE}"
+fetch_aur_snapshot \
+  'https://aur.archlinux.org/lib32-nvidia-580xx-utils.git' \
+  "${NVIDIA_580XX_32_COMMIT}" \
+  "${NVIDIA_580XX_32_SOURCE}"
+
+for nvidia_source in "${NVIDIA_580XX_SOURCE}" "${NVIDIA_580XX_32_SOURCE}"; do
+  (
+    cd -- "${nvidia_source}"
+    env \
+      BUILDDIR="${BUILD_ROOT}/repository-bootstrap/work" \
+      PKGDEST="${BOOTSTRAP_REPOSITORY}" \
+      SRCDEST="${BUILD_ROOT}/repository-bootstrap/sources" \
+      makepkg --cleanbuild --force --nodeps
+  )
+done
+
+nvidia_packages=()
+for package_pattern in \
+  'nvidia-580xx-dkms-[0-9]*-x86_64.pkg.tar.zst' \
+  'nvidia-580xx-utils-[0-9]*-x86_64.pkg.tar.zst' \
+  'lib32-nvidia-580xx-utils-[0-9]*-x86_64.pkg.tar.zst'; do
+  mapfile -t matching_packages < <(
+    find "${BOOTSTRAP_REPOSITORY}" -maxdepth 1 -type f -name "${package_pattern}" -print
+  )
+  (( ${#matching_packages[@]} == 1 )) \
+    || die "не удалось однозначно определить пакет ${package_pattern}"
+  nvidia_packages+=("${matching_packages[0]}")
+done
+repo-add "${BOOTSTRAP_REPOSITORY}/kaskados-bootstrap.db.tar.gz" \
+  "${nvidia_packages[@]}"
 
 env -u LD_LIBRARY_PATH cmake -S "${PROJECT_DIR}/components/kaskad-installer-compositor" -B "${COMPOSITOR_BUILD}" -G Ninja \
   -DBUILD_TESTING=OFF \
@@ -241,6 +293,12 @@ sed -i \
   "${PROFILE_DIR}/pacman.conf"
 printf '%s\n' 'kaskados-keyring' >> "${PROFILE_DIR}/packages.x86_64"
 printf '%s\n' 'dgop' >> "${PROFILE_DIR}/packages.x86_64"
+printf '%s\n' \
+  'nvidia-580xx-dkms' \
+  'nvidia-580xx-utils' \
+  'lib32-nvidia-580xx-utils' \
+  'nvidia-prime' \
+  >> "${PROFILE_DIR}/packages.x86_64"
 
 install -d -m 0755 \
   "${PROFILE_DIR}/airootfs/usr/share/kaskados-installer/theme-pool" \

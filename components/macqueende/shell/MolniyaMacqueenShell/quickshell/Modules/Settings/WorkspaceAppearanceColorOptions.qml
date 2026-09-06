@@ -34,7 +34,7 @@ Column {
         tags: ["workspace", "focused", "color", "custom"].concat(root.extraTags)
         options: root.focusedColorOptions
         currentMode: SettingsData[root.focusedColorModeKey]
-        customColor: SettingsData[root.focusedCustomColorKey] || "#6750A4"
+        customColor: SettingsData[root.focusedCustomColorKey] || "#9FE0B4"
         onModeSelected: mode => SettingsData.set(root.focusedColorModeKey, mode)
         onCustomColorSelected: selectedColor => SettingsData.set(root.focusedCustomColorKey, selectedColor.toString())
     }

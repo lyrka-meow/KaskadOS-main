@@ -1,96 +1,277 @@
-/*
- * SPDX-FileCopyrightText: no
- * SPDX-License-Identifier: CC0-1.0
- */
+/* KaskadOS Material 3 dark palette. */
 
-/*
-A branding component can ship a stylesheet (like this one)
-which is applied to parts of the Calamares user-interface.
-In principle, all parts can be styled through CSS.
-Missing parts should be filed as issues.
+QWidget {
+    background-color: #111512;
+    color: #E2E8E4;
+    font-family: "Noto Sans";
+    font-size: 14px;
+}
 
-The IDs are based on the object names in the C++ code.
-You can use the Debug Dialog to find out object names:
-  - Open the debug dialog
-  - Choose tab *Tools*
-  - Click *Widget Tree* button
-The list of object names is printed in the log.
+QWidget#mainApp,
+QWidget#centralWidget,
+QStackedWidget,
+QScrollArea,
+QScrollArea > QWidget > QWidget {
+    background-color: #111512;
+}
 
-Documentation for styling Qt Widgets through a stylesheet
-can be found at
-    https://doc.qt.io/qt-5/stylesheet-examples.html
-    https://doc.qt.io/qt-5/stylesheet-reference.html
-In Calamares, styling widget classes is supported (e.g.
-using `QComboBox` as a selector).
+QLabel {
+    color: #E2E8E4;
+    background: transparent;
+}
 
-This example stylesheet has all the actual styling commented out.
-The examples are not exhaustive.
+QLabel:disabled {
+    color: #68716B;
+}
 
-*/
+QGroupBox {
+    border: 1px solid #3B443E;
+    border-radius: 16px;
+    margin-top: 14px;
+    padding: 18px 14px 14px 14px;
+    background-color: #1A1F1C;
+    font-weight: 600;
+}
 
-/*** Generic Widgets.
- *
- * You can style **all** widgets of a given class by selecting
- * the class name. Some widgets have specialized sub-selectors.
- */
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 16px;
+    padding: 0 6px;
+    color: #C8D1CB;
+}
 
-/*
-QPushButton { background-color: green; }
-*/
+QPushButton,
+QToolButton {
+    min-height: 38px;
+    padding: 0 18px;
+    border: 1px solid #414943;
+    border-radius: 13px;
+    color: #E2E8E4;
+    background-color: #272D29;
+}
 
-/*** Main application window.
- *
- * The main application window has the sidebar, which in turn
- * contains a logo and a list of items -- note that the list
- * can **not** be styled, since it has its own custom C++
- * delegate code.
- */
+QPushButton:hover,
+QToolButton:hover {
+    background-color: #323A35;
+    border-color: #69746D;
+}
 
-/*
-#mainApp { }
-#sidebarApp { }
-#logoApp { }
-*/
+QPushButton:pressed,
+QToolButton:pressed {
+    background-color: #3A443E;
+}
 
-/*** Welcome module.
- *
- * There are plenty of parts, but the buttons are the most interesting
- * ones (donate, release notes, ...). The little icon image can be
- * styled through *qproperty-icon*, which is a little obscure.
- * URLs can reference the QRC paths of the Calamares application
- * or loaded via plugins or within the filesystem. There is no
- * comprehensive list of available icons, though.
- */
+QPushButton:default {
+    color: #102117;
+    background-color: #9FE0B4;
+    border: 0;
+    font-weight: 600;
+}
 
-/*
-QPushButton#aboutButton { qproperty-icon: url(:/data/images/release.svg); }
-#donateButton,
-#supportButton,
-#releaseNotesButton,
-#knownIssuesButton { qproperty-icon: url(:/data/images/help.svg); }
-*/
+QPushButton:default:hover {
+    background-color: #ACEBC0;
+}
 
-/*** Partitioning module.
- *
- * Many moving parts, which you will need to experiment with.
- */
+QPushButton:disabled,
+QToolButton:disabled {
+    color: #68716B;
+    background-color: #202522;
+    border-color: #2B322E;
+}
 
-/*
-#bootInfoIcon { }
-#bootInfoLable { }
-#deviceInfoIcon { }
-#defineInfoLabel { }
-#scrollAreaWidgetContents { }
-#partitionBarView { }
-*/
+QLineEdit,
+QPlainTextEdit,
+QTextEdit,
+QSpinBox,
+QDoubleSpinBox,
+QComboBox {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid #5E6862;
+    border-radius: 12px;
+    color: #E2E8E4;
+    selection-color: #102117;
+    selection-background-color: #9FE0B4;
+    background-color: #1B211D;
+}
 
-/*** Licensing module.
- *
- * The licensing module paints individual widgets for each of
- * the licenses. The item can be collapsed or expanded.
- */
+QLineEdit:focus,
+QPlainTextEdit:focus,
+QTextEdit:focus,
+QSpinBox:focus,
+QDoubleSpinBox:focus,
+QComboBox:focus {
+    border: 2px solid #9FE0B4;
+}
 
-/*
-#licenseItem {  }
-#licenseItemFullText {  }
-*/
+QComboBox::drop-down {
+    width: 34px;
+    border: 0;
+}
+
+QComboBox QAbstractItemView {
+    color: #E2E8E4;
+    background-color: #252B27;
+    selection-color: #102117;
+    selection-background-color: #9FE0B4;
+    border: 1px solid #414943;
+    outline: 0;
+    padding: 6px;
+}
+
+QListView,
+QTreeView,
+QTableView {
+    color: #E2E8E4;
+    alternate-background-color: #202622;
+    background-color: #181D1A;
+    border: 1px solid #3B443E;
+    border-radius: 12px;
+    outline: 0;
+}
+
+QAbstractItemView::item {
+    min-height: 34px;
+    padding: 4px 8px;
+}
+
+QAbstractItemView::item:selected {
+    color: #102117;
+    background-color: #9FE0B4;
+}
+
+QHeaderView::section {
+    color: #C8D1CB;
+    background-color: #252B27;
+    border: 0;
+    border-right: 1px solid #3B443E;
+    border-bottom: 1px solid #3B443E;
+    padding: 8px;
+}
+
+QCheckBox,
+QRadioButton {
+    spacing: 9px;
+    color: #D8DFDA;
+    background: transparent;
+}
+
+QCheckBox::indicator,
+QRadioButton::indicator {
+    width: 20px;
+    height: 20px;
+}
+
+QCheckBox::indicator:unchecked {
+    border: 2px solid #89938D;
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+QCheckBox::indicator:checked {
+    border: 2px solid #9FE0B4;
+    border-radius: 5px;
+    background-color: #9FE0B4;
+}
+
+QRadioButton::indicator:unchecked {
+    border: 2px solid #89938D;
+    border-radius: 10px;
+    background-color: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 6px solid #9FE0B4;
+    border-radius: 10px;
+    background-color: #111512;
+}
+
+QProgressBar {
+    min-height: 8px;
+    max-height: 8px;
+    border: 0;
+    border-radius: 4px;
+    color: transparent;
+    background-color: #303733;
+}
+
+QProgressBar::chunk {
+    border-radius: 4px;
+    background-color: #9FE0B4;
+}
+
+QTabWidget::pane {
+    border: 0;
+    background-color: #111512;
+}
+
+QTabBar::tab {
+    min-height: 36px;
+    padding: 0 16px;
+    color: #AEB8B1;
+    background-color: #232925;
+}
+
+QTabBar::tab:selected {
+    color: #102117;
+    background-color: #9FE0B4;
+}
+
+QToolBar {
+    border: 0;
+    spacing: 0;
+    background: transparent;
+}
+
+QToolBar QToolButton {
+    min-width: 180px;
+}
+
+QScrollBar:vertical {
+    width: 10px;
+    margin: 2px;
+    background: transparent;
+}
+
+QScrollBar::handle:vertical {
+    min-height: 36px;
+    border-radius: 5px;
+    background-color: #59625C;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    height: 0;
+    background: transparent;
+}
+
+QFrame[frameShape="4"],
+QFrame[frameShape="5"] {
+    color: #3B443E;
+}
+
+QMessageBox,
+QDialog {
+    background-color: #1A1F1C;
+}
+
+QToolTip {
+    color: #E2E8E4;
+    background-color: #303733;
+    border: 1px solid #59625C;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+#slideshow,
+#slideshow QTabWidget,
+#slideshow QTabWidget::pane {
+    background-color: #101412;
+}
+
+#exec-message {
+    color: #B7C1BB;
+    padding: 4px 0;
+}

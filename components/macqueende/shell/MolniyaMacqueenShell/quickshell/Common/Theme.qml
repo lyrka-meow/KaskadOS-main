@@ -31,7 +31,7 @@ Singleton {
         return useAuto ? Math.max(4, spacing) : manualValue;
     }
 
-    property string currentTheme: "purple"
+    property string currentTheme: "kaskados"
     property string currentThemeCategory: "generic"
     property bool isLightMode: typeof SessionData !== "undefined" ? SessionData.isLightMode : false
     property bool colorsFileLoadFailed: false
@@ -440,7 +440,7 @@ Singleton {
 
     readonly property var currentThemeData: {
         if (currentTheme === "custom") {
-            return customThemeData || StockThemes.getThemeByName("purple", isLightMode);
+            return customThemeData || StockThemes.getThemeByName("kaskados", isLightMode);
         } else if (currentTheme === dynamic) {
             return {
                 "primary": getMatugenColor("primary", "#42a5f5"),
@@ -1478,7 +1478,7 @@ Singleton {
         }
     }
 
-    readonly property color widgetBackgroundCustomBaseColor: safeColor(typeof SettingsData !== "undefined" ? SettingsData.widgetBackgroundCustomColor : "#6750A4", primaryContainer)
+    readonly property color widgetBackgroundCustomBaseColor: safeColor(typeof SettingsData !== "undefined" ? SettingsData.widgetBackgroundCustomColor : "#9FE0B4", primaryContainer)
     readonly property real widgetBackgroundCustomStrength: Math.max(0, Math.min(1, typeof SettingsData !== "undefined" ? (SettingsData.widgetBackgroundCustomStrength ?? 0.4) : 0.4))
 
     property var widgetBaseBackgroundColor: {

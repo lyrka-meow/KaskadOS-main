@@ -25,13 +25,14 @@ PanelWindow {
     property int margin: 10
     property bool hidePin: false
     property var desktopEntry: null
+    property bool windowPickerOnly: false
     property bool isDmsWindow: appData?.appId === "org.quickshell" || appData?.appId === "org.macqueende.molniya"
 
     property bool isVertical: false
     property string edge: "top"
     property point anchorPos: Qt.point(0, 0)
 
-    function showAt(x, y, vertical, barEdge, data, hidePinOption, entry, targetScreen) {
+    function showAt(x, y, vertical, barEdge, data, hidePinOption, entry, targetScreen, pickerOnly) {
         if (targetScreen) {
             root.screen = targetScreen;
         }
@@ -43,6 +44,7 @@ PanelWindow {
         appData = data;
         hidePin = hidePinOption || false;
         desktopEntry = entry || null;
+        windowPickerOnly = pickerOnly === true;
 
         visible = true;
 
@@ -158,29 +160,45 @@ PanelWindow {
                 model: {
                     if (!root.appData || root.appData.type !== "grouped")
                         return [];
-
-                    const toplevels = [];
-                    const allToplevels = ToplevelManager.toplevels.values;
-                    for (let i = 0; i < allToplevels.length; i++) {
-                        const toplevel = allToplevels[i];
-                        if (toplevel.appId === root.appData.appId) {
-                            toplevels.push(toplevel);
-                        }
-                    }
-                    return toplevels;
+                    return (root.appData.allWindows || []).map(window => window.toplevel).filter(toplevel => toplevel != null);
                 }
 
                 Rectangle {
-                    implicitWidth: Theme.spacingS + windowTitle.implicitWidth + Theme.spacingXS + closeButton.width + Theme.spacingXS
+                    readonly property bool activeWindow: !!modelData?.activated && !modelData?.minimized
+                    readonly property bool minimizedWindow: !!modelData?.minimized
+
+                    implicitWidth: Theme.spacingS + windowNumber.width + Theme.spacingXS + windowTitle.implicitWidth + Theme.spacingXS + closeButton.width + Theme.spacingXS
                     width: parent.width
-                    height: 28
+                    height: 36
                     radius: Theme.cornerRadius
                     color: windowArea.containsMouse ? BlurService.hoverColor(Theme.widgetBaseHoverColor) : Theme.withAlpha(BlurService.hoverColor(Theme.widgetBaseHoverColor), 0)
 
-                    StyledText {
-                        id: windowTitle
+                    Rectangle {
+                        id: windowNumber
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.spacingS
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 20
+                        height: 20
+                        radius: width / 2
+                        color: parent.activeWindow ? Theme.primary : Theme.surfaceLight
+                        border.width: parent.activeWindow ? 0 : 1
+                        border.color: Theme.outline
+                        opacity: parent.minimizedWindow ? 0.65 : 1
+
+                        StyledText {
+                            anchors.centerIn: parent
+                            text: String(index + 1)
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.weight: Font.Medium
+                            color: windowNumber.parent.activeWindow ? Theme.onPrimary : Theme.surfaceText
+                        }
+                    }
+
+                    StyledText {
+                        id: windowTitle
+                        anchors.left: windowNumber.right
+                        anchors.leftMargin: Theme.spacingXS
                         anchors.right: closeButton.left
                         anchors.rightMargin: Theme.spacingXS
                         anchors.verticalCenter: parent.verticalCenter
@@ -188,6 +206,7 @@ PanelWindow {
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceText
                         font.weight: Font.Normal
+                        opacity: parent.minimizedWindow ? 0.7 : 1
                         elide: Text.ElideRight
                         wrapMode: Text.NoWrap
                     }
@@ -237,9 +256,7 @@ PanelWindow {
                         cursorShape: Qt.PointingHandCursor
                         onPressed: mouse => windowRipple.trigger(mouse.x, mouse.y)
                         onClicked: {
-                            if (modelData && modelData.activate) {
-                                modelData.activate();
-                            }
+                            CompositorService.activateToplevel(modelData);
                             root.close();
                         }
                     }
@@ -252,7 +269,7 @@ PanelWindow {
                         return false;
                     if (root.appData.type !== "grouped")
                         return false;
-                    return root.appData.windowCount > 0;
+                    return !root.windowPickerOnly && root.appData.windowCount > 0;
                 }
                 width: parent.width
                 height: 1
@@ -260,7 +277,7 @@ PanelWindow {
             }
 
             Repeater {
-                model: root.desktopEntry && root.desktopEntry.actions ? root.desktopEntry.actions : []
+                model: !root.windowPickerOnly && root.desktopEntry && root.desktopEntry.actions ? root.desktopEntry.actions : []
 
                 Rectangle {
                     implicitWidth: Theme.spacingS * 2 + (actionIcon.visible ? actionIcon.width + Theme.spacingXS : 0) + actionLabel.implicitWidth
@@ -326,6 +343,8 @@ PanelWindow {
 
             Rectangle {
                 visible: {
+                    if (root.windowPickerOnly)
+                        return false;
                     if (!root.desktopEntry?.actions || root.desktopEntry.actions.length === 0) {
                         return false;
                     }
@@ -337,7 +356,7 @@ PanelWindow {
             }
 
             Rectangle {
-                visible: !root.hidePin
+                visible: !root.windowPickerOnly && !root.hidePin
                 implicitWidth: Theme.spacingS * 2 + pinLabel.implicitWidth
                 width: parent.width
                 height: 28
@@ -387,6 +406,8 @@ PanelWindow {
 
             Rectangle {
                 visible: {
+                    if (root.windowPickerOnly)
+                        return false;
                     const hasNvidia = !root.isDmsWindow && root.desktopEntry && SessionService.nvidiaCommand;
                     const hasWindow = root.appData && (root.appData.type === "window" || (root.appData.type === "grouped" && root.appData.windowCount > 0));
                     const hasPinOption = !root.hidePin;
@@ -399,7 +420,7 @@ PanelWindow {
             }
 
             Rectangle {
-                visible: !root.isDmsWindow && root.desktopEntry && SessionService.nvidiaCommand
+                visible: !root.windowPickerOnly && !root.isDmsWindow && root.desktopEntry && SessionService.nvidiaCommand
                 implicitWidth: Theme.spacingS * 2 + nvidiaLabel.implicitWidth
                 width: parent.width
                 height: 28
@@ -443,7 +464,7 @@ PanelWindow {
             }
 
             Rectangle {
-                visible: root.appData && (root.appData.type === "window" || (root.appData.type === "grouped" && root.appData.windowCount > 0))
+                visible: !root.windowPickerOnly && root.appData && (root.appData.type === "window" || (root.appData.type === "grouped" && root.appData.windowCount > 0))
                 implicitWidth: Theme.spacingS * 2 + closeLabel.implicitWidth
                 width: parent.width
                 height: 28

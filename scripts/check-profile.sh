@@ -113,6 +113,12 @@ grep -Fq 'config:      pacmankeyring.conf' "${CALAMARES_SETTINGS}" \
   || die 'Calamares не использует безопасную конфигурацию pacmankeyring'
 grep -Fq 'shellprocess@pacmankeyring' "${CALAMARES_SETTINGS}" \
   || die 'в последовательности Calamares не запускается подготовка ключей pacman'
+grep -Fq 'id:          gpu' "${CALAMARES_SETTINGS}" \
+  || die 'в Calamares не зарегистрирована настройка графического драйвера'
+grep -Fq 'config:      gpu.conf' "${CALAMARES_SETTINGS}" \
+  || die 'Calamares не использует конфигурацию определения NVIDIA'
+grep -Fq 'shellprocess@gpu' "${CALAMARES_SETTINGS}" \
+  || die 'в последовательности Calamares не запускается настройка графического драйвера'
 grep -Fq 'packagechooser@grubtheme' "${CALAMARES_SETTINGS}" \
   || die 'в Calamares не подключён выбор темы GRUB'
 grep -Fq 'packagechooser@sddmtheme' "${CALAMARES_SETTINGS}" \
@@ -169,6 +175,26 @@ grep -Fq -- '--target macqueen screenshot screencast nightlight' "${PREPARE_PROF
   || die 'prepare-live-profile.sh не собирает обязательные цели Macqueen'
 grep -Fq 'readonly MACQUEEN_STAGE="${PROFILE_DIR}/airootfs/opt/macqueende"' "${PREPARE_PROFILE}" \
   || die 'prepare-live-profile.sh не добавляет MacqueenDE в ISO'
+for package_name in nvidia-580xx-dkms nvidia-580xx-utils lib32-nvidia-580xx-utils nvidia-prime; do
+  grep -Fq "'${package_name}'" "${PREPARE_PROFILE}" \
+    || die "prepare-live-profile.sh не добавляет в автономный ISO пакет ${package_name}"
+done
+grep -Fq 'https://aur.archlinux.org/nvidia-580xx-utils.git' "${PREPARE_PROFILE}" \
+  || die 'prepare-live-profile.sh не получает закрытый драйвер NVIDIA из AUR'
+grep -Fq 'https://aur.archlinux.org/lib32-nvidia-580xx-utils.git' "${PREPARE_PROFILE}" \
+  || die 'prepare-live-profile.sh не получает 32-битные библиотеки NVIDIA из AUR'
+
+readonly GPU_CONFIG="${PROJECT_DIR}/components/calamares/src/modules/shellprocess/gpu.conf"
+readonly GPU_CONFIGURATOR="${PROFILE_DIR}/airootfs/usr/local/libexec/kaskados-configure-gpu"
+grep -Fq '/usr/local/libexec/kaskados-configure-gpu ${ROOT}' "${GPU_CONFIG}" \
+  || die 'Calamares не передаёт корень установленной системы настройщику NVIDIA'
+grep -Fq "0x10de" "${GPU_CONFIGURATOR}" \
+  || die 'настройщик графики не определяет устройства NVIDIA'
+grep -Fq 'test -x /usr/bin/prime-run' "${GPU_CONFIGURATOR}" \
+  || die 'настройщик NVIDIA не проверяет наличие prime-run'
+grep -Fq '"/usr/local/libexec/kaskados-configure-gpu"' \
+  "${PROJECT_DIR}/components/calamares/src/modules/unpackfs/unpackfs.conf" \
+  || die 'служебный настройщик NVIDIA попадёт в установленную систему'
 
 readonly REGALIA_DIR="${PROJECT_DIR}/components/regalia"
 for source_path in \
@@ -285,6 +311,7 @@ required_executables=(
   '/usr/lib/regalia/sing-box'
   '/usr/local/bin/kaskados-installer-session'
   '/usr/local/bin/kaskados-run-calamares'
+  '/usr/local/libexec/kaskados-configure-gpu'
 )
 for executable_path in "${required_executables[@]}"; do
   [[ "${file_permissions[${executable_path}]:-}" == '0:0:755' ]] \

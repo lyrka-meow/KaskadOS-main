@@ -3,6 +3,26 @@
 
 const StockThemes = {
   DARK: {
+    kaskados: {
+      name: "KaskadOS",
+      primary: "#9FE0B4",
+      primaryText: "#102117",
+      primaryContainer: "#284D36",
+      secondary: "#B5CCBD",
+      surface: "#111512",
+      surfaceText: "#E2E8E4",
+      surfaceVariant: "#3F4942",
+      surfaceVariantText: "#BFC9C2",
+      surfaceTint: "#9FE0B4",
+      background: "#0D110E",
+      backgroundText: "#E2E8E4",
+      outline: "#89938D",
+      surfaceContainerLowest: "#080C09",
+      surfaceContainerLow: "#161B18",
+      surfaceContainer: "#1A1F1C",
+      surfaceContainerHigh: "#252B27",
+      surfaceContainerHighest: "#303632",
+    },
     blue: {
       name: "Blue",
       primary: "#42a5f5",
@@ -209,6 +229,26 @@ const StockThemes = {
     },
   },
   LIGHT: {
+    kaskados: {
+      name: "KaskadOS Light",
+      primary: "#326A45",
+      primaryText: "#FFFFFF",
+      primaryContainer: "#B9F3CA",
+      secondary: "#506356",
+      surface: "#F6FBF6",
+      surfaceText: "#171D19",
+      surfaceVariant: "#DDE5DE",
+      surfaceVariantText: "#414942",
+      surfaceTint: "#326A45",
+      background: "#F6FBF6",
+      backgroundText: "#171D19",
+      outline: "#717972",
+      surfaceContainerLowest: "#FFFFFF",
+      surfaceContainerLow: "#F0F5F0",
+      surfaceContainer: "#EAEEEA",
+      surfaceContainerHigh: "#E4E9E4",
+      surfaceContainerHighest: "#DEE3DE",
+    },
     blue: {
       name: "Blue Light",
       primary: "#1976d2",
@@ -420,6 +460,7 @@ const ThemeCategories = {
   GENERIC: {
     name: "Generic",
     variants: [
+      "kaskados",
       "blue",
       "purple",
       "green",
@@ -435,6 +476,7 @@ const ThemeCategories = {
 };
 
 const ThemeNames = {
+  KASKADOS: "kaskados",
   BLUE: "blue",
   PURPLE: "purple",
   GREEN: "green",

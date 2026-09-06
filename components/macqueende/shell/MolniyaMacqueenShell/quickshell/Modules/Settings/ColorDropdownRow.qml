@@ -16,7 +16,7 @@ Column {
     property var tags: []
     property var options: []
     property string currentMode: "default"
-    property color customColor: "#6750A4"
+    property color customColor: "#9FE0B4"
     property string pickerTitle: text
     property int dropdownWidth: 230
     property color defaultColor: Theme.primary

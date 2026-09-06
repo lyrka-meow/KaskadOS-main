@@ -110,7 +110,7 @@ Singleton {
     property alias dankBarCenterWidgetsModel: centerWidgetsModel
     property alias dankBarRightWidgetsModel: rightWidgetsModel
 
-    property string currentThemeName: "purple"
+    property string currentThemeName: "kaskados"
     property string currentThemeCategory: "generic"
     property string customThemeFile: ""
     property var registryThemeVariants: ({})
@@ -121,7 +121,7 @@ Singleton {
     property real popupTransparency: 1.0
     property real dockTransparency: 1
     property string widgetBackgroundColor: "sch"
-    property string widgetBackgroundCustomColor: "#6750A4"
+    property string widgetBackgroundCustomColor: "#9FE0B4"
     property real widgetBackgroundCustomStrength: 0.50
     property string widgetColorMode: "default"
     property string controlCenterTileColorMode: "primary"
@@ -405,7 +405,7 @@ Singleton {
     property bool dwlShowAllTags: false
     property bool workspaceActiveAppHighlightEnabled: false
     property string workspaceColorMode: "default"
-    property string workspaceFocusedCustomColor: "#6750A4"
+    property string workspaceFocusedCustomColor: "#9FE0B4"
     property string workspaceOccupiedColorMode: "none"
     property string workspaceOccupiedCustomColor: "#625B71"
     property string workspaceUnfocusedColorMode: "default"
@@ -414,11 +414,11 @@ Singleton {
     property string workspaceUrgentCustomColor: "#B3261E"
     property bool workspaceFocusedBorderEnabled: false
     property string workspaceFocusedBorderColor: "primary"
-    property string workspaceFocusedBorderCustomColor: "#6750A4"
+    property string workspaceFocusedBorderCustomColor: "#9FE0B4"
     property int workspaceFocusedBorderThickness: 2
     property bool workspaceUnfocusedMonitorSeparateAppearance: false
     property string workspaceUnfocusedMonitorColorMode: "default"
-    property string workspaceUnfocusedMonitorFocusedCustomColor: "#6750A4"
+    property string workspaceUnfocusedMonitorFocusedCustomColor: "#9FE0B4"
     property string workspaceUnfocusedMonitorOccupiedColorMode: "none"
     property string workspaceUnfocusedMonitorOccupiedCustomColor: "#625B71"
     property string workspaceUnfocusedMonitorUnfocusedColorMode: "default"
@@ -427,7 +427,7 @@ Singleton {
     property string workspaceUnfocusedMonitorUrgentCustomColor: "#B3261E"
     property bool workspaceUnfocusedMonitorBorderEnabled: false
     property string workspaceUnfocusedMonitorBorderColor: "primary"
-    property string workspaceUnfocusedMonitorBorderCustomColor: "#6750A4"
+    property string workspaceUnfocusedMonitorBorderCustomColor: "#9FE0B4"
     property int workspaceUnfocusedMonitorBorderThickness: 2
     property var workspaceNameIcons: ({})
     property bool waveProgressEnabled: true
@@ -973,12 +973,12 @@ Singleton {
             "id": "default",
             "name": "Main Bar",
             "enabled": true,
-            "position": 0,
+            "position": 1,
             "screenPreferences": ["all"],
             "showOnLastDisplay": true,
-            "leftWidgets": ["launcherButton", "workspaceSwitcher", "focusedWindow"],
+            "leftWidgets": ["launcherButton", "appsDock", "focusedWindow"],
             "centerWidgets": ["music", "clock", "weather"],
-            "rightWidgets": ["systemTray", "clipboard", "systemUpdate", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"],
+            "rightWidgets": ["systemTray", "clipboard", "systemUpdate", "cpuUsage", "memUsage", "notificationButton", "battery", "workspaceSwitcher", "controlCenterButton"],
             "spacing": 4,
             "innerPadding": 4,
             "barInsetPadding": -1,
@@ -3008,9 +3008,9 @@ Singleton {
     }
 
     function resetDankBarWidgetsToDefault() {
-        var defaultLeft = ["launcherButton", "workspaceSwitcher", "focusedWindow"];
+        var defaultLeft = ["launcherButton", "appsDock", "focusedWindow"];
         var defaultCenter = ["music", "clock", "weather"];
-        var defaultRight = ["systemTray", "clipboard", "notificationButton", "battery", "controlCenterButton"];
+        var defaultRight = ["systemTray", "clipboard", "systemUpdate", "cpuUsage", "memUsage", "notificationButton", "battery", "workspaceSwitcher", "controlCenterButton"];
         const defaultBar = barConfigs[0] || getBarConfig("default");
         if (defaultBar) {
             updateBarConfig(defaultBar.id, {

@@ -205,7 +205,7 @@ Singleton {
                     refresh();
                 } else {
                     const launchFailure = state?.app !== undefined && state.app !== null;
-                    ToastService.showError(launchFailure ? "Приложение не запустилось." : "Не удалось установить GE-Proton.",
+                    ToastService.showError(launchFailure ? (state.message || "Приложение не запустилось.") : "Не удалось установить GE-Proton.",
                                            state?.logPath ? "Диагностический журнал сохранён автоматически." : "Повторите попытку позже.",
                                            "", "windows-launch");
                 }

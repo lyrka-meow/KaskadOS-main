@@ -24,7 +24,7 @@ Column {
         tags: ["workspace", "focused", "border", "color", "custom"].concat(root.extraTags)
         options: root.borderColorOptions
         currentMode: SettingsData[root.borderColorKey]
-        customColor: SettingsData[root.borderCustomColorKey] || "#6750A4"
+        customColor: SettingsData[root.borderCustomColorKey] || "#9FE0B4"
         onModeSelected: mode => SettingsData.set(root.borderColorKey, mode)
         onCustomColorSelected: selectedColor => SettingsData.set(root.borderCustomColorKey, selectedColor.toString())
     }

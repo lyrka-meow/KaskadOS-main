@@ -5,7 +5,7 @@ iso_name="kaskados"
 iso_label="KASKADOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
 iso_publisher="KaskadOS <https://github.com/lyrka-meow/KaskadOS-main>"
 iso_application="KaskadOS Live Installer"
-iso_version="0.1.0-alpha.38"
+iso_version="0.1.0-alpha.40"
 install_dir="arch"
 buildmodes=('iso')
 bootmodes=('bios.syslinux'
@@ -39,4 +39,5 @@ file_permissions=(
   ["/usr/local/bin/choose-mirror"]="0:0:755"
   ["/usr/local/bin/Installation_guide"]="0:0:755"
   ["/usr/local/bin/livecd-sound"]="0:0:755"
+  ["/usr/local/libexec/kaskados-configure-gpu"]="0:0:755"
 )

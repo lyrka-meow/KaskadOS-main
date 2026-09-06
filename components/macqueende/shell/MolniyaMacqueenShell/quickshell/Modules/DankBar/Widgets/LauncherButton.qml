@@ -43,7 +43,7 @@ BasePill {
                 smooth: true
                 mipmap: true
                 asynchronous: true
-                source: "file://" + Theme.shellDir + "/assets/danklogo.svg"
+                source: "file://" + Theme.shellDir + "/assets/kaskados-logo.png"
                 layer.enabled: Theme.effectiveLogoColor !== ""
                 layer.smooth: true
                 layer.mipmap: true

@@ -163,7 +163,7 @@ Singleton {
         });
     }
 
-    readonly property string dmsLogoPath: Qt.resolvedUrl("../assets/danklogo2.svg")
+    readonly property string dmsLogoPath: Qt.resolvedUrl("../assets/kaskados-logo.png")
 
     readonly property var builtInPlugins: ({
             "dms_settings": {

@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "KaskadOS — Linux без лишнего шума",
   description:
     "KaskadOS — дистрибутив на базе Arch Linux с собственным рабочим окружением, понятным установщиком и встроенными системными инструментами.",
+  icons: {
+    icon: "/kaskados-logo.png",
+  },
   openGraph: {
     title: "KaskadOS — Linux без лишнего шума",
     description:

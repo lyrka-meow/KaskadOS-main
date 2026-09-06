@@ -30,9 +30,7 @@ export default function Home() {
       <header className="site-header">
         <a className="brand" href="#top" aria-label="KaskadOS — на главную">
           <span className="brand-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
+            <img src="/kaskados-logo.png" alt="" />
           </span>
           <span>KaskadOS</span>
         </a>
@@ -83,7 +81,7 @@ export default function Home() {
           <div className="ambient ambient-two" />
           <div className="desktop-frame">
             <div className="desktop-topbar">
-              <span className="mini-mark"><i /><i /><i /></span>
+              <span className="mini-mark"><img src="/kaskados-logo.png" alt="" /></span>
               <span className="workspace-pill">Рабочее пространство 1</span>
               <span className="topbar-time">21:29</span>
             </div>
@@ -176,7 +174,7 @@ export default function Home() {
 
       <footer>
         <a className="brand" href="#top">
-          <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
+          <span className="brand-mark" aria-hidden="true"><img src="/kaskados-logo.png" alt="" /></span>
           <span>KaskadOS</span>
         </a>
         <p>Открытый дистрибутив на базе Arch Linux.</p>

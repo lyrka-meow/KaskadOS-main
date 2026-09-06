@@ -19,6 +19,7 @@
 
 class QLabel;
 class QObject;
+class QAction;
 class QProgressBar;
 class QTabWidget;
 
@@ -67,6 +68,7 @@ private:
     Slideshow* m_slideshow;
     QTabWidget* m_tab_widget;
     LogWidget* m_log_widget;
+    QAction* m_toggleLogAction;
 
     QList< ModuleSystem::InstanceKey > m_jobInstanceKeys;
 

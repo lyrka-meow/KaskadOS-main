@@ -70,6 +70,7 @@ ExecutionViewStep::ExecutionViewStep( QObject* parent )
     , m_slideshow( makeSlideshow( m_widget ) )
     , m_tab_widget( new QTabWidget )
     , m_log_widget( new LogWidget )
+    , m_toggleLogAction( nullptr )
 {
     m_widget->setObjectName( "slideshow" );
     m_progressBar->setObjectName( "exec-progress" );
@@ -83,8 +84,8 @@ ExecutionViewStep::ExecutionViewStep( QObject* parent )
 
     m_progressBar->setMaximum( 10000 );
 
-    m_tab_widget->addTab( m_slideshow->widget(), "Slideshow" );
-    m_tab_widget->addTab( m_log_widget, "Log" );
+    m_tab_widget->addTab( m_slideshow->widget(), tr( "О системе" ) );
+    m_tab_widget->addTab( m_log_widget, tr( "Ход установки" ) );
     m_tab_widget->tabBar()->hide();
 
     layout->addWidget( m_tab_widget );
@@ -96,13 +97,13 @@ ExecutionViewStep::ExecutionViewStep( QObject* parent )
     bottomLayout->addWidget( m_label );
 
     QToolBar* toolBar = new QToolBar;
-    const auto logButtonIcon = QIcon::fromTheme( "utilities-terminal" );
-    auto toggleLogAction = toolBar->addAction(
+    m_toggleLogAction = toolBar->addAction(
         Branding::instance()->image(
             { "utilities-log-viewer", "utilities-terminal", "text-x-log", "text-x-changelog", "preferences-log" },
             QSize( 32, 32 ) ),
-        "Toggle log" );
-    auto toggleLogButton = dynamic_cast< QToolButton* >( toolBar->widgetForAction( toggleLogAction ) );
+        tr( "Показать ход установки" ) );
+    m_toggleLogAction->setToolTip( tr( "Переключиться между слайдами и журналом установки" ) );
+    auto toggleLogButton = dynamic_cast< QToolButton* >( toolBar->widgetForAction( m_toggleLogAction ) );
     connect( toggleLogButton, &QToolButton::clicked, this, &ExecutionViewStep::toggleLog );
 
     barLayout->addWidget( m_progressBar );
@@ -232,6 +233,7 @@ ExecutionViewStep::toggleLog()
         m_log_widget->stop();
     }
     m_tab_widget->setCurrentIndex( logBecomesVisible ? 1 : 0 );
+    m_toggleLogAction->setText( logBecomesVisible ? tr( "Вернуться к слайдам" ) : tr( "Показать ход установки" ) );
 }
 
 void
