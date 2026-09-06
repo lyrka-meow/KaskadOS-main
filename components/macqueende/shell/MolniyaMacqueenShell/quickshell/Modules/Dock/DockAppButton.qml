@@ -184,15 +184,6 @@ Item {
         CompositorService.activateToplevel(toplevel);
     }
 
-    function activeGroupedToplevel() {
-        const groupedToplevels = getGroupedToplevels();
-        for (let i = 0; i < groupedToplevels.length; i++) {
-            if (groupedToplevels[i]?.activated)
-                return groupedToplevels[i];
-        }
-        return null;
-    }
-
     onIsHoveredChanged: {
         if (mouseArea.pressed || dragging)
             return;
@@ -360,11 +351,9 @@ Item {
                 } else if (appData.windowCount === 1) {
                     const groupedToplevel = getToplevelObject();
                     activateOrMinimizeToplevel(groupedToplevel);
-                } else if (activeGroupedToplevel()) {
-                    CompositorService.setToplevelMinimized(activeGroupedToplevel(), true);
                 } else if (contextMenu) {
                     const shouldHidePin = appData.appId === "org.quickshell" || appData.appId === "org.macqueende.molniya";
-                    contextMenu.showForButton(root, appData, root.height + 25, shouldHidePin, cachedDesktopEntry, parentDockScreen, dockApps);
+                    contextMenu.showForButton(root, appData, root.height + 25, shouldHidePin, cachedDesktopEntry, parentDockScreen, dockApps, true);
                 }
                 break;
             }
