@@ -280,16 +280,22 @@ cp -a -- "${SOURCE_PROFILE}/." "${PROFILE_DIR}/"
 # Эти серверы относятся только к временному профилю сборки. В установленную
 # систему по-прежнему попадает исходный pacman.conf с обычным mirrorlist.
 sed -i \
-  '/^Include = \/etc\/pacman.d\/mirrorlist$/c\Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch\
-Server = https://nl.mirror.cx/archlinux/$repo/os/$arch\
-Server = https://de.mirrors.mk/archlinux/$repo/os/$arch' \
+  '/^Include = \/etc\/pacman.d\/mirrorlist$/c\Server = https://de.arch.mirror.kescher.at/$repo/os/$arch\
+Server = https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch\
+Server = https://mirror.yandex.ru/archlinux/$repo/os/$arch' \
   "${PROFILE_DIR}/pacman.conf"
-grep -Fqx 'Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch' \
+grep -Fqx 'Server = https://de.arch.mirror.kescher.at/$repo/os/$arch' \
   "${PROFILE_DIR}/pacman.conf" \
   || die 'не удалось настроить основное зеркало Arch для сборки ISO'
 if grep -Fqx 'Include = /etc/pacman.d/mirrorlist' "${PROFILE_DIR}/pacman.conf"; then
   die 'в профиле сборки осталась зависимость от списка зеркал хост-системы'
 fi
+sed -i \
+  -e 's/^ParallelDownloads = .*/ParallelDownloads = 3/' \
+  -e '/^ParallelDownloads = 3$/a DisableDownloadTimeout' \
+  "${PROFILE_DIR}/pacman.conf"
+grep -Fqx 'DisableDownloadTimeout' "${PROFILE_DIR}/pacman.conf" \
+  || die 'не удалось отключить тайм-аут медленной загрузки для сборки ISO'
 
 # Временные пакеты bootstrap-репозитория пересобираются под теми же версиями.
 # Отдельный свежий кэш не позволяет pacman взять одноимённый пакет от прошлой сборки.
