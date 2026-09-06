@@ -9,12 +9,16 @@ import QtQuick.Layouts 1.15
 Rectangle {
     id: navigationBar
     color: "#111512"
-    height: 72
+    height: 64
+
+    function cleanLabel(label) {
+        return label ? label.replace(/&/g, "") : ""
+    }
 
     component ActionButton: Button {
         id: control
-        implicitHeight: 44
-        implicitWidth: Math.max(120, contentItem.implicitWidth + 40)
+        implicitHeight: 40
+        implicitWidth: Math.max(96, contentItem.implicitWidth + 32)
 
         contentItem: Text {
             text: control.text
@@ -46,7 +50,7 @@ Rectangle {
         spacing: 12
 
         ActionButton {
-            text: ViewManager.quitLabel
+            text: navigationBar.cleanLabel(ViewManager.quitLabel)
             enabled: ViewManager.quitEnabled
             visible: ViewManager.quitVisible
             onClicked: ViewManager.quit()
@@ -55,14 +59,14 @@ Rectangle {
         Item { Layout.fillWidth: true }
 
         ActionButton {
-            text: ViewManager.backLabel
+            text: navigationBar.cleanLabel(ViewManager.backLabel)
             enabled: ViewManager.backEnabled
             visible: ViewManager.backAndNextVisible
             onClicked: ViewManager.back()
         }
 
         ActionButton {
-            text: ViewManager.nextLabel
+            text: navigationBar.cleanLabel(ViewManager.nextLabel)
             highlighted: true
             enabled: ViewManager.nextEnabled
             visible: ViewManager.backAndNextVisible

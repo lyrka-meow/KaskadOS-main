@@ -461,7 +461,7 @@ CalamaresWindow::CalamaresWindow( QWidget* parent )
                           baseWidget,
                           ::getWidgetSidebar,
                           ::getQmlSidebar,
-                          qBound( 100, Calamares::defaultFontHeight() * 12, w < windowPreferredWidth ? 100 : 190 ) );
+                          qBound( 220, availableSize.width() / 5, 280 ) );
     QWidget* navigation = flavoredWidget( branding->navigationFlavor(),
                                           ::orientation( branding->navigationSide() ),
                                           m_debugManager,

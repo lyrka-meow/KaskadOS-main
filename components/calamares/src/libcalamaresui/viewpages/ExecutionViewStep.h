@@ -64,6 +64,7 @@ public:
 private:
     QWidget* m_widget;
     QProgressBar* m_progressBar;
+    QLabel* m_percentageLabel;
     QLabel* m_label;
     Slideshow* m_slideshow;
     QTabWidget* m_tab_widget;

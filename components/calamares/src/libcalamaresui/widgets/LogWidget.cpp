@@ -14,6 +14,7 @@
 #include <QFile>
 #include <QScrollBar>
 #include <QStackedLayout>
+#include <QTextCursor>
 #include <QTextStream>
 #include <QThread>
 
@@ -73,6 +74,8 @@ LogWidget::LogWidget( QWidget* parent )
     setLayout( layout );
 
     m_text->setReadOnly( true );
+    m_text->setObjectName( "installation-log" );
+    m_text->setPlaceholderText( tr( "Здесь появится подробный ход установки." ) );
     m_text->setVerticalScrollBarPolicy( Qt::ScrollBarPolicy::ScrollBarAlwaysOn );
 
     QFont monospaceFont( "monospace" );
@@ -82,30 +85,37 @@ LogWidget::LogWidget( QWidget* parent )
     layout->addWidget( m_text );
 
     connect( &m_log_thread, &LogThread::onLogChunk, this, &LogWidget::handleLogChunk );
-
-    m_log_thread.start( QThread::LowestPriority );
 }
 
 void
 LogWidget::handleLogChunk( const QString& logChunk )
 {
-    m_text->appendPlainText( logChunk );
+    m_text->moveCursor( QTextCursor::End );
+    m_text->insertPlainText( logChunk );
+    m_text->verticalScrollBar()->setValue( m_text->verticalScrollBar()->maximum() );
 }
 
 void
 LogWidget::start()
 {
-    if ( !m_log_thread.isRunning() )
+    if ( m_log_thread.isRunning() )
     {
-        m_text->clear();
-        m_log_thread.start();
+        m_log_thread.requestInterruption();
+        m_log_thread.wait();
     }
+
+    m_text->clear();
+    m_log_thread.start( QThread::LowestPriority );
 }
 
 void
 LogWidget::stop()
 {
-    m_log_thread.requestInterruption();
+    if ( m_log_thread.isRunning() )
+    {
+        m_log_thread.requestInterruption();
+        m_log_thread.wait();
+    }
 }
 
 

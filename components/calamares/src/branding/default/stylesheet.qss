@@ -273,5 +273,33 @@ QToolTip {
 
 #exec-message {
     color: #B7C1BB;
-    padding: 4px 0;
+    padding: 2px 0;
+}
+
+#exec-progress {
+    min-height: 18px;
+    max-height: 18px;
+    background: transparent;
+}
+
+#exec-progress-percent {
+    color: #D8F8E2;
+    font-weight: 600;
+}
+
+QToolButton#exec-toggle-view {
+    min-width: 0;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 12px;
+}
+
+QPlainTextEdit#installation-log {
+    padding: 14px;
+    border: 1px solid #3B443E;
+    border-radius: 16px;
+    color: #D8E2DC;
+    selection-color: #102117;
+    selection-background-color: #9FE0B4;
+    background-color: #0C100E;
 }

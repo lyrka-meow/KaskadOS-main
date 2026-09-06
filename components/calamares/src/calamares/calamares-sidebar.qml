@@ -8,6 +8,7 @@ import QtQuick.Layouts 1.15
 Rectangle {
     id: sideBar
     color: "#161B18"
+    clip: true
 
     ColumnLayout {
         anchors.fill: parent
@@ -36,19 +37,24 @@ Rectangle {
             }
 
             ColumnLayout {
+                Layout.fillWidth: true
                 spacing: 1
 
                 Text {
+                    Layout.fillWidth: true
                     text: "KaskadOS"
                     color: "#F1F5F2"
                     font.pixelSize: 20
                     font.weight: Font.DemiBold
+                    elide: Text.ElideNone
                 }
 
                 Text {
+                    Layout.fillWidth: true
                     text: "Установка системы"
                     color: "#9EAAA2"
                     font.pixelSize: 12
+                    wrapMode: Text.WordWrap
                 }
             }
         }
@@ -61,7 +67,7 @@ Rectangle {
                 required property string display
 
                 Layout.fillWidth: true
-                height: 44
+                Layout.preferredHeight: 44
                 radius: 14
                 color: index === ViewManager.currentStepIndex ? "#31483A" : "transparent"
 
@@ -84,9 +90,11 @@ Rectangle {
                         width: parent.width - 34
                         text: display
                         color: index === ViewManager.currentStepIndex ? "#D8F8E2" : "#C4CCC7"
-                        font.pixelSize: 15
+                        font.pixelSize: sideBar.width < 235 ? 14 : 15
+                        minimumPixelSize: 12
+                        fontSizeMode: Text.HorizontalFit
                         font.weight: index === ViewManager.currentStepIndex ? Font.DemiBold : Font.Normal
-                        elide: Text.ElideRight
+                        elide: Text.ElideNone
                     }
                 }
             }
@@ -103,7 +111,7 @@ Rectangle {
         Text {
             Layout.topMargin: 6
             Layout.fillWidth: true
-            text: "KaskadOS Rolling"
+            text: "Установщик KaskadOS"
             color: "#77817B"
             font.pixelSize: 11
             horizontalAlignment: Text.AlignHCenter

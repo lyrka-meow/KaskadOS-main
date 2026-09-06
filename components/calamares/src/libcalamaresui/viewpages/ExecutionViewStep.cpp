@@ -31,13 +31,101 @@
 #include <QDir>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPainter>
+#include <QPainterPath>
 #include <QPlainTextEdit>
 #include <QProgressBar>
 #include <QTabBar>
 #include <QTabWidget>
-#include <QToolBar>
 #include <QToolButton>
+#include <QTimer>
 #include <QVBoxLayout>
+
+#include <cmath>
+
+namespace
+{
+
+class WaveProgressBar : public QProgressBar
+{
+public:
+    explicit WaveProgressBar( QWidget* parent = nullptr )
+        : QProgressBar( parent )
+    {
+        setTextVisible( false );
+        setFixedHeight( 18 );
+
+        auto* animationTimer = new QTimer( this );
+        QObject::connect( animationTimer, &QTimer::timeout, this, [ this ]() {
+            m_phase += 0.35;
+            update();
+        } );
+        animationTimer->start( 45 );
+    }
+
+protected:
+    void paintEvent( QPaintEvent* ) override
+    {
+        QPainter painter( this );
+        painter.setRenderHint( QPainter::Antialiasing );
+
+        const QRectF track = QRectF( rect() ).adjusted( 1.0, 1.0, -1.0, -1.0 );
+        QPainterPath trackPath;
+        trackPath.addRoundedRect( track, track.height() / 2.0, track.height() / 2.0 );
+        painter.fillPath( trackPath, QColor( "#303733" ) );
+
+        const qreal range = maximum() - minimum();
+        const qreal ratio = range > 0 ? qBound( 0.0, ( value() - minimum() ) / range, 1.0 ) : 0.0;
+        const qreal fillWidth = track.width() * ratio;
+        if ( fillWidth <= 0.0 )
+        {
+            return;
+        }
+
+        painter.save();
+        painter.setClipPath( trackPath );
+
+        if ( ratio >= 0.999 )
+        {
+            painter.fillPath( trackPath, QColor( "#9FE0B4" ) );
+        }
+        else
+        {
+            QPainterPath wave;
+            const qreal waveTop = track.top() + 3.5;
+            wave.moveTo( track.left(), track.bottom() );
+            wave.lineTo( track.left(), waveTop + std::sin( m_phase ) * 2.0 );
+            for ( qreal x = 0.0; x <= fillWidth; x += 2.0 )
+            {
+                const qreal y = waveTop + std::sin( x / 15.0 + m_phase ) * 2.0;
+                wave.lineTo( track.left() + x, y );
+            }
+            wave.lineTo( track.left() + fillWidth, track.bottom() );
+            wave.closeSubpath();
+            painter.fillPath( wave, QColor( "#9FE0B4" ) );
+
+            QPainterPath highlight;
+            const qreal highlightTop = track.top() + 5.5;
+            highlight.moveTo( track.left(), track.bottom() );
+            highlight.lineTo( track.left(), highlightTop + std::sin( m_phase + 1.8 ) * 1.5 );
+            for ( qreal x = 0.0; x <= fillWidth; x += 2.0 )
+            {
+                const qreal y = highlightTop + std::sin( x / 19.0 + m_phase + 1.8 ) * 1.5;
+                highlight.lineTo( track.left() + x, y );
+            }
+            highlight.lineTo( track.left() + fillWidth, track.bottom() );
+            highlight.closeSubpath();
+            painter.fillPath( highlight, QColor( 139, 201, 160, 105 ) );
+        }
+
+        painter.restore();
+    }
+
+private:
+    qreal m_phase = 0.0;
+};
+
+}  // namespace
 
 static Calamares::Slideshow*
 makeSlideshow( QWidget* parent )
@@ -65,7 +153,8 @@ namespace Calamares
 ExecutionViewStep::ExecutionViewStep( QObject* parent )
     : ViewStep( parent )
     , m_widget( new QWidget )
-    , m_progressBar( new QProgressBar )
+    , m_progressBar( new WaveProgressBar )
+    , m_percentageLabel( new QLabel( QStringLiteral( "0%" ) ) )
     , m_label( new QLabel )
     , m_slideshow( makeSlideshow( m_widget ) )
     , m_tab_widget( new QTabWidget )
@@ -74,13 +163,15 @@ ExecutionViewStep::ExecutionViewStep( QObject* parent )
 {
     m_widget->setObjectName( "slideshow" );
     m_progressBar->setObjectName( "exec-progress" );
-    CALAMARES_RETRANSLATE( m_progressBar->setFormat(
-        tr( "%p%", "Progress percentage indicator: %p is where the number 0..100 is placed" ) ); );
+    m_percentageLabel->setObjectName( "exec-progress-percent" );
+    m_percentageLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+    m_percentageLabel->setMinimumWidth( Calamares::defaultFontHeight() * 3 );
     m_label->setObjectName( "exec-message" );
+    m_label->setWordWrap( true );
 
     QVBoxLayout* layout = new QVBoxLayout( m_widget );
-    QVBoxLayout* bottomLayout = new QVBoxLayout;
-    QHBoxLayout* barLayout = new QHBoxLayout;
+    QHBoxLayout* progressLayout = new QHBoxLayout;
+    QHBoxLayout* statusLayout = new QHBoxLayout;
 
     m_progressBar->setMaximum( 10000 );
 
@@ -88,26 +179,31 @@ ExecutionViewStep::ExecutionViewStep( QObject* parent )
     m_tab_widget->addTab( m_log_widget, tr( "Ход установки" ) );
     m_tab_widget->tabBar()->hide();
 
-    layout->addWidget( m_tab_widget );
-    Calamares::unmarginLayout( layout );
-    layout->addLayout( bottomLayout );
+    layout->setContentsMargins( 18, 18, 18, 14 );
+    layout->setSpacing( 12 );
+    layout->addWidget( m_tab_widget, 1 );
+    layout->addLayout( progressLayout );
+    layout->addLayout( statusLayout );
 
-    bottomLayout->addSpacing( Calamares::defaultFontHeight() / 2 );
-    bottomLayout->addLayout( barLayout );
-    bottomLayout->addWidget( m_label );
-
-    QToolBar* toolBar = new QToolBar;
-    m_toggleLogAction = toolBar->addAction(
+    m_toggleLogAction = new QAction(
         Branding::instance()->image(
             { "utilities-log-viewer", "utilities-terminal", "text-x-log", "text-x-changelog", "preferences-log" },
             QSize( 32, 32 ) ),
-        tr( "Показать ход установки" ) );
+        tr( "Показать ход установки" ),
+        this );
     m_toggleLogAction->setToolTip( tr( "Переключиться между слайдами и журналом установки" ) );
-    auto toggleLogButton = dynamic_cast< QToolButton* >( toolBar->widgetForAction( m_toggleLogAction ) );
+    auto* toggleLogButton = new QToolButton;
+    toggleLogButton->setObjectName( "exec-toggle-view" );
+    toggleLogButton->setDefaultAction( m_toggleLogAction );
     connect( toggleLogButton, &QToolButton::clicked, this, &ExecutionViewStep::toggleLog );
 
-    barLayout->addWidget( m_progressBar );
-    barLayout->addWidget( toolBar );
+    progressLayout->setSpacing( 12 );
+    progressLayout->addWidget( m_progressBar, 1 );
+    progressLayout->addWidget( m_percentageLabel );
+
+    statusLayout->setSpacing( 16 );
+    statusLayout->addWidget( m_label, 1 );
+    statusLayout->addWidget( toggleLogButton, 0, Qt::AlignRight | Qt::AlignVCenter );
 
     connect( JobQueue::instance(), &JobQueue::progress, this, &ExecutionViewStep::updateFromJobQueue );
 }
@@ -213,7 +309,9 @@ ExecutionViewStep::appendJobModuleInstanceKey( const ModuleSystem::InstanceKey& 
 void
 ExecutionViewStep::updateFromJobQueue( qreal percent, const QString& message )
 {
-    m_progressBar->setValue( int( percent * m_progressBar->maximum() ) );
+    const int progressPercent = qBound( 0, qRound( percent * 100.0 ), 100 );
+    m_progressBar->setValue( progressPercent * 100 );
+    m_percentageLabel->setText( QStringLiteral( "%1%" ).arg( progressPercent ) );
     if ( !message.isEmpty() )
     {
         m_label->setText( message );
