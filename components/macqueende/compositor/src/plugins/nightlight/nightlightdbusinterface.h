@@ -74,6 +74,7 @@ public Q_SLOTS:
      * @since 5.25
      */
     void stopPreview();
+    void configure(bool enabled, uint temperature);
 
 private Q_SLOTS:
     void removeInhibitorService(const QString &serviceName);

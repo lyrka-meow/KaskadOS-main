@@ -404,6 +404,17 @@ void NightLightManager::stopPreview()
     }
 }
 
+void NightLightManager::configure(bool enabled, int temperature)
+{
+    NightLightSettings *settings = NightLightSettings::self();
+    settings->setActive(enabled);
+    settings->setMode(NightLightMode::Constant);
+    settings->setNightTemperature(std::clamp(temperature, MIN_TEMPERATURE, DEFAULT_DAY_TEMPERATURE));
+    settings->save();
+
+    reconfigure();
+}
+
 void NightLightManager::updateTargetTemperature()
 {
     const int targetTemperature = mode() != NightLightMode::Constant && daylight() ? m_dayTargetTemperature : m_nightTargetTemperature;

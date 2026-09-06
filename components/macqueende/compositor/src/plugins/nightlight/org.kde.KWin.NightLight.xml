@@ -48,6 +48,12 @@
     <method name="stopPreview">
     </method>
 
+    <!-- Applies the persistent Night Light state requested by MacqueenShell. -->
+    <method name="configure">
+        <arg name="enabled" type="b" direction="in"/>
+        <arg name="temperature" type="u" direction="in"/>
+    </method>
+
     <!--
         This property holds a value to indicate whether Night Light is inhibited.
     -->

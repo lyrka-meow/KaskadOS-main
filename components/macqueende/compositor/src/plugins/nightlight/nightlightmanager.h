@@ -175,6 +175,8 @@ public:
      */
     void stopPreview();
 
+    void configure(bool enabled, int temperature);
+
 public Q_SLOTS:
     void quickAdjust(int targetTemperature);
 

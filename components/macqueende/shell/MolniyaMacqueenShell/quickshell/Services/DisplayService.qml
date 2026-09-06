@@ -102,6 +102,12 @@ Singleton {
     property bool automationAvailable: false
     property bool gammaControlAvailable: false
     property int resumeRecoveryAttempt: 0
+    property int nightLightProbeAttempt: 0
+    property bool syncingNativeNightLightState: false
+
+    readonly property string nativeNightLightService: "org.kde.KWin.NightLight"
+    readonly property string nativeNightLightPath: "/org/kde/KWin/NightLight"
+    readonly property string nativeNightLightInterface: "org.kde.KWin.NightLight"
 
     property var gammaState: ({})
     property int gammaCurrentTemp: gammaState?.currentTemp ?? 0
@@ -863,52 +869,55 @@ Singleton {
         return deviceInfo.displayMax || 100;
     }
 
-    // Night Mode Functions - Simplified
+    // Night Mode Functions - native Macqueen backend
+    function configureNativeNightLight(enabled, temperature, callback) {
+        DMSService.dbusCall("session", nativeNightLightService, nativeNightLightPath, nativeNightLightInterface, "configure", [enabled, temperature], callback);
+    }
+
+    function storeNightModeEnabled(enabled) {
+        nightModeEnabled = enabled;
+        if (SessionData.nightModeEnabled === enabled)
+            return;
+
+        syncingNativeNightLightState = true;
+        SessionData.setNightModeEnabled(enabled);
+        syncingNativeNightLightState = false;
+    }
+
     function enableNightMode() {
         if (!gammaControlAvailable) {
-            ToastService.showWarning(I18n.tr("Night mode failed: DMS gamma control not available"));
+            ToastService.showWarning(I18n.tr("Night mode is not available in Macqueen"));
             return;
         }
 
-        nightModeEnabled = true;
-        SessionData.setNightModeEnabled(true);
-
-        DMSService.sendRequest("wayland.gamma.setEnabled", {
-            "enabled": true
-        }, response => {
+        const temperature = SessionData.nightModeTemperature || 4500;
+        configureNativeNightLight(true, temperature, response => {
             if (response.error) {
-                log.error("Failed to enable gamma control:", response.error);
+                log.error("Failed to enable native Night Light:", response.error);
                 ToastService.showError(I18n.tr("Failed to enable night mode"), response.error, "", "night-mode");
-                nightModeEnabled = false;
-                SessionData.setNightModeEnabled(false);
                 return;
             }
-            ToastService.dismissCategory("night-mode");
 
-            if (SessionData.nightModeAutoEnabled) {
-                startAutomation();
-            } else {
-                applyNightModeDirectly();
-            }
+            storeNightModeEnabled(true);
+            ToastService.dismissCategory("night-mode");
+            refreshNativeNightLightState();
         });
     }
 
     function disableNightMode() {
-        nightModeEnabled = false;
-        SessionData.setNightModeEnabled(false);
-
         if (!gammaControlAvailable) {
             return;
         }
 
-        DMSService.sendRequest("wayland.gamma.setEnabled", {
-            "enabled": false
-        }, response => {
+        const temperature = SessionData.nightModeTemperature || 4500;
+        configureNativeNightLight(false, temperature, response => {
             if (response.error) {
-                log.error("Failed to disable gamma control:", response.error);
+                log.error("Failed to disable native Night Light:", response.error);
                 ToastService.showError(I18n.tr("Failed to disable night mode"), response.error, "", "night-mode");
             } else {
+                storeNightModeEnabled(false);
                 ToastService.dismissCategory("night-mode");
+                refreshNativeNightLightState();
             }
         });
     }
@@ -922,37 +931,15 @@ Singleton {
     }
 
     function applyNightModeDirectly() {
-        const temperature = SessionData.nightModeTemperature || 4000;
-
-        DMSService.sendRequest("wayland.gamma.setManualTimes", {
-            "sunrise": null,
-            "sunset": null
-        }, response => {
+        const temperature = SessionData.nightModeTemperature || 4500;
+        configureNativeNightLight(true, temperature, response => {
             if (response.error) {
-                log.error("Failed to clear manual times:", response.error);
-                return;
+                log.error("Failed to set native Night Light temperature:", response.error);
+                ToastService.showError(I18n.tr("Failed to set night mode temperature"), response.error, "", "night-mode");
+            } else {
+                ToastService.dismissCategory("night-mode");
+                refreshNativeNightLightState();
             }
-
-            DMSService.sendRequest("wayland.gamma.setUseIPLocation", {
-                "use": false
-            }, response => {
-                if (response.error) {
-                    log.error("Failed to disable IP location:", response.error);
-                    return;
-                }
-
-                DMSService.sendRequest("wayland.gamma.setTemperature", {
-                    "low": temperature,
-                    "high": temperature
-                }, response => {
-                    if (response.error) {
-                        log.error("Failed to set temperature:", response.error);
-                        ToastService.showError(I18n.tr("Failed to set night mode temperature"), response.error, "", "night-mode");
-                    } else {
-                        ToastService.dismissCategory("night-mode");
-                    }
-                });
-            });
         });
     }
 
@@ -1111,41 +1098,51 @@ Singleton {
             return;
         }
 
-        if (DMSService.apiVersion < 6) {
+        if (!DMSService.capabilities.includes("dbus")) {
             gammaControlAvailable = false;
             automationAvailable = false;
             return;
         }
 
-        if (!DMSService.capabilities.includes("gamma")) {
-            gammaControlAvailable = false;
-            automationAvailable = false;
-            return;
-        }
+        refreshNativeNightLightState();
+    }
 
-        DMSService.sendRequest("wayland.gamma.getState", null, response => {
+    function refreshNativeNightLightState() {
+        DMSService.dbusGetAllProperties("session", nativeNightLightService, nativeNightLightPath, nativeNightLightInterface, response => {
             if (response.error) {
                 gammaControlAvailable = false;
                 automationAvailable = false;
-                log.error("Gamma control not available:", response.error);
-            } else {
-                gammaControlAvailable = true;
-                automationAvailable = true;
-
-                if (nightModeEnabled) {
-                    DMSService.sendRequest("wayland.gamma.setEnabled", {
-                        "enabled": true
-                    }, enableResponse => {
-                        if (enableResponse.error) {
-                            log.error("Failed to enable gamma control on startup:", enableResponse.error);
-                            return;
-                        }
-
-                        evaluateNightMode();
-                    });
+                if (nightLightProbeAttempt < 10) {
+                    nightLightProbeAttempt++;
+                    nightLightProbeTimer.restart();
                 }
+                return;
             }
+
+            nightLightProbeAttempt = 0;
+            const state = response.result || {};
+            const available = state.available !== false;
+            gammaControlAvailable = available;
+            automationAvailable = available;
+            gammaState = {
+                "currentTemp": state.currentTemperature || 0,
+                "isDay": state.daylight !== false,
+                "config": {
+                    "LowTemp": SessionData.nightModeTemperature,
+                    "HighTemp": SessionData.nightModeHighTemperature
+                }
+            };
+
+            if (state.enabled !== undefined)
+                storeNightModeEnabled(state.enabled);
         });
+    }
+
+    Timer {
+        id: nightLightProbeTimer
+        interval: 1000
+        repeat: false
+        onTriggered: root.checkGammaControlAvailability()
     }
 
     Timer {
@@ -1299,6 +1296,8 @@ Singleton {
 
         function onNightModeEnabledChanged() {
             nightModeEnabled = SessionData.nightModeEnabled;
+            if (syncingNativeNightLightState)
+                return;
             evaluateNightMode();
         }
 

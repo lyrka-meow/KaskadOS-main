@@ -231,6 +231,11 @@ void NightLightDBusInterface::stopPreview()
     m_manager->stopPreview();
 }
 
+void NightLightDBusInterface::configure(bool enabled, uint temperature)
+{
+    m_manager->configure(enabled, int(temperature));
+}
+
 }
 
 #include "moc_nightlightdbusinterface.cpp"
