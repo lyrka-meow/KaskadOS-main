@@ -208,7 +208,7 @@ protected:
         outputs.insert(output);
 
         auto lockSurface = new ExtSessionLockSurfaceV1Interface(q, surface, output, lockSurfaceResource);
-        connect(lockSurface, &ExtSessionLockSurfaceV1Interface::aboutToBeDestroyed, q, [this, output]() {
+        QObject::connect(lockSurface, &ExtSessionLockSurfaceV1Interface::aboutToBeDestroyed, q, [this, output]() {
             outputs.remove(output);
         });
         Q_EMIT q->surfaceCreated(lockSurface);
