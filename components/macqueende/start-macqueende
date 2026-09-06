@@ -41,6 +41,7 @@ repo_root=$(resolve_repo_root)
 macqueen="$repo_root/build/compositor/bin/macqueen"
 macqueen_screenshot_plugin="$repo_root/build/compositor/bin/kwin/plugins/screenshot.so"
 macqueen_screencast_plugin="$repo_root/build/compositor/bin/kwin/plugins/screencast.so"
+macqueen_nightlight_plugin="$repo_root/build/compositor/bin/kwin/plugins/nightlight.so"
 molniya="$repo_root/session/run-molniya"
 qml_module="$repo_root/build/quickshell-macqueen"
 qt_plugins="$repo_root/build/compositor/bin:$repo_root/build/compositor/lib"
@@ -53,6 +54,8 @@ prepare_user_config="$repo_root/session/prepare-user-config"
     die "missing $macqueen_screenshot_plugin; run: cmake --build $repo_root/build/compositor --target screenshot"
 [[ -f "$macqueen_screencast_plugin" ]] ||
     die "missing $macqueen_screencast_plugin; run: cmake --build $repo_root/build/compositor --target screencast"
+[[ -f "$macqueen_nightlight_plugin" ]] ||
+    die "missing $macqueen_nightlight_plugin; run: cmake --build $repo_root/build/compositor --target nightlight"
 [[ -x "$molniya" ]] ||
     die "missing $molniya"
 [[ -f "$qml_module/Macqueen/Ipc/qmldir" ]] ||

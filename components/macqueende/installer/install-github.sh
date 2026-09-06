@@ -291,7 +291,7 @@ build_sources()
     local jobs=${MACQUEENDE_BUILD_JOBS:-$(nproc)}
     ((jobs > 8)) && jobs=8
     cmake --build "$source_dir/build/compositor" \
-        --target macqueen screenshot screencast --parallel "$jobs"
+        --target macqueen screenshot screencast nightlight --parallel "$jobs"
     cmake --build "$source_dir/build/portal" --parallel "$jobs"
     cmake --build "$source_dir/build/quickshell-macqueen" --parallel "$jobs"
     make -C "$source_dir/shell/MolniyaMacqueenShell/core" \

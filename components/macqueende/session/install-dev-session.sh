@@ -23,6 +23,12 @@ if [[ ! -f "$repo_root/build/compositor/bin/kwin/plugins/screencast.so" ]]; then
     exit 1
 fi
 
+if [[ ! -f "$repo_root/build/compositor/bin/kwin/plugins/nightlight.so" ]]; then
+    echo "Missing Macqueen night light plugin. Run:" >&2
+    echo "  cmake --build $repo_root/build/compositor --target nightlight" >&2
+    exit 1
+fi
+
 if [[ ! -x "$repo_root/shell/MolniyaMacqueenShell/core/bin/dms" ]]; then
     echo "Missing Molniya backend. Run:" >&2
     echo "  make -C $repo_root/shell/MolniyaMacqueenShell/core dev" >&2

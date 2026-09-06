@@ -165,7 +165,7 @@ grep -Fq 'desktopFile: "macqueende"' "${DISPLAYMANAGER_CONFIG}" \
   || die 'Calamares не выбирает сеанс MacqueenDE по умолчанию'
 
 readonly PREPARE_PROFILE="${SCRIPT_DIR}/prepare-live-profile.sh"
-grep -Fq -- '--target macqueen screenshot screencast' "${PREPARE_PROFILE}" \
+grep -Fq -- '--target macqueen screenshot screencast nightlight' "${PREPARE_PROFILE}" \
   || die 'prepare-live-profile.sh не собирает обязательные цели Macqueen'
 grep -Fq 'readonly MACQUEEN_STAGE="${PROFILE_DIR}/airootfs/opt/macqueende"' "${PREPARE_PROFILE}" \
   || die 'prepare-live-profile.sh не добавляет MacqueenDE в ISO'

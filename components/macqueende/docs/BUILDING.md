@@ -51,6 +51,7 @@ upstream settings module:
 cmake --build build/compositor --target macqueen --parallel 8
 cmake --build build/compositor --target screenshot --parallel 8
 cmake --build build/compositor --target screencast --parallel 8
+cmake --build build/compositor --target nightlight --parallel 8
 cmake --build build/portal --parallel 8
 cmake --build build/quickshell-macqueen --parallel 8
 ```

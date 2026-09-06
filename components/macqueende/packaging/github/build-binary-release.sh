@@ -19,6 +19,7 @@ required=(
     build/compositor/bin/libkwin.so.6.7.3
     build/compositor/bin/kwin/plugins/screenshot.so
     build/compositor/bin/kwin/plugins/screencast.so
+    build/compositor/bin/kwin/plugins/nightlight.so
     build/portal/bin/xdg-desktop-portal-macqueen
     build/quickshell-macqueen/libquickshell-macqueen.so
     build/quickshell-macqueen/Macqueen/Ipc/qmldir

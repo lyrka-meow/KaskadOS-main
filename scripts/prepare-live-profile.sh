@@ -157,8 +157,10 @@ env -u LD_LIBRARY_PATH cmake -S "${MACQUEENDE_SOURCE}/compositor" -B "${MACQUEEN
   -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
   -DCMAKE_INSTALL_PREFIX=/opt/macqueende
 env -u LD_LIBRARY_PATH cmake --build "${MACQUEEN_COMPOSITOR_BUILD}" \
-  --target macqueen screenshot screencast \
+  --target macqueen screenshot screencast nightlight \
   --parallel "${MACQUEEN_BUILD_JOBS}"
+[[ -f "${MACQUEEN_COMPOSITOR_BUILD}/bin/kwin/plugins/nightlight.so" ]] \
+  || die 'сборка MacqueenDE не создала модуль ночного режима'
 
 env -u LD_LIBRARY_PATH cmake -S "${MACQUEENDE_SOURCE}/portal" -B "${MACQUEEN_PORTAL_BUILD}" -G Ninja \
   -DBUILD_TESTING=OFF \

@@ -13,6 +13,10 @@ source_root="$payload_root/opt/macqueende"
     echo "Invalid MacqueenDE release payload: screencast plugin is missing." >&2
     exit 1
 }
+[[ -f "$source_root/build/compositor/bin/kwin/plugins/nightlight.so" ]] || {
+    echo "Invalid MacqueenDE release payload: night light plugin is missing." >&2
+    exit 1
+}
 [[ -x "$source_root/installer/macqueende-manager" ]] || {
     echo "Invalid MacqueenDE release payload: manager is missing." >&2
     exit 1
