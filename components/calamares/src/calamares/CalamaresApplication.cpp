@@ -93,6 +93,7 @@ CalamaresApplication::CalamaresApplication( int& argc, char* argv[] )
 void
 CalamaresApplication::init()
 {
+    Logger::setupLogfile();
     cDebug() << "Calamares version:" << CALAMARES_VERSION;
     cDebug() << Logger::SubEntry << "Using Qt version:" << qVersion();
     cDebug() << Logger::SubEntry << "Build type:" << CMAKE_BUILD_TYPE;

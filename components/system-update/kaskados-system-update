@@ -3,8 +3,8 @@
 set -Eeuo pipefail
 
 mode=${1:-}
-if (( $# != 1 )) || [[ "${mode}" != system && "${mode}" != flatpak-system ]]; then
-    echo "Допустимый режим: system или flatpak-system" >&2
+if (( $# != 1 )) || [[ "${mode}" != system && "${mode}" != flatpak-system && "${mode}" != pacman-catalog ]]; then
+    echo "Допустимый режим: system, flatpak-system или pacman-catalog" >&2
     exit 64
 fi
 
@@ -23,5 +23,8 @@ case "${mode}" in
     flatpak-system)
         command -v flatpak >/dev/null 2>&1 || exit 0
         /usr/bin/flatpak update --system --noninteractive -y
+        ;;
+    pacman-catalog)
+        /usr/bin/pacman -Sy --noconfirm
         ;;
 esac

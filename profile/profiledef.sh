@@ -5,7 +5,7 @@ iso_name="kaskados"
 iso_label="KASKADOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
 iso_publisher="KaskadOS <https://github.com/lyrka-meow/KaskadOS-main>"
 iso_application="KaskadOS Live Installer"
-iso_version="0.1.0-alpha.41"
+iso_version="0.1.0-alpha.42"
 install_dir="arch"
 buildmodes=('iso')
 bootmodes=('bios.syslinux'

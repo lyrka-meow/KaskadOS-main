@@ -41,7 +41,7 @@ func NewManager() *Manager {
 }
 
 func (m *Manager) Search(query string, source Source) SearchResult {
-	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	return m.catalog.Search(ctx, query, source)
 }
@@ -80,13 +80,13 @@ func (m *Manager) Install(item Item) error {
 	return m.start("install", item, func(ctx context.Context, logf func(string)) error {
 		switch item.Source {
 		case SourcePacman:
-			err := runLogged(ctx, logf, "pkexec", "pacman", "-S", "--needed", "--noconfirm", item.PackageName)
+			err := runLogged(ctx, logf, "pkexec", "pacman", "-Syu", "--needed", "--noconfirm", item.PackageName)
 			if err == nil {
 				m.setSource(item.PackageName, "")
 			}
 			return err
 		case SourceFlatpak:
-			if err := runLogged(ctx, logf, "flatpak", "remote-add", "--user", "--if-not-exists", "flathub", "https://flathub.org/repo/flathub.flatpakrepo"); err != nil {
+			if err := runLogged(ctx, logf, "flatpak", "remote-add", "--user", "--if-not-exists", "flathub", "https://dl.flathub.org/repo/flathub.flatpakrepo"); err != nil {
 				return err
 			}
 			return runLogged(ctx, logf, "flatpak", "install", "--user", "--noninteractive", "-y", item.RemoteOr("flathub"), item.ID)
@@ -308,7 +308,7 @@ func (m *Manager) installAUR(ctx context.Context, name string, visiting map[stri
 	aur = uniqueStrings(aur)
 	if len(official) > 0 {
 		logf("Установка зависимостей из репозиториев")
-		args := append([]string{"pkexec", "pacman", "-S", "--needed", "--noconfirm"}, official...)
+		args := append([]string{"pkexec", "pacman", "-Syu", "--needed", "--noconfirm"}, official...)
 		if err := runLogged(ctx, logf, args...); err != nil {
 			return err
 		}

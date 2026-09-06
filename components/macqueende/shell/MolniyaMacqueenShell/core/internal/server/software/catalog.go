@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
 	"regexp"
 	"sort"
@@ -16,7 +17,10 @@ import (
 )
 
 type Catalog struct {
-	httpClient *http.Client
+	httpClient   *http.Client
+	pacmanSyncM  sync.Mutex
+	flatpakInitM sync.Mutex
+	flatpakReady bool
 }
 
 func NewCatalog() *Catalog {
@@ -32,18 +36,54 @@ func (c *Catalog) Search(ctx context.Context, query string, source Source) Searc
 		query = query[:120]
 	}
 
+	problems := make([]string, 0, 2)
+	var problemsM sync.Mutex
+	pacmanReady := true
+	if source == "" || source == SourcePacman {
+		if err := c.ensurePacmanDatabases(ctx); err != nil {
+			pacmanReady = false
+			problems = append(problems, "Не удалось подготовить каталог Pacman. Проверьте подключение к интернету и повторите поиск.")
+		}
+	}
+	flatpakReady := true
+	if source == "" || source == SourceFlatpak {
+		if err := c.ensureFlatpakCatalog(ctx); err != nil {
+			flatpakReady = false
+			problems = append(problems, "Не удалось подготовить Flathub. Проверьте подключение к интернету и повторите поиск.")
+		}
+	}
+
 	installed := installedNames(ctx)
 	type searchFunc func(context.Context, string, map[string]bool) []Item
+	flatpakSearch := func(ctx context.Context, query string, installed map[string]bool) []Item {
+		items, err := c.searchFlatpak(ctx, query, installed)
+		if err != nil {
+			problemsM.Lock()
+			problems = append(problems, "Не удалось выполнить поиск во Flathub. Проверьте подключение к интернету и повторите поиск.")
+			problemsM.Unlock()
+		}
+		return items
+	}
 	searches := make([]searchFunc, 0, 3)
 	switch source {
 	case SourcePacman:
-		searches = append(searches, c.searchPacman)
+		if pacmanReady {
+			searches = append(searches, c.searchPacman)
+		}
 	case SourceFlatpak:
-		searches = append(searches, c.searchFlatpak)
+		if flatpakReady {
+			searches = append(searches, flatpakSearch)
+		}
 	case SourceAUR:
 		searches = append(searches, c.searchAUR)
 	default:
-		searches = append(searches, c.searchPacman, c.searchFlatpak, c.searchAUR)
+		if pacmanReady {
+			searches = append(searches, c.searchPacman)
+		}
+		if flatpakReady {
+			searches = append(searches, flatpakSearch)
+		}
+		searches = append(searches, c.searchAUR)
 	}
 
 	results := make(chan []Item, len(searches))
@@ -76,7 +116,92 @@ func (c *Catalog) Search(ctx context.Context, query string, source Source) Searc
 	if len(items) > 100 {
 		items = items[:100]
 	}
-	return SearchResult{Items: items, Sources: availableSources()}
+	return SearchResult{Items: items, Sources: availableSources(), Problem: strings.Join(problems, " ")}
+}
+
+func (c *Catalog) ensurePacmanDatabases(ctx context.Context) error {
+	if pacmanDatabasesReady() {
+		return nil
+	}
+
+	c.pacmanSyncM.Lock()
+	defer c.pacmanSyncM.Unlock()
+	if pacmanDatabasesReady() {
+		return nil
+	}
+
+	const helper = "/usr/lib/kaskados/kaskados-system-update"
+	if _, err := os.Stat(helper); err != nil {
+		return err
+	}
+
+	var cmd *exec.Cmd
+	if os.Geteuid() == 0 {
+		cmd = exec.CommandContext(ctx, helper, "pacman-catalog")
+	} else {
+		cmd = exec.CommandContext(ctx, "pkexec", helper, "pacman-catalog")
+	}
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return errors.New(strings.TrimSpace(string(output)))
+	}
+	if !pacmanDatabasesReady() {
+		return errors.New("pacman did not create repository databases")
+	}
+	return nil
+}
+
+func pacmanDatabasesReady() bool {
+	for _, path := range []string{
+		"/var/lib/pacman/sync/core.db",
+		"/var/lib/pacman/sync/extra.db",
+	} {
+		info, err := os.Stat(path)
+		if err != nil || !info.Mode().IsRegular() || info.Size() == 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func (c *Catalog) ensureFlatpakCatalog(ctx context.Context) error {
+	if !commandExists("flatpak") {
+		return errors.New("flatpak is not installed")
+	}
+
+	c.flatpakInitM.Lock()
+	defer c.flatpakInitM.Unlock()
+	if c.flatpakReady {
+		return nil
+	}
+
+	add := exec.CommandContext(
+		ctx,
+		"flatpak", "remote-add", "--user", "--if-not-exists",
+		"flathub", "https://dl.flathub.org/repo/flathub.flatpakrepo",
+	)
+	if output, err := add.CombinedOutput(); err != nil {
+		return commandOutputError(err, output)
+	}
+
+	update := exec.CommandContext(
+		ctx,
+		"flatpak", "update", "--user", "--appstream",
+		"--noninteractive", "-y", "flathub",
+	)
+	if output, err := update.CombinedOutput(); err != nil {
+		return commandOutputError(err, output)
+	}
+
+	c.flatpakReady = true
+	return nil
+}
+
+func commandOutputError(err error, output []byte) error {
+	message := strings.TrimSpace(string(output))
+	if message == "" {
+		return err
+	}
+	return errors.New(message)
 }
 
 func sortSearchResults(items []Item, query string) {
@@ -191,16 +316,18 @@ func (c *Catalog) searchPacman(ctx context.Context, query string, installed map[
 	return items
 }
 
-func (c *Catalog) searchFlatpak(ctx context.Context, query string, installed map[string]bool) []Item {
+func (c *Catalog) searchFlatpak(ctx context.Context, query string, installed map[string]bool) ([]Item, error) {
 	if !commandExists("flatpak") {
-		return nil
+		return nil, errors.New("flatpak is not installed")
 	}
-	if err := ensureUserFlathub(ctx); err != nil {
-		return nil
-	}
-	out, err := exec.CommandContext(ctx, "flatpak", "search", "--user", "--columns=application,name,description,version", query).Output()
+	out, err := exec.CommandContext(
+		ctx,
+		"flatpak", "search", "--user",
+		"--columns=application:full,name:full,description:full,version:full",
+		query,
+	).CombinedOutput()
 	if err != nil {
-		return nil
+		return nil, commandOutputError(err, out)
 	}
 	var items []Item
 	for scanner := bufio.NewScanner(strings.NewReader(string(out))); scanner.Scan(); {
@@ -220,7 +347,7 @@ func (c *Catalog) searchFlatpak(ctx context.Context, query string, installed map
 			break
 		}
 	}
-	return items
+	return items, nil
 }
 
 type aurRPCResponse struct {
@@ -386,8 +513,4 @@ func installedFlatpaks(ctx context.Context) []Item {
 func commandExists(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil
-}
-
-func ensureUserFlathub(ctx context.Context) error {
-	return exec.CommandContext(ctx, "flatpak", "remote-add", "--user", "--if-not-exists", "flathub", "https://flathub.org/repo/flathub.flatpakrepo").Run()
 }

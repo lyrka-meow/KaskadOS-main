@@ -320,11 +320,16 @@ FocusScope {
                     ? "Установленные пакеты не найдены"
                     : (root.query.trim().length < 2
                        ? "Начните поиск приложения"
+                       : (SoftwareService.searchProblem.length > 0
+                          ? SoftwareService.searchProblem
                        : (!SoftwareService.sourceAvailable(SoftwareService.sourceFilter)
                           ? SoftwareService.sourceFilterLabel(SoftwareService.sourceFilter) + " недоступен"
-                          : "Нет результатов · " + SoftwareService.sourceFilterLabel(SoftwareService.sourceFilter)))
+                          : "Нет результатов · " + SoftwareService.sourceFilterLabel(SoftwareService.sourceFilter))))
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceVariantText
+                width: parent.width - Theme.spacingXL * 2
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
             }
         }
     }

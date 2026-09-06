@@ -102,9 +102,8 @@ readonly CALAMARES_RUNNER="${PROFILE_DIR}/airootfs/usr/local/bin/kaskados-run-ca
 if grep -Eq 'exec .*calamares.*[[:space:]]-D[0-9]+' "${CALAMARES_RUNNER}"; then
   die 'Calamares запускается с диагностическим уровнем журналирования'
 fi
-if grep -Fq 'Logger::setupLogfile();' "${PROJECT_DIR}/components/calamares/src/calamares/CalamaresApplication.cpp"; then
-  die 'Calamares создаёт диагностический session.log'
-fi
+grep -Fq 'Logger::setupLogfile();' "${PROJECT_DIR}/components/calamares/src/calamares/CalamaresApplication.cpp" \
+  || die 'Calamares не создаёт временный журнал хода установки'
 
 readonly CALAMARES_SETTINGS="${PROJECT_DIR}/components/calamares/settings.conf"
 grep -Fq 'id:          pacmankeyring' "${CALAMARES_SETTINGS}" \

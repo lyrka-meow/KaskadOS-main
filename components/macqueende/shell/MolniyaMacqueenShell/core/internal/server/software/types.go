@@ -26,6 +26,7 @@ type Item struct {
 type SearchResult struct {
 	Items   []Item   `json:"items"`
 	Sources []Source `json:"sources"`
+	Problem string   `json:"problem,omitempty"`
 }
 
 type Phase string

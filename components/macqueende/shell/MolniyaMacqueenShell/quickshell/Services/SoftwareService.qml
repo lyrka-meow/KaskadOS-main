@@ -14,6 +14,7 @@ Singleton {
     property string query: ""
     property string sourceFilter: "all"
     property var searchResults: []
+    property string searchProblem: ""
     property var installedItems: []
     property var sources: []
     property var operation: ({"phase": "idle"})
@@ -79,6 +80,7 @@ Singleton {
         if (sourceFilter === next)
             return;
         sourceFilter = next;
+        searchProblem = "";
         if (query.length >= 2) {
             searching = true;
             searchDebounce.restart();
@@ -87,6 +89,7 @@ Singleton {
 
     function setQuery(value) {
         query = (value || "").trim();
+        searchProblem = "";
         if (query.length < 2) {
             searchDebounce.stop();
             searchResults = [];
@@ -111,8 +114,12 @@ Singleton {
             if (response?.result) {
                 searchResults = response.result.items || [];
                 sources = response.result.sources || [];
+                searchProblem = response.result.problem || "";
+                if (searchProblem.length > 0)
+                    ToastService.showWarning(searchProblem, "", "", "software-search");
             } else {
                 searchResults = [];
+                searchProblem = "Не удалось выполнить поиск приложений.";
                 ToastService.showWarning("Не удалось выполнить поиск приложений.", "", "", "software-search");
             }
         });
